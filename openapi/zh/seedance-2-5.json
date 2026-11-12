@@ -28,7 +28,7 @@
           "type",
           "audio_url"
         ],
-        "title": "音频 audio_url",
+        "title": "音频",
         "type": "object"
       },
       "SeedanceV3CallbackBody": {
@@ -91,21 +91,21 @@
       },
       "SeedanceV3CreateTaskRequest": {
         "additionalProperties": false,
-        "description": "创建视频生成任务的请求体。字段全部为 snake_case；只接受本表列出的字段，传入表外字段返回 400 `不支持的参数：xxx`。",
+        "description": "只接受下列字段，其他字段返回 400 `不支持的参数：xxx`。",
         "properties": {
           "model": {
             "default": "seedance-2.5",
-            "description": "模型名称，**必填**，本页固定为 `seedance-2.5`（Seedance 2.5）。其他模型见左侧导航。模型不存在或当前账号未开放时返回 404 `not_found`。查询任务时会原样回显该值。\n\n**可选值：**\n- `seedance-2.5`：Seedance 2.5：时长 4 ~ 30 秒（默认智能时长 `-1`），480p / 720p / 1080p，图片最多 30 张、视频与音频各最多 10 个，支持 `omni_reference_task_type`",
+            "description": "**必填**，固定为 `seedance-2.5`。账号未开通该模型时返回 404。",
             "enum": [
               "seedance-2.5"
             ],
             "examples": [
-              "seedance-2.0"
+              "seedance-2.5"
             ],
             "type": "string"
           },
           "content": {
-            "description": "输入内容数组，**必填**，至少包含 1 个 `text` 提示词，可再附带参考图片 / 视频 / 音频。\n\n- 缺失或空数组：400 `content 不能为空`\n- 没有 `text` 项：400 `content 中必须包含 text 类型的提示词`\n- 素材按类型分别编号，提示词中用「图片1」「图片2」「视频1」「音频1」引用对应位置的素材\n- 素材地址须为公网 `http` / `https` 地址，或素材库的 `asset://<素材Id>`\n\n本模型素材上限：图片 30 张、视频 10 个、音频 10 个（由模型执行，超限时任务以失败终态返回原因）。带参考视频即为视频编辑 / 延长。",
+            "description": "**必填**。至少 1 个 `text` 提示词，可附带参考图片 / 视频 / 音频。\n\n- 素材地址：公网 `http(s)` 地址或 `asset://<素材Id>`\n- 提示词中用「图片1」「视频1」「音频1」按顺序引用素材\n- 本模型上限：图片 30、视频 10、音频 10，超出时任务失败\n- 带参考视频即为视频编辑 / 延长\n\n缺少 `content` 或没有 `text` 项返回 400。",
             "items": {
               "discriminator": {
                 "mapping": {
@@ -136,7 +136,7 @@
           },
           "ratio": {
             "default": "adaptive",
-            "description": "输出视频宽高比，默认 `adaptive`。取值区分大小写，其他值返回 400 `ratio 仅支持 ...`。含首帧 / 尾帧图片时输出比例跟随输入图片，本字段不生效。\n\n**可选值：**\n- `adaptive`：自适应（默认）：有参考图片 / 视频时按素材比例输出，纯文本时由模型选择合适的比例\n- `16:9`：横屏宽屏，适合电脑、电视与大多数视频平台\n- `9:16`：竖屏，适合短视频与手机全屏播放\n- `1:1`：方形，适合社交媒体信息流与头像类内容\n- `4:3`：传统横屏比例\n- `3:4`：竖版比例，适合人像与商品展示\n- `21:9`：超宽银幕，电影感画面",
+            "description": "输出宽高比，默认 `adaptive`。有首帧 / 尾帧图片时跟随图片比例。\n\n**可选值：**\n- `adaptive`：自适应（默认）：有参考图片 / 视频时按素材比例输出，纯文本时由模型选择合适的比例\n- `16:9`：横屏宽屏，适合电脑、电视与大多数视频平台\n- `9:16`：竖屏，适合短视频与手机全屏播放\n- `1:1`：方形，适合社交媒体信息流与头像类内容\n- `4:3`：传统横屏比例\n- `3:4`：竖版比例，适合人像与商品展示\n- `21:9`：超宽银幕，电影感画面",
             "enum": [
               "adaptive",
               "16:9",
@@ -185,7 +185,7 @@
             "type": "integer"
           },
           "frames": {
-            "description": "总帧数，正整数。与 `duration` 二选一，同时传入时 `frames` 优先、`duration` 被忽略；按实际生成用量计费。非正整数返回 400 `frames 必须是正整数`。",
+            "description": "总帧数，正整数。与 `duration` 二选一，同时传时以 `frames` 为准。",
             "format": "int64",
             "minimum": 1,
             "type": "integer"
@@ -202,11 +202,11 @@
           },
           "generate_audio": {
             "default": true,
-            "description": "是否同时生成音频（音效 / 配乐 / 人声），默认 `true`。传 `false` 输出无声视频。须为布尔值，字符串 `\"true\"` 返回 400。",
+            "description": "是否生成音频（音效、配乐、人声），默认 `true`；`false` 输出无声视频。",
             "type": "boolean"
           },
           "output_format": {
-            "description": "输出容器格式，不传时为 `mp4`。平台只校验类型（须为字符串），最终是否支持由模型决定。\n\n**可选值：**\n- `mp4`：MP4（默认），兼容性最好\n- `mov`：QuickTime MOV，便于导入剪辑软件",
+            "description": "输出格式，默认 `mp4`。\n\n**可选值：**\n- `mp4`：MP4（默认），兼容性最好\n- `mov`：QuickTime MOV，便于导入剪辑软件",
             "enum": [
               "mp4",
               "mov"
@@ -215,25 +215,25 @@
           },
           "watermark": {
             "default": false,
-            "description": "是否在视频上添加水印，默认 `false`（不加水印）。须为布尔值。",
+            "description": "是否加水印，默认 `false`。",
             "type": "boolean"
           },
           "seed": {
-            "description": "随机种子，整数。相同种子与相同参数通常生成相近的结果，便于复现与微调；不传时由模型随机选择，实际值可从查询结果的 `seed` 获取。不保证完全一致。",
+            "description": "随机种子。相同种子和参数通常得到相近结果，便于复现；不保证完全一致。",
             "format": "int64",
             "type": "integer"
           },
           "camera_fixed": {
-            "description": "是否固定摄像机机位。`true` 时尽量保持镜头不动（不推拉摇移），适合产品展示等场景；不传时由模型根据提示词决定运镜。",
+            "description": "是否固定机位。`true` 时尽量不推拉摇移，适合产品展示。",
             "type": "boolean"
           },
           "return_last_frame": {
-            "description": "是否返回视频尾帧图片。`true` 时任务成功后在 `content.last_frame_url` 返回最后一帧，可作为下一段视频的首帧实现连续生成。",
+            "description": "是否返回尾帧。`true` 时成功后在 `content.last_frame_url` 返回最后一帧，可作下一段的首帧。",
             "type": "boolean"
           },
           "bitrate_mode": {
             "default": "standard",
-            "description": "同一分辨率下的输出画质档位，不传时等同 `standard`。其他值返回 400 `bitrate_mode 仅支持 standard / high`。\n\n**可选值：**\n- `standard`：标准码率（默认，等同不传）\n- `high`：高码率，画面细节与运动更清晰，文件更大",
+            "description": "画质档位，默认 `standard`。\n\n**可选值：**\n- `standard`：标准码率（默认，等同不传）\n- `high`：高码率，画面细节与运动更清晰，文件更大",
             "enum": [
               "standard",
               "high"
@@ -241,23 +241,23 @@
             "type": "string"
           },
           "callback_url": {
-            "description": "任务结束（成功或失败）后的回调通知地址，须为 `http` / `https` 地址，否则返回 400 `callback_url 必须是 http/https 地址`。平台会向该地址 POST 回调体，返回任意 2xx 视为投递成功，失败会在 1 分钟、5 分钟、30 分钟后重试。回调体与签名校验见「任务回调」。",
+            "description": "任务结束后的回调地址（`http(s)`）。详见 [任务完成回调](/webhooks/task-callback)。",
             "format": "uri",
             "type": "string"
           },
           "tools": {
-            "description": "启用的工具列表。当前仅支持联网搜索 `[{\"type\": \"web_search\"}]`，开启后模型可参考实时信息生成内容；其他取值返回 400 `tools 当前仅支持 [{\"type\":\"web_search\"}]`。",
+            "description": "工具列表。目前只支持联网搜索：`[{\"type\": \"web_search\"}]`。",
             "items": {
               "$ref": "#/components/schemas/SeedanceV3Tool"
             },
             "type": "array"
           },
           "task_nickname": {
-            "description": "任务昵称，字符串，便于业务侧标记与检索任务，不影响生成结果。",
+            "description": "任务昵称，方便你自己检索，不影响生成。",
             "type": "string"
           },
           "draft": {
-            "description": "样片模式，布尔值。开启后模型可能以更快、更低成本的方式生成预览样片。平台只校验类型，最终行为由模型决定。",
+            "description": "样片模式：更快、更低成本地生成预览，效果由模型决定。",
             "type": "boolean"
           },
           "real_person_mode": {
@@ -265,21 +265,21 @@
             "type": "boolean"
           },
           "priority": {
-            "description": "任务优先级，整数。平台只校验类型（非整数返回 400 `priority 必须是整数`），最终调度行为由模型侧决定。",
+            "description": "任务优先级（整数），由模型侧调度。",
             "format": "int64",
             "type": "integer"
           },
           "service_tier": {
-            "description": "服务档位，字符串。平台只校验类型，最终行为由模型侧决定。",
+            "description": "服务档位，由模型侧决定。",
             "type": "string"
           },
           "execution_expires_after": {
-            "description": "任务执行超时时间（秒），整数。超过该时间仍未完成的任务可能被模型侧终止。平台只校验类型，最终行为由模型侧决定。",
+            "description": "执行超时（秒），超时未完成的任务可能被终止。",
             "format": "int64",
             "type": "integer"
           },
           "safety_identifier": {
-            "description": "终端用户的安全标识，字符串（建议传哈希后的用户 ID，不要传明文个人信息），用于内容安全审核与滥用追踪。平台只校验类型。",
+            "description": "终端用户标识，用于内容安全审核。建议传哈希后的用户 ID，不要传明文个人信息。",
             "type": "string"
           },
           "omni_reference_task_type": {
@@ -429,7 +429,7 @@
           "type",
           "image_url"
         ],
-        "title": "图片 image_url",
+        "title": "图片",
         "type": "object"
       },
       "SeedanceV3MediaURL": {
@@ -819,7 +819,7 @@
           "type",
           "text"
         ],
-        "title": "文本 text",
+        "title": "文本",
         "type": "object"
       },
       "SeedanceV3Tool": {
@@ -866,7 +866,7 @@
           "type",
           "video_url"
         ],
-        "title": "视频 video_url",
+        "title": "视频",
         "type": "object"
       }
     },
@@ -887,7 +887,7 @@
   "paths": {
     "/api/v3/contents/generations/tasks": {
       "get": {
-        "description": "按条件批量查询任务，一次返回多个任务的状态。只返回当前 API Key 通过本接口创建的任务，按创建时间倒序。",
+        "description": "批量查询当前 API Key 创建的任务，按创建时间倒序。",
         "operationId": "seedanceListTasks",
         "parameters": [
           {
@@ -1126,7 +1126,7 @@
         }
       },
       "post": {
-        "description": "提交一个 Seedance 视频生成任务，用 `model` 选择 Seedance 2.5 / 2.0 / 2.0 Fast / 2.0 Mini。任务异步执行：创建成功返回任务 `id`，再通过「查询任务」轮询，或在 `callback_url` 接收回调获取结果。\n\n请求示例下拉框提供了多个使用场景（文生视频、图生视频、首尾帧、多图参考、视频编辑 / 延长、参考音频、联网搜索、素材库引用等），可直接切换后在 Try it 中调试。\n\n参数校验失败的请求不会创建任务，也不会扣费。",
+        "description": "异步创建视频生成任务，返回任务 `id`。用「查询任务」轮询结果，或传 `callback_url` 接收回调。参数校验失败不会创建任务，也不扣费。",
         "operationId": "seedanceCreateTask",
         "requestBody": {
           "content": {
@@ -1658,7 +1658,7 @@
     },
     "/api/v3/contents/generations/tasks/{id}": {
       "get": {
-        "description": "查询单个任务的状态与结果。任务在生成中失败时本接口仍返回 HTTP 200，`status` 为 `failed`。\n\n推荐轮询节奏：前 30 秒每 3 秒一次，30 秒 ~ 2 分钟每 5 秒一次，之后每 10 秒一次；同时使用 `callback_url` 时可适当放大间隔。只能查询当前账号通过本接口创建的任务。",
+        "description": "查询任务状态与结果。生成失败时同样返回 HTTP 200，`status` 为 `failed`。\n\n建议轮询间隔：前 30 秒每 3 秒，2 分钟内每 5 秒，之后每 10 秒。",
         "operationId": "seedanceGetTask",
         "parameters": [
           {
@@ -1921,7 +1921,7 @@
   "webhooks": {
     "seedanceTaskCompleted": {
       "post": {
-        "description": "创建任务时传了 `callback_url`，任务结束（成功或失败）后平台向该地址发送此 POST 请求。返回任意 2xx 视为投递成功；失败会在 1 分钟、5 分钟、30 分钟后重试，共 4 次。\n\n回调只是加速通知的手段，请同时保留对查询接口的兜底轮询，并以查询接口返回的状态为准。",
+        "description": "任务结束（成功或失败）后，平台向 `callback_url` 发送此 POST 请求。返回 2xx 即投递成功，否则在 1、5、30 分钟后重试，共 4 次。请同时保留轮询兜底。",
         "operationId": "seedanceTaskCallback",
         "parameters": [
           {

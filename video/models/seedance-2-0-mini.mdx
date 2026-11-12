@@ -6,21 +6,11 @@ description: "Seedance 2.0 Mini 视频生成：轻量版本，适合大批量、
 
 {/* 本页由 apps/gateway/internal/service/seedance_v3_model_pages_test.go 自动生成，请勿手工修改。 */}
 
-- 🪶 轻量版本，适合批量生成
-- ⏱️ `duration` 4 ~ 15 秒，默认 `5`，也可用 `-1` 智能时长
-- 🎬 仅 **480p / 720p**，传 `1080p` 返回 400
-- 🖼️ 图片最多 9 张、视频与音频各最多 3 个
-- 🚫 不支持视频编辑 / 延长
-
-**Base URL**: `https://api.dreamto.ai`　·　**model**: `seedance-2.0-mini`
-
-<Info>
-  接口、鉴权、任务查询与回调和其他 Seedance 模型完全相同，只需把 `model` 换成 `seedance-2.0-mini`。通用说明见 [Seedance 通用说明](/video/seedance-2-0)。
-</Info>
+`model` 填 `seedance-2.0-mini`，其余用法见 [通用说明](/video/seedance-2-0)。
 
 ## 参数范围
 
-以下取值由平台按本模型校验，超出范围返回 HTTP 400，不会创建任务、不会扣费。
+超出范围返回 400，不建任务、不扣费。
 
 | 字段 | 默认值 | 本模型取值 |
 |---|---|---|
@@ -33,7 +23,7 @@ description: "Seedance 2.0 Mini 视频生成：轻量版本，适合大批量、
 | `real_person_mode` | `false` | `true` / `false` |
 | `omni_reference_task_type` | — | 本模型不使用，传入合法值会被忽略 |
 
-其余参数（`seed`、`watermark`、`return_last_frame`、`bitrate_mode`、`tools`、`callback_url` 等）见 [创建视频生成任务](/api-reference/seedance-2-0-mini/create-task)。
+全部参数见 [创建视频生成任务](/api-reference/seedance-2-0-mini/create-task)。
 
 ## 参考素材
 
@@ -43,13 +33,11 @@ description: "Seedance 2.0 Mini 视频生成：轻量版本，适合大批量、
 | 视频 `video_url` | 3 个 | 参考视频（不支持视频编辑 / 延长） |
 | 音频 `audio_url` | 3 个 | 参考音频 |
 
-素材上限由模型执行，超限时任务以 `failed` 终态返回原因。素材地址须为公网 `http` / `https` 地址，或素材库的 `asset://<素材Id>`。
-
-视频编辑 / 延长：**不支持**。
+素材地址须为公网 `http(s)` 地址或 `asset://<素材Id>`；超出上限时任务失败。
 
 ## 快速开始
 
-创建任务后轮询结果，`status` 为 `succeeded` 时下载 `content.video_url`。示例中的 `$DREAMTO_API_KEY` 为你的 API Key。
+创建任务后轮询，`status` 为 `succeeded` 时取 `content.video_url`。
 
 <CodeGroup>
 
@@ -149,11 +137,7 @@ for (;;) {
 
 </CodeGroup>
 
-完整轮询策略、超时处理与下载示例见 [Seedance 通用说明](/video/seedance-2-0)；查询接口见 [查询任务](/api-reference/seedance-2-0-mini/get-task)。
-
 ## 使用示例
-
-以下示例的请求体都已填好 `model`，可直接复制使用：
 
 - [文生视频](/video/models/seedance-2-0-mini/scenarios/text-to-video)
 - [图生视频（首帧）](/video/models/seedance-2-0-mini/scenarios/image-to-video)
@@ -165,7 +149,7 @@ for (;;) {
 - [指定帧数](/video/models/seedance-2-0-mini/scenarios/frames)
 - [Fast / Mini 快速出片](/video/models/seedance-2-0-mini/scenarios/fast-draft)
 
-## 本模型常见报错
+## 常见报错
 
 | 场景 | HTTP | 返回 |
 |---|---|---|
@@ -173,4 +157,4 @@ for (;;) {
 | `resolution` 不在 `480p` / `720p` 中 | 400 | `resolution 仅支持 480p / 720p` |
 | 账号未开放该模型 | 404 | `error.code` 为 `not_found` |
 
-400 的 `error.message` 为平台原文（中文）。全部错误码见 [错误码](/errors)。
+全部错误码见 [错误码](/errors)。

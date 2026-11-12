@@ -91,11 +91,11 @@
       },
       "SeedanceV3CreateTaskRequest": {
         "additionalProperties": false,
-        "description": "Request body for creating a video generation task. All fields are snake_case; only the fields listed here are accepted, any other field returns 400 \"unsupported parameter: xxx\".",
+        "description": "Only the fields below are accepted; any other field returns 400 \"unsupported parameter: xxx\".",
         "properties": {
           "model": {
             "default": "seedance-2.0",
-            "description": "Model name, **required**; `seedance-2.0` (Seedance 2.0) on this page. Other models are listed in the navigation. An unknown model or one not enabled for your account returns 404 `not_found`. The value is echoed unchanged when the task is queried.\n\n**Allowed values:**\n- `seedance-2.0`: Seedance 2.0 standard: 4–15 s (default 5), 480p / 720p / 1080p, up to 9 images and 3 videos / 3 audios",
+            "description": "**Required**: `seedance-2.0`. Returns 404 if the model is not enabled for your account.",
             "enum": [
               "seedance-2.0"
             ],
@@ -105,7 +105,7 @@
             "type": "string"
           },
           "content": {
-            "description": "Input content array, **required**. Must contain at least one `text` prompt and may add reference images / videos / audios.\n\n- Missing or empty: 400 \"content must not be empty\"\n- No `text` item: 400 \"content must include a text prompt\"\n- Media are numbered per type; reference them in the prompt as \"image 1\", \"image 2\", \"video 1\", \"audio 1\"\n- Media URLs must be public `http` / `https` URLs or asset-library references `asset://<asset Id>`\n\nLimits for this model: 9 images, 3 videos, 3 audios (enforced by the model; exceeding them makes the task end as `failed` with the reason). A reference video means video editing / extension.",
+            "description": "**Required**. At least one `text` prompt, plus optional reference images / videos / audios.\n\n- Media: public `http(s)` URLs or `asset://<asset Id>`\n- Refer to media in the prompt by order: \"image 1\", \"video 1\", \"audio 1\"\n- Limits for this model: 9 images, 3 videos, 3 audios; exceeding them fails the task\n- A reference video means video editing / extension\n\nA missing `content` or no `text` item returns 400.",
             "items": {
               "discriminator": {
                 "mapping": {
@@ -136,7 +136,7 @@
           },
           "ratio": {
             "default": "adaptive",
-            "description": "Output aspect ratio, default `adaptive`. Case-sensitive; other values return 400. When a first/last frame image is given, the output follows the input image ratio and this field has no effect.\n\n**Allowed values:**\n- `adaptive`: Adaptive (default): follows the reference image/video ratio, or lets the model choose for text-only prompts\n- `16:9`: Landscape widescreen, for desktop, TV and most video platforms\n- `9:16`: Portrait, for short-video apps and full-screen mobile\n- `1:1`: Square, for social feeds and avatar-style content\n- `4:3`: Classic landscape ratio\n- `3:4`: Portrait ratio, for people and product shots\n- `21:9`: Ultra-wide cinematic",
+            "description": "Output aspect ratio, default `adaptive`. With a first / last frame image the output follows the image.\n\n**Allowed values:**\n- `adaptive`: Adaptive (default): follows the reference image/video ratio, or lets the model choose for text-only prompts\n- `16:9`: Landscape widescreen, for desktop, TV and most video platforms\n- `9:16`: Portrait, for short-video apps and full-screen mobile\n- `1:1`: Square, for social feeds and avatar-style content\n- `4:3`: Classic landscape ratio\n- `3:4`: Portrait ratio, for people and product shots\n- `21:9`: Ultra-wide cinematic",
             "enum": [
               "adaptive",
               "16:9",
@@ -170,7 +170,7 @@
             "type": "integer"
           },
           "frames": {
-            "description": "Total number of frames, a positive integer. Alternative to `duration`; when both are given `frames` wins and `duration` is ignored. Billed by actual usage. Non-positive or non-integer values return 400 \"frames must be a positive integer\".",
+            "description": "Total frame count, a positive integer. Alternative to `duration`; `frames` wins when both are sent.",
             "format": "int64",
             "minimum": 1,
             "type": "integer"
@@ -187,11 +187,11 @@
           },
           "generate_audio": {
             "default": true,
-            "description": "Whether to generate audio (sound effects / music / voice) together with the video, default `true`. `false` produces a silent video. Must be a JSON boolean; the string `\"true\"` returns 400.",
+            "description": "Generate audio (effects, music, voice), default `true`; `false` outputs a silent video.",
             "type": "boolean"
           },
           "output_format": {
-            "description": "Output container format, `mp4` when omitted. The platform only checks the type (string); whether a value is honored is decided by the model.\n\n**Allowed values:**\n- `mp4`: MP4 (default), the most compatible\n- `mov`: QuickTime MOV, convenient for editing software",
+            "description": "Output container format, default `mp4`.\n\n**Allowed values:**\n- `mp4`: MP4 (default), the most compatible\n- `mov`: QuickTime MOV, convenient for editing software",
             "enum": [
               "mp4",
               "mov"
@@ -200,25 +200,25 @@
           },
           "watermark": {
             "default": false,
-            "description": "Whether to add a watermark to the video, default `false` (no watermark). Must be a JSON boolean.",
+            "description": "Add a watermark, default `false`.",
             "type": "boolean"
           },
           "seed": {
-            "description": "Random seed, an integer. The same seed with the same parameters usually produces similar results, useful for reproducing and iterating; when omitted the model picks one (returned as `seed` when querying). Identical output is not guaranteed.",
+            "description": "Random seed. The same seed and parameters usually give similar results, which helps reproduction; not guaranteed identical.",
             "format": "int64",
             "type": "integer"
           },
           "camera_fixed": {
-            "description": "Whether to keep the camera fixed. `true` asks the model to avoid camera moves (no push/pull/pan), useful for product shots; when omitted, camera motion follows the prompt.",
+            "description": "Keep the camera still. `true` avoids push, pull and pan moves; good for product shots.",
             "type": "boolean"
           },
           "return_last_frame": {
-            "description": "Whether to return the last frame image. When `true`, a succeeded task returns `content.last_frame_url`, which you can feed as the first frame of the next clip for continuous generation.",
+            "description": "Return the last frame. When `true`, a succeeded task returns `content.last_frame_url`, usable as the next clip's first frame.",
             "type": "boolean"
           },
           "bitrate_mode": {
             "default": "standard",
-            "description": "Output quality tier at the chosen resolution; omitted equals `standard`. Other values return 400 \"bitrate_mode only supports standard / high\".\n\n**Allowed values:**\n- `standard`: Standard bitrate (default, same as omitting)\n- `high`: High bitrate; sharper detail and motion, larger files",
+            "description": "Bitrate tier, default `standard`.\n\n**Allowed values:**\n- `standard`: Standard bitrate (default, same as omitting)\n- `high`: High bitrate; sharper detail and motion, larger files",
             "enum": [
               "standard",
               "high"
@@ -226,23 +226,23 @@
             "type": "string"
           },
           "callback_url": {
-            "description": "Notification URL called when the task finishes (succeeded or failed). Must be an `http` / `https` URL, otherwise 400 \"callback_url must be an http/https URL\". The platform POSTs the callback body to it; any 2xx counts as delivered, failures are retried after 1, 5 and 30 minutes. See \"Task callback\" for the body and signature verification.",
+            "description": "Callback URL (`http(s)`) notified when the task ends. See [Task callback](/en/webhooks/task-callback).",
             "format": "uri",
             "type": "string"
           },
           "tools": {
-            "description": "Tools to enable. Only web search is supported: `[{\"type\": \"web_search\"}]`, letting the model use real-time information. Anything else returns 400 \"tools only supports web_search\".",
+            "description": "Tools to enable. Only web search is supported: `[{\"type\": \"web_search\"}]`.",
             "items": {
               "$ref": "#/components/schemas/SeedanceV3Tool"
             },
             "type": "array"
           },
           "task_nickname": {
-            "description": "Task nickname, a string for your own labeling and lookup. It does not affect generation.",
+            "description": "Task nickname for your own lookup; does not affect generation.",
             "type": "string"
           },
           "draft": {
-            "description": "Draft mode, a boolean. When enabled the model may produce a faster, cheaper preview. The platform only checks the type; the final behavior is decided by the model.",
+            "description": "Draft mode: a faster, cheaper preview; the effect is up to the model.",
             "type": "boolean"
           },
           "real_person_mode": {
@@ -250,21 +250,21 @@
             "type": "boolean"
           },
           "priority": {
-            "description": "Task priority, an integer. The platform only checks the type (non-integers return 400 \"priority must be an integer\"); scheduling is decided by the model side.",
+            "description": "Task priority (integer), scheduled by the model side.",
             "format": "int64",
             "type": "integer"
           },
           "service_tier": {
-            "description": "Service tier, a string. The platform only checks the type; the behavior is decided by the model side.",
+            "description": "Service tier, decided by the model side.",
             "type": "string"
           },
           "execution_expires_after": {
-            "description": "Task execution timeout in seconds, an integer. Tasks still running after this time may be terminated by the model side. The platform only checks the type; the behavior is decided by the model side.",
+            "description": "Execution timeout in seconds; tasks still unfinished may be stopped.",
             "format": "int64",
             "type": "integer"
           },
           "safety_identifier": {
-            "description": "Safety identifier of your end user, a string (pass a hashed user ID, never plain personal data). Used for content safety and abuse tracing. The platform only checks the type.",
+            "description": "End-user identifier for content-safety review. Send a hashed user ID, never plain personal data.",
             "type": "string"
           },
           "omni_reference_task_type": {
@@ -872,7 +872,7 @@
   "paths": {
     "/api/v3/contents/generations/tasks": {
       "get": {
-        "description": "List tasks by filter, returning the status of several tasks at once. Only tasks created through this API with the current API Key are returned, newest first.",
+        "description": "Lists the tasks created with the current API Key, newest first.",
         "operationId": "seedanceListTasks",
         "parameters": [
           {
@@ -1111,7 +1111,7 @@
         }
       },
       "post": {
-        "description": "Submit a Seedance video generation task; choose Seedance 2.5 / 2.0 / 2.0 Fast / 2.0 Mini with `model`. Tasks run asynchronously: creation returns a task `id`; poll \"Get task\" or receive the result at `callback_url`.\n\nThe request example dropdown offers several scenarios (text-to-video, image-to-video, first/last frame, multi-image reference, video edit / extension, reference audio, web search, asset library…) that you can switch and try directly in Try it.\n\nRequests rejected by validation create no task and are not charged.",
+        "description": "Creates a video generation task asynchronously and returns its `id`. Poll Get task for the result, or pass `callback_url` to receive a callback. A request that fails validation creates no task and is not billed.",
         "operationId": "seedanceCreateTask",
         "requestBody": {
           "content": {
@@ -1619,7 +1619,7 @@
     },
     "/api/v3/contents/generations/tasks/{id}": {
       "get": {
-        "description": "Get the status and result of one task. A task that fails during generation still returns HTTP 200 with `status: failed`.\n\nRecommended polling: every 3 s for the first 30 s, every 5 s up to 2 minutes, then every 10 s; poll less often when you also use `callback_url`. Only tasks created by your account through this API can be queried.",
+        "description": "Returns the task status and result. A failed generation still returns HTTP 200 with `status` `failed`.\n\nSuggested polling: every 3 s for the first 30 s, every 5 s up to 2 min, then every 10 s.",
         "operationId": "seedanceGetTask",
         "parameters": [
           {
@@ -1882,7 +1882,7 @@
   "webhooks": {
     "seedanceTaskCompleted": {
       "post": {
-        "description": "When a task created with `callback_url` finishes (succeeded or failed), the platform POSTs this request to that URL. Any 2xx counts as delivered; failures are retried after 1, 5 and 30 minutes (4 attempts in total).\n\nCallbacks only speed up notification: keep fallback polling and treat the query endpoint as the source of truth.",
+        "description": "When a task ends (succeeded or failed), the platform POSTs this request to `callback_url`. Any 2xx response counts as delivered; otherwise it retries after 1, 5 and 30 minutes (4 attempts in total). Keep polling as a fallback.",
         "operationId": "seedanceTaskCallback",
         "parameters": [
           {
