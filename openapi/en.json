@@ -525,7 +525,7 @@
           },
           "Error": {
             "$ref": "#/components/schemas/SeedanceAssetErrorDetail",
-            "description": "Failure reason, present only when `Status` is `Failed`. Common `Code`s: `InvalidParameter.DownloadFailed` (URL not downloadable), `InvalidParameter.InvalidURL` (not public), `InvalidParameter.FileTooLarge` (over 100 MB), `InvalidParameter.AssetTypeMismatch` (type mismatch), `InvalidParameter.InvalidAsset` (invalid file or spec), `InvalidParameter.SensitiveContentDetected` (moderation rejected), `InternalError` (processing timed out). Fix the cause and call CreateAsset again."
+            "description": "Failure reason, present only when `Status` is `Failed`. Common `Code`s: `InvalidParameter.DownloadFailed` (URL not downloadable), `InvalidParameter.InvalidURL` (not public), `InvalidParameter.FileTooLarge` (over 100 MB), `InvalidParameter.AssetTypeMismatch` (type mismatch), `InvalidParameter.InvalidAsset` (invalid file or spec), `InvalidParameter.SensitiveContentDetected` (moderation rejected), `InternalError` (processing failed or timed out). Fix the cause and call CreateAsset again."
           }
         },
         "required": [
@@ -838,14 +838,20 @@
         "description": "Request body for creating a video generation task. All fields are snake_case; only the fields listed here are accepted, any other field returns 400 \"unsupported parameter: xxx\".",
         "properties": {
           "model": {
-            "description": "Model name, **required**. Currently `seedance-2.0` (Seedance 2.0 standard tier). An unknown model or one not enabled for your account returns 404 `not_found`. The value is echoed unchanged when the task is queried.",
+            "description": "Model name, **required**: `seedance-2.5`, `seedance-2.0`, `seedance-2.0-fast` or `seedance-2.0-mini`. Supported durations, resolutions and media limits per model are listed under the values. An unknown model or one not enabled for your account returns 404 `not_found`. The value is echoed unchanged when the task is queried.\n\n**Allowed values:**\n- `seedance-2.5`: Seedance 2.5: 4–30 s (smart duration `-1` by default), 480p / 720p / 1080p, up to 30 images and 10 videos / 10 audios, honors `omni_reference_task_type`\n- `seedance-2.0`: Seedance 2.0 standard: 4–15 s (default 5), 480p / 720p / 1080p, up to 9 images and 3 videos / 3 audios\n- `seedance-2.0-fast`: Seedance 2.0 Fast: faster generation, 4–15 s (default 5), 480p / 720p only, no video editing / extension\n- `seedance-2.0-mini`: Seedance 2.0 Mini: lightweight, 4–15 s (default 5), 480p / 720p only, no video editing / extension",
+            "enum": [
+              "seedance-2.5",
+              "seedance-2.0",
+              "seedance-2.0-fast",
+              "seedance-2.0-mini"
+            ],
             "examples": [
               "seedance-2.0"
             ],
             "type": "string"
           },
           "content": {
-            "description": "Input content array, **required**. Must contain at least one `text` prompt and may add reference images / videos / audios.\n\n- Missing or empty: 400 \"content must not be empty\"\n- No `text` item: 400 \"content must include a text prompt\"\n- Media are numbered per type; reference them in the prompt as \"image 1\", \"image 2\", \"video 1\", \"audio 1\"\n- Media URLs must be public `http` / `https` URLs or asset-library references `asset://<asset Id>`\n\nThe platform does not cap the number of items; the model does (up to 9 images, 3 videos, 3 audios). Exceeding a model limit makes the task end as `failed` with the reason.",
+            "description": "Input content array, **required**. Must contain at least one `text` prompt and may add reference images / videos / audios.\n\n- Missing or empty: 400 \"content must not be empty\"\n- No `text` item: 400 \"content must include a text prompt\"\n- Media are numbered per type; reference them in the prompt as \"image 1\", \"image 2\", \"video 1\", \"audio 1\"\n- Media URLs must be public `http` / `https` URLs or asset-library references `asset://<asset Id>`\n\nThe platform does not cap the number of items; the model does: `seedance-2.5` takes up to 30 images, 10 videos and 10 audios; `seedance-2.0` / `-fast` / `-mini` take up to 9 images, 3 videos and 3 audios. Exceeding a model limit makes the task end as `failed` with the reason.",
             "items": {
               "discriminator": {
                 "mapping": {
@@ -889,8 +895,7 @@
             "type": "string"
           },
           "duration": {
-            "default": 5,
-            "description": "Video duration in seconds, default `5`.\n\n- Integer `4`–`15`: generate exactly that many seconds\n- `-1`: smart duration, the model picks 4–15 s and you are billed for actual usage; the actual length is returned as `duration` when querying\n- Decimals, strings or out-of-range values: 400 \"duration only supports 4-15 seconds or -1 (smart duration)\"\n\nIgnored when `frames` is also given.",
+            "description": "Video duration in seconds. When omitted: `-1` (smart duration) on `seedance-2.5`, `5` on the other models.\n\n- Integer from `4` to the model maximum: generate exactly that many seconds. The maximum is `30` on `seedance-2.5` and `15` on `seedance-2.0` / `-fast` / `-mini`\n- `-1`: smart duration, the model picks 4 s to its maximum and you are billed for actual usage; the actual length is returned as `duration` when querying\n- Decimals, strings or values outside the chosen model range: 400, e.g. \"duration only supports 4-15 seconds or -1 (smart duration)\"\n\nIgnored when `frames` is also given.",
             "enum": [
               -1,
               4,
@@ -904,7 +909,22 @@
               12,
               13,
               14,
-              15
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30
             ],
             "format": "int64",
             "type": "integer"
@@ -917,7 +937,7 @@
           },
           "resolution": {
             "default": "720p",
-            "description": "Output resolution, default `720p`. Higher resolutions take longer and cost more. Other values return 400 \"resolution only supports 480p / 720p / 1080p\".\n\n**Allowed values:**\n- `480p`: SD; fastest and cheapest, good for previews and quick iteration\n- `720p`: HD (default); balanced quality and speed\n- `1080p`: Full HD; best detail, slower and more expensive",
+            "description": "Output resolution, default `720p`. Higher resolutions take longer and cost more. `seedance-2.5` / `seedance-2.0` support `480p` / `720p` / `1080p`; `seedance-2.0-fast` / `seedance-2.0-mini` support `480p` / `720p` only. A value the chosen model does not support returns 400, e.g. \"resolution only supports 480p / 720p\".\n\n**Allowed values:**\n- `480p`: SD; fastest and cheapest, good for previews and quick iteration\n- `720p`: HD (default); balanced quality and speed\n- `1080p`: Full HD; best detail, slower and more expensive",
             "enum": [
               "480p",
               "720p",
@@ -986,7 +1006,7 @@
             "type": "boolean"
           },
           "real_person_mode": {
-            "description": "Real-person mode switch, a boolean. Intended for material containing real people; honored when the selected route supports it, ignored otherwise.",
+            "description": "Real-person mode switch, a boolean. When on, real people in reference images / videos are converted to virtual likenesses before generation. When omitted it is `true` on `seedance-2.5` / `seedance-2.0` and `false` on `seedance-2.0-fast` / `seedance-2.0-mini`; honored when the selected route supports it, ignored otherwise.",
             "type": "boolean"
           },
           "priority": {
@@ -1008,7 +1028,13 @@
             "type": "string"
           },
           "omni_reference_task_type": {
-            "description": "Task type. **Not used** by this model: it is accepted (must be a string) and ignored. The generation mode is derived from `content`: a reference video means video edit / extension, first/last frames mean frame-to-frame generation, `reference_image` items mean multi-image reference.",
+            "description": "Reference task type, honored by `seedance-2.5` only; other models accept a valid value and ignore it, deriving the mode from `content`. Other values return 400 \"omni_reference_task_type only supports auto / reference / edit / extend\". `edit` / `extend` need a reference video in `content`.\n\n**Allowed values:**\n- `auto`: Auto: derived from the media in `content`\n- `reference`: Reference: generate a new video from the reference media\n- `edit`: Edit: change the content of the reference video; needs a reference video\n- `extend`: Extend: continue the reference video; needs a reference video",
+            "enum": [
+              "auto",
+              "reference",
+              "edit",
+              "extend"
+            ],
             "type": "string"
           }
         },
@@ -4348,7 +4374,7 @@
         },
         "summary": "List tasks",
         "tags": [
-          "Seedance 2.0 video generation"
+          "Seedance 2 video generation"
         ],
         "x-mint": {
           "href": "/en/api-reference/seedance/list-tasks",
@@ -4359,7 +4385,7 @@
         }
       },
       "post": {
-        "description": "Submit a Seedance 2.0 video generation task. Tasks run asynchronously: creation returns a task `id`; poll \"Get task\" or receive the result at `callback_url`.\n\nThe request example dropdown offers several scenarios (text-to-video, image-to-video, first/last frame, multi-image reference, video edit / extension, reference audio, web search, asset library…) that you can switch and try directly in Try it.\n\nRequests rejected by validation create no task and are not charged.",
+        "description": "Submit a Seedance video generation task; choose Seedance 2.5 / 2.0 / 2.0 Fast / 2.0 Mini with `model`. Tasks run asynchronously: creation returns a task `id`; poll \"Get task\" or receive the result at `callback_url`.\n\nThe request example dropdown offers several scenarios (text-to-video, image-to-video, first/last frame, multi-image reference, video edit / extension, reference audio, web search, asset library…) that you can switch and try directly in Try it.\n\nRequests rejected by validation create no task and are not charged.",
         "operationId": "seedanceCreateTask",
         "requestBody": {
           "content": {
@@ -4622,6 +4648,46 @@
                     "bitrate_mode": "high",
                     "callback_url": "https://your-server.example.com/dreamto/callback"
                   }
+                },
+                "Seedance 2.5 long video": {
+                  "description": "Generate up to 30 seconds in one task with Seedance 2.5.",
+                  "summary": "Seedance 2.5 long video",
+                  "value": {
+                    "model": "seedance-2.5",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "The traveler in image 1 sets off from the foot of the mountain at dawn, passes through a forest and a stream, and reaches the summit at sunrise; the camera follows all the way"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://example.com/traveler.jpg"
+                        },
+                        "role": "reference_image"
+                      }
+                    ],
+                    "ratio": "16:9",
+                    "duration": 20,
+                    "resolution": "1080p",
+                    "omni_reference_task_type": "reference"
+                  }
+                },
+                "Fast / Mini drafts": {
+                  "description": "Preview quickly with Seedance 2.0 Fast or Mini.",
+                  "summary": "Fast / Mini drafts",
+                  "value": {
+                    "model": "seedance-2.0-fast",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "An iced coffee on a wooden table, ice slowly melting, sunlight through the window"
+                      }
+                    ],
+                    "ratio": "9:16",
+                    "duration": 5,
+                    "resolution": "480p"
+                  }
                 }
               },
               "schema": {
@@ -4854,7 +4920,7 @@
         },
         "summary": "Create video task",
         "tags": [
-          "Seedance 2.0 video generation"
+          "Seedance 2 video generation"
         ],
         "x-mint": {
           "href": "/en/api-reference/seedance/create-task",
@@ -5100,7 +5166,7 @@
         },
         "summary": "Get task",
         "tags": [
-          "Seedance 2.0 video generation"
+          "Seedance 2 video generation"
         ],
         "x-mint": {
           "href": "/en/api-reference/seedance/get-task",
@@ -5124,7 +5190,7 @@
   ],
   "tags": [
     {
-      "name": "Seedance 2.0 video generation"
+      "name": "Seedance 2 video generation"
     },
     {
       "name": "Seedance asset library"
@@ -5210,7 +5276,7 @@
         },
         "summary": "Task completed callback",
         "tags": [
-          "Seedance 2.0 video generation"
+          "Seedance 2 video generation"
         ],
         "x-mint": {
           "href": "/en/api-reference/seedance/task-callback",

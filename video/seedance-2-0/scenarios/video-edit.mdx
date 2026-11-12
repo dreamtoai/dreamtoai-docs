@@ -5,7 +5,7 @@ description: "基于参考视频修改画面内容。"
 
 {/* 本页由 apps/gateway/internal/service/seedance_v3_openapi_test.go 自动生成，请勿手工修改。 */}
 
-在 `content` 中带 `role: reference_video` 的参考视频（mp4 / mov，2 ~ 15 秒，最多 3 个），提示词描述要修改的内容。模型按素材自行判定生成方式，无需传 `omni_reference_task_type`；`ratio` / `duration` 按你传入的值生效。
+在 `content` 中带 `role: reference_video` 的参考视频（mp4 / mov，2 ~ 15 秒；Seedance 2.5 最多 10 个，2.0 最多 3 个），提示词描述要修改的内容。`seedance-2.0` 按素材自行判定生成方式，无需传 `omni_reference_task_type`；用 `seedance-2.5` 时建议传 `omni_reference_task_type: edit` 明确为编辑。Fast / Mini 不支持视频编辑。`ratio` / `duration` 按你传入的值生效。
 
 <Tip>
   想直接调试？打开 [创建视频生成任务](/api-reference/seedance/create-task)，在请求示例下拉框中选择「视频编辑」，填入 API Key 后点击 **Try it**。

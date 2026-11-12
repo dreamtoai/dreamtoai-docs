@@ -10,7 +10,7 @@ description: "Store reference material for video generation long-term and reuse 
 
 ## Overview
 
-The asset library stores reference material for video generation (images / videos / audio, typically for virtual human avatars). Upload once and reuse it in [Seedance 2.0](/en/video/seedance-2-0) tasks as `asset://<asset Id>`.
+The asset library stores reference material for video generation (images / videos / audio, typically for virtual human avatars). Upload once and reuse it in [Seedance 2.5 / 2.0 / 2.0 Fast / 2.0 Mini](/en/video/seedance-2-0) tasks as `asset://<asset Id>`.
 
 - 📦 **Asset groups**: keep all material of one subject in the same group for management and search
 - ⏳ **Asynchronous processing**: creation returns an Id immediately; the asset is usable once `Processing` becomes `Active`
@@ -251,8 +251,8 @@ When an asset's `Status` is `Failed`, `Error.Code` is one of the following. Fix 
 | `InvalidParameter.AssetTypeMismatch` | Actual file type differs from `AssetType` |
 | `InvalidParameter.InvalidAsset` | Not a valid image / video / audio, or wrong spec |
 | `InvalidParameter.SensitiveContentDetected` | Rejected by moderation (sensitive or copyrighted content) |
-| `InvalidParameter.*` (others) | Resolution, duration or format out of spec; `Message` gives details |
-| `InternalError` | Processing timed out; create it again |
+| `InvalidParameter.*` (others) | Resolution, duration or format out of spec; adjust the media according to `Error.Code` and create it again |
+| `InternalError` | Processing failed or timed out; create it again |
 
 ---
 

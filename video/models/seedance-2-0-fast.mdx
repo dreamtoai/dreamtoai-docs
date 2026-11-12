@@ -1,0 +1,177 @@
+---
+title: "Seedance 2.0 Fast 视频生成"
+sidebarTitle: "Seedance 2.0 Fast"
+description: "Seedance 2.0 Fast 视频生成：生成更快，适合批量试提示词与出草稿，支持 480p / 720p。"
+icon: "/icons/doubao.svg"
+---
+
+{/* 本页由 apps/gateway/internal/service/seedance_v3_model_pages_test.go 自动生成，请勿手工修改。 */}
+
+- ⚡ 生成更快，适合快速迭代提示词
+- ⏱️ `duration` 4 ~ 15 秒，默认 `5`，也可用 `-1` 智能时长
+- 🎬 仅 **480p / 720p**，传 `1080p` 返回 400
+- 🖼️ 图片最多 9 张、视频与音频各最多 3 个
+- 🚫 不支持视频编辑 / 延长
+
+**Base URL**: `https://api.dreamto.ai`　·　**model**: `seedance-2.0-fast`
+
+<Info>
+  接口、鉴权、任务查询与回调和其他 Seedance 模型完全相同，只需把 `model` 换成 `seedance-2.0-fast`。通用说明见 [Seedance 通用说明](/video/seedance-2-0)。
+</Info>
+
+## 参数范围
+
+以下取值由平台按本模型校验，超出范围返回 HTTP 400，不会创建任务、不会扣费。
+
+| 字段 | 默认值 | 本模型取值 |
+|---|---|---|
+| `model` | — | `seedance-2.0-fast` |
+| `duration` | `5` | `4` ~ `15` 秒的整数，或 `-1` 智能时长 |
+| `resolution` | `720p` | `480p` / `720p` |
+| `ratio` | `adaptive` | `adaptive` / `16:9` / `9:16` / `1:1` / `4:3` / `3:4` / `21:9` |
+| `frames` | 不传 | 正整数，与 `duration` 二选一，`frames` 优先 |
+| `generate_audio` | `true` | `true` / `false` |
+| `real_person_mode` | `false` | `true` / `false` |
+| `omni_reference_task_type` | — | 本模型不使用，传入合法值会被忽略 |
+
+其余参数（`seed`、`watermark`、`return_last_frame`、`bitrate_mode`、`tools`、`callback_url` 等）见 [API 全部参数](/api-reference/seedance/create-task)。
+
+## 参考素材
+
+| 类型 | 本模型上限 | 用途 |
+|---|---|---|
+| 图片 `image_url` | 9 张 | 首帧 / 尾帧 / 参考图 |
+| 视频 `video_url` | 3 个 | 参考视频（不支持视频编辑 / 延长） |
+| 音频 `audio_url` | 3 个 | 参考音频 |
+
+素材上限由模型执行，超限时任务以 `failed` 终态返回原因。素材地址须为公网 `http` / `https` 地址，或素材库的 `asset://<素材Id>`。
+
+视频编辑 / 延长：**不支持**。
+
+## 快速开始
+
+创建任务后轮询结果，`status` 为 `succeeded` 时下载 `content.video_url`。示例中的 `$DREAMTO_API_KEY` 为你的 API Key。
+
+<CodeGroup>
+
+```bash cURL
+# 1. 创建任务
+curl -X POST "https://api.dreamto.ai/api/v3/contents/generations/tasks" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0-fast",
+    "content": [
+      {
+        "type": "text",
+        "text": "一杯冰咖啡放在木桌上，冰块缓缓融化，阳光透过窗户"
+      }
+    ],
+    "ratio": "16:9",
+    "duration": 5,
+    "resolution": "720p"
+  }'
+
+# 2. 查询任务（替换为上一步返回的 id）
+curl "https://api.dreamto.ai/api/v3/contents/generations/tasks/task_8c1d2e3f4a5b6c7d8e9f0a1b" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY"
+```
+
+```python Python
+import os
+import time
+
+import requests
+
+URL = "https://api.dreamto.ai/api/v3/contents/generations/tasks"
+HEADERS = {"Authorization": f"Bearer {os.environ['DREAMTO_API_KEY']}"}
+
+payload = {
+    "model": "seedance-2.0-fast",
+    "content": [
+        {
+            "type": "text",
+            "text": "一杯冰咖啡放在木桌上，冰块缓缓融化，阳光透过窗户"
+        }
+    ],
+    "ratio": "16:9",
+    "duration": 5,
+    "resolution": "720p"
+}
+
+resp = requests.post(URL, headers=HEADERS, json=payload, timeout=60)
+resp.raise_for_status()
+task_id = resp.json()["id"]
+
+while True:
+    task = requests.get(f"{URL}/{task_id}", headers=HEADERS, timeout=30).json()
+    if task["status"] == "succeeded":
+        print(task["content"]["video_url"])
+        break
+    if task["status"] == "failed":
+        raise RuntimeError(task["error"]["message"])
+    time.sleep(5)
+```
+
+```javascript Node.js
+const URL = "https://api.dreamto.ai/api/v3/contents/generations/tasks";
+const headers = {
+  Authorization: `Bearer ${process.env.DREAMTO_API_KEY}`,
+  "Content-Type": "application/json",
+};
+
+const payload = {
+  "model": "seedance-2.0-fast",
+  "content": [
+    {
+      "type": "text",
+      "text": "一杯冰咖啡放在木桌上，冰块缓缓融化，阳光透过窗户"
+    }
+  ],
+  "ratio": "16:9",
+  "duration": 5,
+  "resolution": "720p"
+};
+
+const created = await fetch(URL, { method: "POST", headers, body: JSON.stringify(payload) });
+if (!created.ok) throw new Error(JSON.stringify(await created.json()));
+const { id } = await created.json();
+
+for (;;) {
+  const task = await (await fetch(`${URL}/${id}`, { headers })).json();
+  if (task.status === "succeeded") {
+    console.log(task.content.video_url);
+    break;
+  }
+  if (task.status === "failed") throw new Error(task.error.message);
+  await new Promise((r) => setTimeout(r, 5000));
+}
+```
+
+</CodeGroup>
+
+完整轮询策略、超时处理与下载示例见 [Seedance 通用说明](/video/seedance-2-0)；查询接口见 [查询任务](/api-reference/seedance/get-task)。
+
+## 场景示例
+
+以下示例的请求体把 `model` 换成 `seedance-2.0-fast` 即可使用：
+
+- [文生视频](/video/seedance-2-0/scenarios/text-to-video)
+- [图生视频（首帧）](/video/seedance-2-0/scenarios/image-to-video)
+- [首尾帧生视频](/video/seedance-2-0/scenarios/first-last-frame)
+- [多图参考生视频](/video/seedance-2-0/scenarios/multi-image-reference)
+- [参考音频](/video/seedance-2-0/scenarios/reference-audio)
+- [联网搜索增强](/video/seedance-2-0/scenarios/web-search)
+- [引用素材库素材](/video/seedance-2-0/scenarios/asset-reference)
+- [指定帧数](/video/seedance-2-0/scenarios/frames)
+- [Fast / Mini 快速出片](/video/seedance-2-0/scenarios/fast-draft)
+
+## 本模型常见报错
+
+| 场景 | HTTP | 返回 |
+|---|---|---|
+| `duration` 超出 4 ~ 15 或不是整数 | 400 | `duration 仅支持 4~15 秒或 -1(智能时长)` |
+| `resolution` 不在 `480p` / `720p` 中 | 400 | `resolution 仅支持 480p / 720p` |
+| 账号未开放该模型 | 404 | `error.code` 为 `not_found` |
+
+400 的 `error.message` 为平台原文（中文）。全部错误码见 [错误码](/errors)。

@@ -75,9 +75,13 @@
             "group": "视频生成",
             "openapi": "openapi/zh.json",
             "pages": [
+              "video/models/seedance-2-5",
+              "video/models/seedance-2-0",
+              "video/models/seedance-2-0-fast",
+              "video/models/seedance-2-0-mini",
               {
-                "group": "Seedance 2.0",
-                "icon": "/icons/doubao.svg",
+                "group": "Seedance 接口与示例",
+                "icon": "code",
                 "pages": [
                   "video/seedance-2-0",
                   "POST /api/v3/contents/generations/tasks",
@@ -99,7 +103,9 @@
                       "video/seedance-2-0/scenarios/web-search",
                       "video/seedance-2-0/scenarios/asset-reference",
                       "video/seedance-2-0/scenarios/frames",
-                      "video/seedance-2-0/scenarios/smart-duration-callback"
+                      "video/seedance-2-0/scenarios/smart-duration-callback",
+                      "video/seedance-2-0/scenarios/seedance-2-5-long-video",
+                      "video/seedance-2-0/scenarios/fast-draft"
                     ]
                   }
                 ]
@@ -140,9 +146,13 @@
             "group": "Video generation",
             "openapi": "openapi/en.json",
             "pages": [
+              "en/video/models/seedance-2-5",
+              "en/video/models/seedance-2-0",
+              "en/video/models/seedance-2-0-fast",
+              "en/video/models/seedance-2-0-mini",
               {
-                "group": "Seedance 2.0",
-                "icon": "/icons/doubao.svg",
+                "group": "Seedance API & examples",
+                "icon": "code",
                 "pages": [
                   "en/video/seedance-2-0",
                   "POST /api/v3/contents/generations/tasks",
@@ -164,7 +174,9 @@
                       "en/video/seedance-2-0/scenarios/web-search",
                       "en/video/seedance-2-0/scenarios/asset-reference",
                       "en/video/seedance-2-0/scenarios/frames",
-                      "en/video/seedance-2-0/scenarios/smart-duration-callback"
+                      "en/video/seedance-2-0/scenarios/smart-duration-callback",
+                      "en/video/seedance-2-0/scenarios/seedance-2-5-long-video",
+                      "en/video/seedance-2-0/scenarios/fast-draft"
                     ]
                   }
                 ]

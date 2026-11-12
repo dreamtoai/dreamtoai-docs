@@ -1,15 +1,15 @@
 ---
-title: "Seedance 2.0 video generation"
-sidebarTitle: "Overview"
-description: "Seedance 2.0 video generation API: generate videos from text, image, video and audio inputs."
+title: "Seedance video generation: shared guide"
+sidebarTitle: "Shared guide"
+description: "Seedance 2.5 / 2.0 / 2.0 Fast / 2.0 Mini video generation API: generate videos from text, image, video and audio inputs."
 ---
 
 ## Overview
 
-The Seedance 2.0 video generation API turns text, images, videos and audio into video. Requests and responses use snake_case throughout; there is a single generation endpoint and the model is selected with `model`. Tasks run asynchronously: creation returns a task ID, and you get the result by polling or through a callback.
+The Seedance video generation API serves four models, **Seedance 2.5**, **Seedance 2.0**, **Seedance 2.0 Fast** and **Seedance 2.0 Mini**, and turns text, images, videos and audio into video. Requests and responses use snake_case throughout; there is a single generation endpoint and the model is selected with `model` (see [Model](#model)). Tasks run asynchronously: creation returns a task ID, and you get the result by polling or through a callback.
 
 **Features**:
-- 🎬 **Standard quality**: 480p / 720p / 1080p output
+- 🎬 **Four models, one endpoint**: 2.5 up to 30 s; 2.0 at 480p / 720p / 1080p; Fast / Mini at 480p / 720p
 - 🧠 **Multimodal understanding**: combines reference images, videos and audio
 - 🎯 **Automatic mode**: text-to-video, image-to-video, first/last frame, multi-image reference, video edit and extension are derived from the material
 - 🎞️ **Frame control**: set the exact frame count with `frames`
@@ -245,11 +245,18 @@ See [Authentication](/en/authentication) for how to get and use an API Key.
 
 ## Model
 
-`model` is **required**. The value for this page is:
+`model` is **required**. One endpoint serves all models; pick one with `model`, the other parameters are written the same way. Click a model for its own page (parameter ranges, quick start, scenarios):
 
-| model | Description |
-|-------|------|
-| `seedance-2.0` | Seedance 2.0 standard tier |
+| model | Description | `duration` | Resolution | Reference media limit | Video edit / extend |
+|-------|------|------|------|------|------|
+| [`seedance-2.5`](/en/video/models/seedance-2-5) | Seedance 2.5, latest generation, long videos | 4–30 s, default `-1` (smart duration) | 480p / 720p / 1080p | 30 images, 10 videos, 10 audios | Yes, selectable with `omni_reference_task_type` |
+| [`seedance-2.0`](/en/video/models/seedance-2-0) | Seedance 2.0 standard tier | 4–15 s, default `5` | 480p / 720p / 1080p | 9 images, 3 videos, 3 audios | Yes, derived from the material |
+| [`seedance-2.0-fast`](/en/video/models/seedance-2-0-fast) | Seedance 2.0 Fast, faster generation | 4–15 s, default `5` | 480p / 720p | 9 images, 3 videos, 3 audios | No |
+| [`seedance-2.0-mini`](/en/video/models/seedance-2-0-mini) | Seedance 2.0 Mini, lightweight | 4–15 s, default `5` | 480p / 720p | 9 images, 3 videos, 3 audios | No |
+
+- The platform validates `duration` and `resolution` against the chosen `model`: for example `1080p` on `seedance-2.0-fast` or `duration: 20` on `seedance-2.0` returns 400; no task is created and nothing is billed.
+- Choosing a model: try prompts with Fast / Mini at low resolution, then switch `model` to `seedance-2.0` or `seedance-2.5` for the final cut (see [Fast / Mini drafts](/en/video/seedance-2-0/scenarios/fast-draft)); use `seedance-2.5` for more than 15 seconds or more reference media (see [Seedance 2.5 long video](/en/video/seedance-2-0/scenarios/seedance-2-5-long-video)).
+- See the console model pricing page for the price of each model.
 
 A missing, unknown or not-enabled `model` returns a 4xx error, see [Errors](#errors). The query endpoint echoes the `model` given at creation unchanged.
 
@@ -260,8 +267,8 @@ A missing, unknown or not-enabled `model` returns a 4xx error, see [Errors](#err
 | Field | Default | Allowed values |
 |------|--------|---------|
 | `ratio` | `adaptive` | `adaptive` / `16:9` / `9:16` / `1:1` / `4:3` / `3:4` / `21:9` |
-| `duration` | `5` | 4–15 seconds (integer), or `-1` for smart duration |
-| `resolution` | `720p` | `480p` / `720p` / `1080p` |
+| `duration` | `-1` on `seedance-2.5`, otherwise `5` | 4–15 seconds (4–30 on `seedance-2.5`) as an integer, or `-1` for smart duration |
+| `resolution` | `720p` | `480p` / `720p` / `1080p` (Fast / Mini: `480p` / `720p` only) |
 | `frames` | omitted | Positive integer; alternative to `duration`, `frames` wins |
 | `generate_audio` | `true` | `true` / `false` |
 | `output_format` | omitted (`mp4`) | `mp4` / `mov` |
@@ -274,7 +281,7 @@ Enum values are case-sensitive; values outside the range return HTTP 400 (`inval
 
 ## Material and generation modes
 
-`content` must contain at least one `text` prompt and may add reference material. The generation mode is derived from the material, so `omni_reference_task_type` is not needed:
+`content` must contain at least one `text` prompt and may add reference material. The generation mode is derived from the material, so `omni_reference_task_type` is not needed (`seedance-2.5` lets you set `reference` / `edit` / `extend` explicitly):
 
 | Material | Mode | Example |
 |---|---|---|
@@ -282,16 +289,16 @@ Enum values are case-sensitive; values outside the range return HTTP 400 (`inval
 | `image_url` with `role: first_frame` | Image to video (first frame) | [Image to video](/en/video/seedance-2-0/scenarios/image-to-video) |
 | `first_frame` + `last_frame` | First/last frame transition | [First and last frame](/en/video/seedance-2-0/scenarios/first-last-frame) |
 | Several `role: reference_image` | Multi-image reference | [Multi-image reference](/en/video/seedance-2-0/scenarios/multi-image-reference) |
-| `video_url` (`reference_video`) | Video edit / extension | [Video editing](/en/video/seedance-2-0/scenarios/video-edit), [Video extension](/en/video/seedance-2-0/scenarios/video-extend) |
+| `video_url` (`reference_video`) | Video edit / extension (2.5 / 2.0 only) | [Video editing](/en/video/seedance-2-0/scenarios/video-edit), [Video extension](/en/video/seedance-2-0/scenarios/video-extend) |
 | `audio_url` (`reference_audio`) | Reference audio | [Reference audio](/en/video/seedance-2-0/scenarios/reference-audio) |
 
 **Material limits** (enforced by the model; exceeding them makes the task end as `failed` with the reason):
 
 | Type | Count | Format and limits |
 |---|---|---|
-| Image | up to 9 | jpeg / png / webp / bmp / tiff / gif, aspect ratio 0.4–2.5, sides 300–6000 px, max 30 MB each |
-| Video | up to 3 | mp4 / mov, 480p / 720p, 2–15 s, 24–60 FPS, max 50 MB each |
-| Audio | up to 3 | wav / mp3, 2–15 s, max 15 MB each |
+| Image | up to 9 (30 on 2.5) | jpeg / png / webp / bmp / tiff / gif, aspect ratio 0.4–2.5, sides 300–6000 px, max 30 MB each |
+| Video | up to 3 (10 on 2.5) | mp4 / mov, 480p / 720p, 2–15 s, 24–60 FPS, max 50 MB each |
+| Audio | up to 3 (10 on 2.5) | wav / mp3, 2–15 s, max 15 MB each |
 
 Material `url`s must be public `http` / `https` URLs or asset-library references `asset://<asset Id>`. In the prompt, refer to material by position: "image 1", "image 2", "video 1", "audio 1".
 
@@ -373,7 +380,7 @@ When you also use `callback_url`, poll less often as a fallback for lost callbac
     `frames` wins and `duration` is ignored. With `frames`, billing follows actual usage.
   </Accordion>
   <Accordion title="Q2: Why is my duration rejected?">
-    `duration` accepts integers 4–15 or `-1` (smart duration). Decimals, strings and out-of-range values return HTTP 400. With `-1` the model picks the length and you are billed for actual usage.
+    `duration` accepts integers 4–15 (4–30 on `seedance-2.5`) or `-1` (smart duration). Decimals, strings and values outside the chosen model range return HTTP 400; for more than 15 seconds switch `model` to `seedance-2.5`. With `-1` the model picks the length and you are billed for actual usage.
   </Accordion>
   <Accordion title="Q3: Why are duration or resolution missing from the query response?">
     They appear only when the information exists. Only `id` / `model` / `status` / `created_at` / `updated_at` / `request_id` are always present; parse the rest as optional.
