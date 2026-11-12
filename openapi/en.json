@@ -55,7 +55,7 @@
             "type": "array"
           },
           "Statuses": {
-            "description": "Filter by status, multiple allowed; other values return 400 `Filter.Statuses 仅支持 Processing / Active / Failed`.\n\n**Allowed values:**\n- `Processing`: Processing (download, moderation, storage); not yet usable\n- `Active`: Ready; reference it in tasks as `asset://<Id>`\n- `Failed`: Processing failed; see `Error`",
+            "description": "Filter by status, multiple allowed; other values return 400 \"Filter.Statuses only supports Processing / Active / Failed\".\n\n**Allowed values:**\n- `Processing`: Processing (download, moderation, storage); not yet usable\n- `Active`: Ready; reference it in tasks as `asset://<Id>`\n- `Failed`: Processing failed; see `Error`",
             "items": {
               "enum": [
                 "Processing",
@@ -173,16 +173,10 @@
           },
           "Name": {
             "description": "Asset group name.",
-            "examples": [
-              "虚拟人A"
-            ],
             "type": "string"
           },
           "Title": {
             "description": "Same value as `Name`, kept for compatibility.",
-            "examples": [
-              "虚拟人A"
-            ],
             "type": "string"
           },
           "Description": {
@@ -554,9 +548,6 @@
         "properties": {
           "Name": {
             "description": "Asset group name, 1–64 characters (leading/trailing whitespace is trimmed). Used for management and search; names need not be unique.",
-            "examples": [
-              "虚拟人A"
-            ],
             "maxLength": 64,
             "minLength": 1,
             "type": "string"
@@ -591,7 +582,7 @@
         "description": "CreateAsset request body. Creates one asset per call. Asynchronous: the asset is `Processing` when the Id is returned and can be referenced by tasks once `Active`.",
         "properties": {
           "GroupId": {
-            "description": "Owning asset group Id, **required**. Empty returns 400 `GroupId 不能为空`; a missing or foreign group returns 404. The asset inherits the group's `ProjectName`.",
+            "description": "Owning asset group Id, **required**. Empty returns 400 \"GroupId must not be empty\"; a missing or foreign group returns 404. The asset inherits the group's `ProjectName`.",
             "examples": [
               "group-20261111083000-p7m2q4ab"
             ],
@@ -679,7 +670,7 @@
           },
           "SortBy": {
             "default": "CreateTime",
-            "description": "Sort field, default `CreateTime`. Other values return 400 `SortBy 仅支持 CreateTime / UpdateTime / Name / GroupId`.\n\n**Allowed values:**\n- `CreateTime`: By creation time (default)\n- `UpdateTime`: By update time\n- `Name`: By asset name\n- `GroupId`: By owning group Id",
+            "description": "Sort field, default `CreateTime`. Other values return 400 \"SortBy only supports CreateTime / UpdateTime / Name / GroupId\".\n\n**Allowed values:**\n- `CreateTime`: By creation time (default)\n- `UpdateTime`: By update time\n- `Name`: By asset name\n- `GroupId`: By owning group Id",
             "enum": [
               "CreateTime",
               "UpdateTime",
@@ -690,7 +681,7 @@
           },
           "SortOrder": {
             "default": "Desc",
-            "description": "Sort direction, default `Desc`. Other values return 400 `SortOrder 仅支持 Desc / Asc`.\n\n**Allowed values:**\n- `Desc`: Descending (default)\n- `Asc`: Ascending",
+            "description": "Sort direction, default `Desc`. Other values return 400 \"SortOrder only supports Desc / Asc\".\n\n**Allowed values:**\n- `Desc`: Descending (default)\n- `Asc`: Ascending",
             "enum": [
               "Desc",
               "Asc"
@@ -740,7 +731,7 @@
             "type": "string"
           },
           "Name": {
-            "description": "New name, **required**, up to 255 characters; `\"\"` clears it. Omitting it returns 400 `Name 不能缺省（传空串表示清空）`.",
+            "description": "New name, **required**, up to 255 characters; `\"\"` clears it. Omitting it returns 400 \"Name is required\".",
             "maxLength": 255,
             "type": [
               "string",
@@ -844,7 +835,7 @@
       },
       "SeedanceV3CreateTaskRequest": {
         "additionalProperties": false,
-        "description": "Request body for creating a video generation task. All fields are snake_case; only the fields listed here are accepted, any other field returns 400 `不支持的参数：xxx` (unsupported parameter).",
+        "description": "Request body for creating a video generation task. All fields are snake_case; only the fields listed here are accepted, any other field returns 400 \"unsupported parameter: xxx\".",
         "properties": {
           "model": {
             "description": "Model name, **required**. Currently `seedance-2.0` (Seedance 2.0 standard tier). An unknown model or one not enabled for your account returns 404 `not_found`. The value is echoed unchanged when the task is queried.",
@@ -854,7 +845,7 @@
             "type": "string"
           },
           "content": {
-            "description": "Input content array, **required**. Must contain at least one `text` prompt and may add reference images / videos / audios.\n\n- Missing or empty: 400 `content 不能为空` (content must not be empty)\n- No `text` item: 400 `content 中必须包含 text 类型的提示词` (a text prompt is required)\n- Media are numbered per type; reference them in the prompt as \"image 1\", \"image 2\", \"video 1\", \"audio 1\" (图片1 / 视频1 / 音频1)\n- Media URLs must be public `http` / `https` URLs or asset-library references `asset://<asset Id>`\n\nThe platform does not cap the number of items; the model does (up to 9 images, 3 videos, 3 audios). Exceeding a model limit makes the task end as `failed` with the reason.",
+            "description": "Input content array, **required**. Must contain at least one `text` prompt and may add reference images / videos / audios.\n\n- Missing or empty: 400 \"content must not be empty\"\n- No `text` item: 400 \"content must include a text prompt\"\n- Media are numbered per type; reference them in the prompt as \"image 1\", \"image 2\", \"video 1\", \"audio 1\"\n- Media URLs must be public `http` / `https` URLs or asset-library references `asset://<asset Id>`\n\nThe platform does not cap the number of items; the model does (up to 9 images, 3 videos, 3 audios). Exceeding a model limit makes the task end as `failed` with the reason.",
             "items": {
               "discriminator": {
                 "mapping": {
@@ -899,7 +890,7 @@
           },
           "duration": {
             "default": 5,
-            "description": "Video duration in seconds, default `5`.\n\n- Integer `4`–`15`: generate exactly that many seconds\n- `-1`: smart duration, the model picks 4–15 s and you are billed for actual usage; the actual length is returned as `duration` when querying\n- Decimals, strings or out-of-range values: 400 `duration 仅支持 4~15 秒或 -1(智能时长)`\n\nIgnored when `frames` is also given.",
+            "description": "Video duration in seconds, default `5`.\n\n- Integer `4`–`15`: generate exactly that many seconds\n- `-1`: smart duration, the model picks 4–15 s and you are billed for actual usage; the actual length is returned as `duration` when querying\n- Decimals, strings or out-of-range values: 400 \"duration only supports 4-15 seconds or -1 (smart duration)\"\n\nIgnored when `frames` is also given.",
             "enum": [
               -1,
               4,
@@ -919,14 +910,14 @@
             "type": "integer"
           },
           "frames": {
-            "description": "Total number of frames, a positive integer. Alternative to `duration`; when both are given `frames` wins and `duration` is ignored. Billed by actual usage. Non-positive or non-integer values return 400 `frames 必须是正整数`.",
+            "description": "Total number of frames, a positive integer. Alternative to `duration`; when both are given `frames` wins and `duration` is ignored. Billed by actual usage. Non-positive or non-integer values return 400 \"frames must be a positive integer\".",
             "format": "int64",
             "minimum": 1,
             "type": "integer"
           },
           "resolution": {
             "default": "720p",
-            "description": "Output resolution, default `720p`. Higher resolutions take longer and cost more. Other values return 400 `resolution 仅支持 480p / 720p / 1080p`.\n\n**Allowed values:**\n- `480p`: SD; fastest and cheapest, good for previews and quick iteration\n- `720p`: HD (default); balanced quality and speed\n- `1080p`: Full HD; best detail, slower and more expensive",
+            "description": "Output resolution, default `720p`. Higher resolutions take longer and cost more. Other values return 400 \"resolution only supports 480p / 720p / 1080p\".\n\n**Allowed values:**\n- `480p`: SD; fastest and cheapest, good for previews and quick iteration\n- `720p`: HD (default); balanced quality and speed\n- `1080p`: Full HD; best detail, slower and more expensive",
             "enum": [
               "480p",
               "720p",
@@ -967,7 +958,7 @@
           },
           "bitrate_mode": {
             "default": "standard",
-            "description": "Output quality tier at the chosen resolution; omitted equals `standard`. Other values return 400 `bitrate_mode 仅支持 standard / high`.\n\n**Allowed values:**\n- `standard`: Standard bitrate (default, same as omitting)\n- `high`: High bitrate; sharper detail and motion, larger files",
+            "description": "Output quality tier at the chosen resolution; omitted equals `standard`. Other values return 400 \"bitrate_mode only supports standard / high\".\n\n**Allowed values:**\n- `standard`: Standard bitrate (default, same as omitting)\n- `high`: High bitrate; sharper detail and motion, larger files",
             "enum": [
               "standard",
               "high"
@@ -975,12 +966,12 @@
             "type": "string"
           },
           "callback_url": {
-            "description": "Notification URL called when the task finishes (succeeded or failed). Must be an `http` / `https` URL, otherwise 400 `callback_url 必须是 http/https 地址`. The platform POSTs the callback body to it; any 2xx counts as delivered, failures are retried after 1, 5 and 30 minutes. See \"Task callback\" for the body and signature verification.",
+            "description": "Notification URL called when the task finishes (succeeded or failed). Must be an `http` / `https` URL, otherwise 400 \"callback_url must be an http/https URL\". The platform POSTs the callback body to it; any 2xx counts as delivered, failures are retried after 1, 5 and 30 minutes. See \"Task callback\" for the body and signature verification.",
             "format": "uri",
             "type": "string"
           },
           "tools": {
-            "description": "Tools to enable. Only web search is supported: `[{\"type\": \"web_search\"}]`, letting the model use real-time information. Anything else returns 400 `tools 当前仅支持 [{\"type\":\"web_search\"}]`.",
+            "description": "Tools to enable. Only web search is supported: `[{\"type\": \"web_search\"}]`, letting the model use real-time information. Anything else returns 400 \"tools only supports web_search\".",
             "items": {
               "$ref": "#/components/schemas/SeedanceV3Tool"
             },
@@ -999,7 +990,7 @@
             "type": "boolean"
           },
           "priority": {
-            "description": "Task priority, an integer. The platform only checks the type (non-integers return 400 `priority 必须是整数`); scheduling is decided by the model side.",
+            "description": "Task priority, an integer. The platform only checks the type (non-integers return 400 \"priority must be an integer\"); scheduling is decided by the model side.",
             "format": "int64",
             "type": "integer"
           },
@@ -1144,7 +1135,7 @@
             "description": "Image URL object."
           },
           "role": {
-            "description": "How the image is used. Case-sensitive; other values return 400 `content[n].role 仅支持 reference_image / first_frame / last_frame`.\n\n**Allowed values:**\n- `reference_image`: Reference image: subject, style or scene to draw from; multiple allowed, referenced in the prompt as \"image 1\", \"image 2\"\n- `first_frame`: First frame: the video starts from this image\n- `last_frame`: Last frame: the video ends on this image; usually paired with `first_frame` for a transition",
+            "description": "How the image is used. Case-sensitive; other values return 400 \"content[n].role only supports reference_image / first_frame / last_frame\".\n\n**Allowed values:**\n- `reference_image`: Reference image: subject, style or scene to draw from; multiple allowed, referenced in the prompt as \"image 1\", \"image 2\"\n- `first_frame`: First frame: the video starts from this image\n- `last_frame`: Last frame: the video ends on this image; usually paired with `first_frame` for a transition",
             "enum": [
               "reference_image",
               "first_frame",
@@ -1165,7 +1156,7 @@
         "description": "Media URL.",
         "properties": {
           "url": {
-            "description": "Media URL, **required**, either:\n\n- a publicly reachable `http` / `https` URL (no auth, not intranet-only)\n- an asset-library reference `asset://<asset Id>`: the asset must belong to your account and be `Active`; not ready, missing or deleted assets return 400 and nothing is charged\n\nOther schemes return 400 `content[n].image_url.url 必须是 http/https 地址或 asset://<素材Id>`.",
+            "description": "Media URL, **required**, either:\n\n- a publicly reachable `http` / `https` URL (no auth, not intranet-only)\n- an asset-library reference `asset://<asset Id>`: the asset must belong to your account and be `Active`; not ready, missing or deleted assets return 400 and nothing is charged\n\nOther schemes return 400 \"content[n].image_url.url must be an http/https URL or asset://<asset Id>\".",
             "examples": [
               "https://example.com/portrait.jpg"
             ],
@@ -1308,7 +1299,7 @@
             "type": "string"
           },
           "message": {
-            "description": "Readable failure reason, e.g. non-compliant material or a model limit exceeded; `视频生成失败，请重试` (generation failed, please retry) when unknown.",
+            "description": "Readable failure reason, e.g. non-compliant material or a model limit exceeded; \"Video generation failed, please retry\" when unknown.",
             "type": "string"
           }
         },
@@ -1537,7 +1528,7 @@
             "type": "string"
           },
           "text": {
-            "description": "Video prompt, 3–20000 characters after trimming whitespace, otherwise 400 `提示词长度需为 3~20000 字符`.\n\nTips: subject + action, background + action, camera + motion (push in, pull out, orbit…). Reference media as \"image 1\", \"video 1\", \"audio 1\" (图片1 / 视频1 / 音频1); never put asset Ids in the prompt.",
+            "description": "Video prompt, 3–20000 characters after trimming whitespace, otherwise 400 \"prompt must be 3-20000 characters\".\n\nTips: subject + action, background + action, camera + motion (push in, pull out, orbit…). Reference media as \"image 1\", \"video 1\", \"audio 1\"; never put asset Ids in the prompt.",
             "maxLength": 20000,
             "minLength": 3,
             "type": "string"
@@ -1684,7 +1675,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "GroupId must not be empty"
                         }
                       }
                     }
@@ -1709,7 +1700,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -1734,7 +1725,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "The account has no access"
                         }
                       }
                     }
@@ -1759,7 +1750,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -1784,7 +1775,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body exceeds 1 MB"
                         }
                       }
                     }
@@ -1834,7 +1825,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -1930,7 +1921,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Name must be 1-64 characters"
                         }
                       }
                     }
@@ -1955,7 +1946,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -1980,7 +1971,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "The account has no access"
                         }
                       }
                     }
@@ -2005,7 +1996,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -2030,7 +2021,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body exceeds 1 MB"
                         }
                       }
                     }
@@ -2080,7 +2071,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -2173,7 +2164,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Id must not be empty"
                         }
                       }
                     }
@@ -2198,7 +2189,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -2223,7 +2214,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "The account has no access"
                         }
                       }
                     }
@@ -2248,7 +2239,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset not found or deleted"
                         }
                       }
                     }
@@ -2273,7 +2264,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body exceeds 1 MB"
                         }
                       }
                     }
@@ -2323,7 +2314,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -2416,7 +2407,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Id must not be empty"
                         }
                       }
                     }
@@ -2441,7 +2432,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -2466,7 +2457,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "The account has no access"
                         }
                       }
                     }
@@ -2491,7 +2482,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -2516,7 +2507,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body exceeds 1 MB"
                         }
                       }
                     }
@@ -2566,7 +2557,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -2672,7 +2663,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Id must not be empty"
                         }
                       }
                     }
@@ -2697,7 +2688,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -2722,7 +2713,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "The account has no access"
                         }
                       }
                     }
@@ -2747,7 +2738,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset not found or deleted"
                         }
                       }
                     }
@@ -2772,7 +2763,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body exceeds 1 MB"
                         }
                       }
                     }
@@ -2822,7 +2813,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -2924,7 +2915,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Id must not be empty"
                         }
                       }
                     }
@@ -2949,7 +2940,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -2974,7 +2965,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "The account has no access"
                         }
                       }
                     }
@@ -2999,7 +2990,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -3024,7 +3015,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body exceeds 1 MB"
                         }
                       }
                     }
@@ -3074,7 +3065,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -3187,7 +3178,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Filter.GroupIds allows at most 100 Ids"
                         }
                       }
                     }
@@ -3212,7 +3203,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -3237,7 +3228,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "The account has no access"
                         }
                       }
                     }
@@ -3262,7 +3253,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -3287,7 +3278,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body exceeds 1 MB"
                         }
                       }
                     }
@@ -3337,7 +3328,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -3462,7 +3453,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "SortBy only supports CreateTime / UpdateTime / Name / GroupId"
                         }
                       }
                     }
@@ -3487,7 +3478,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -3512,7 +3503,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "The account has no access"
                         }
                       }
                     }
@@ -3537,7 +3528,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset not found or deleted"
                         }
                       }
                     }
@@ -3562,7 +3553,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body exceeds 1 MB"
                         }
                       }
                     }
@@ -3612,7 +3603,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -3706,7 +3697,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Name is required (pass an empty string to clear it)"
                         }
                       }
                     }
@@ -3731,7 +3722,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -3756,7 +3747,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "The account has no access"
                         }
                       }
                     }
@@ -3781,7 +3772,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset not found or deleted"
                         }
                       }
                     }
@@ -3806,7 +3797,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body exceeds 1 MB"
                         }
                       }
                     }
@@ -3856,7 +3847,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -3950,7 +3941,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Name must be 1-64 characters"
                         }
                       }
                     }
@@ -3975,7 +3966,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -4000,7 +3991,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "The account has no access"
                         }
                       }
                     }
@@ -4025,7 +4016,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -4050,7 +4041,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body exceeds 1 MB"
                         }
                       }
                     }
@@ -4100,7 +4091,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -4242,7 +4233,7 @@
                     "value": {
                       "error": {
                         "code": "unauthorized",
-                        "message": "API Key 无效",
+                        "message": "Invalid API key",
                         "type": "authentication_error",
                         "http_status": 401,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4266,7 +4257,7 @@
                     "value": {
                       "error": {
                         "code": "forbidden",
-                        "message": "无权限访问该资源",
+                        "message": "No permission to access this resource",
                         "type": "permission_error",
                         "http_status": 403,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4314,7 +4305,7 @@
                     "value": {
                       "error": {
                         "code": "api_error",
-                        "message": "服务器内部错误，请稍后重试",
+                        "message": "Internal server error, please retry later",
                         "type": "api_error",
                         "http_status": 500,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4338,7 +4329,7 @@
                     "value": {
                       "error": {
                         "code": "service_unavailable",
-                        "message": "服务暂时不可用，请稍后重试",
+                        "message": "Service temporarily unavailable, please retry later",
                         "type": "api_error",
                         "http_status": 503,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4675,7 +4666,7 @@
                     "value": {
                       "error": {
                         "code": "invalid_parameter",
-                        "message": "duration 仅支持 4~15 秒或 -1(智能时长)",
+                        "message": "duration only supports 4-15 seconds or -1 (smart duration)",
                         "type": "invalid_request_error",
                         "http_status": 400,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4",
@@ -4700,7 +4691,7 @@
                     "value": {
                       "error": {
                         "code": "unauthorized",
-                        "message": "API Key 无效",
+                        "message": "Invalid API key",
                         "type": "authentication_error",
                         "http_status": 401,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4724,7 +4715,7 @@
                     "value": {
                       "error": {
                         "code": "insufficient_balance",
-                        "message": "余额不足",
+                        "message": "Insufficient balance",
                         "type": "insufficient_balance_error",
                         "http_status": 402,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4748,7 +4739,7 @@
                     "value": {
                       "error": {
                         "code": "forbidden",
-                        "message": "无权限访问该资源",
+                        "message": "No permission to access this resource",
                         "type": "permission_error",
                         "http_status": 403,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4772,7 +4763,7 @@
                     "value": {
                       "error": {
                         "code": "not_found",
-                        "message": "模型不存在或未开放",
+                        "message": "Model not found or not enabled",
                         "type": "invalid_request_error",
                         "http_status": 404,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4820,7 +4811,7 @@
                     "value": {
                       "error": {
                         "code": "api_error",
-                        "message": "服务器内部错误，请稍后重试",
+                        "message": "Internal server error, please retry later",
                         "type": "api_error",
                         "http_status": 500,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4844,7 +4835,7 @@
                     "value": {
                       "error": {
                         "code": "service_unavailable",
-                        "message": "服务暂时不可用，请稍后重试",
+                        "message": "Service temporarily unavailable, please retry later",
                         "type": "api_error",
                         "http_status": 503,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4939,7 +4930,7 @@
                       "status": "failed",
                       "error": {
                         "code": "task_failed",
-                        "message": "视频生成失败，请重试"
+                        "message": "Video generation failed, please retry"
                       },
                       "created_at": 1794384000,
                       "updated_at": 1794384120,
@@ -4970,7 +4961,7 @@
                     "value": {
                       "error": {
                         "code": "unauthorized",
-                        "message": "API Key 无效",
+                        "message": "Invalid API key",
                         "type": "authentication_error",
                         "http_status": 401,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -4994,7 +4985,7 @@
                     "value": {
                       "error": {
                         "code": "forbidden",
-                        "message": "无权限访问该资源",
+                        "message": "No permission to access this resource",
                         "type": "permission_error",
                         "http_status": 403,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -5018,7 +5009,7 @@
                     "value": {
                       "error": {
                         "code": "not_found",
-                        "message": "任务不存在",
+                        "message": "Task not found",
                         "type": "invalid_request_error",
                         "http_status": 404,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -5066,7 +5057,7 @@
                     "value": {
                       "error": {
                         "code": "api_error",
-                        "message": "服务器内部错误，请稍后重试",
+                        "message": "Internal server error, please retry later",
                         "type": "api_error",
                         "http_status": 500,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -5090,7 +5081,7 @@
                     "value": {
                       "error": {
                         "code": "service_unavailable",
-                        "message": "服务暂时不可用，请稍后重试",
+                        "message": "Service temporarily unavailable, please retry later",
                         "type": "api_error",
                         "http_status": 503,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -5199,7 +5190,7 @@
                     "taskId": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
                     "status": "failed",
                     "result": [],
-                    "errorMsg": "视频生成失败，请重试",
+                    "errorMsg": "Video generation failed, please retry",
                     "timestamp": "2026-11-11T08:03:16Z",
                     "signature": "9a7e2c4b1d..."
                   }

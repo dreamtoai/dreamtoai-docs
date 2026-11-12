@@ -6,7 +6,7 @@ description: "Error shapes, HTTP status codes and handling advice for the video 
 DreamTo returns errors as **real HTTP status codes plus a structured error body**. Branch on the HTTP status first (retry / fix parameters / top up), then refine with the error code.
 
 <Note>
-  Error `message` texts are currently returned in Chinese. They are safe to show to users as-is; for program logic use the HTTP status, `error.code` and `error.param`.
+  The API currently returns `message` texts in Chinese; the examples in these docs show English translations. Use the HTTP status, `error.code` and `error.param` for program logic, not the message text.
 </Note>
 
 ## Video task API
@@ -17,7 +17,7 @@ Applies to every endpoint under `/api/v3/contents/generations/tasks` (create, qu
 {
   "error": {
     "code": "invalid_parameter",
-    "message": "duration 仅支持 4~15 秒或 -1(智能时长)",
+    "message": "duration only supports 4-15 seconds or -1 (smart duration)",
     "type": "invalid_request_error",
     "http_status": 400,
     "request_id": "req_3f9a1c2b7d4e5f60718293a4",
@@ -62,7 +62,7 @@ When a created task fails during generation, the query endpoint returns HTTP 200
   "status": "failed",
   "error": {
     "code": "task_failed",
-    "message": "视频生成失败，请重试"
+    "message": "Video generation failed, please retry"
   },
   "created_at": 1794384000,
   "updated_at": 1794384120,
@@ -84,7 +84,7 @@ Applies to `POST /api/v3/assets?Action=...`. Failed responses have no `Result`; 
     "Version": "2024-01-01",
     "Error": {
       "Code": "ResourceNotFound",
-      "Message": "素材不存在或已删除"
+      "Message": "Asset not found or deleted"
     }
   }
 }

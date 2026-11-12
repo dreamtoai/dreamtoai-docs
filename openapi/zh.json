@@ -173,16 +173,10 @@
           },
           "Name": {
             "description": "素材组名称。",
-            "examples": [
-              "虚拟人A"
-            ],
             "type": "string"
           },
           "Title": {
             "description": "与 `Name` 取值相同，为兼容保留。",
-            "examples": [
-              "虚拟人A"
-            ],
             "type": "string"
           },
           "Description": {
@@ -554,9 +548,6 @@
         "properties": {
           "Name": {
             "description": "素材组名称，1 ~ 64 个字符（首尾空白会被去除），用于管理与检索，可重名。",
-            "examples": [
-              "虚拟人A"
-            ],
             "maxLength": 64,
             "minLength": 1,
             "type": "string"
@@ -1684,7 +1675,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "GroupId 不能为空"
                         }
                       }
                     }
@@ -1759,7 +1750,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "素材组不存在或已删除"
                         }
                       }
                     }
@@ -2005,7 +1996,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "素材组不存在或已删除"
                         }
                       }
                     }
@@ -2173,7 +2164,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Id 不能为空"
                         }
                       }
                     }
@@ -2416,7 +2407,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Id 不能为空"
                         }
                       }
                     }
@@ -2491,7 +2482,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "素材组不存在或已删除"
                         }
                       }
                     }
@@ -2672,7 +2663,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Id 不能为空"
                         }
                       }
                     }
@@ -2924,7 +2915,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Id 不能为空"
                         }
                       }
                     }
@@ -2999,7 +2990,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "素材组不存在或已删除"
                         }
                       }
                     }
@@ -3187,7 +3178,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Filter.GroupIds 最多 100 个"
                         }
                       }
                     }
@@ -3262,7 +3253,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "素材组不存在或已删除"
                         }
                       }
                     }
@@ -3462,7 +3453,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "SortBy 仅支持 CreateTime / UpdateTime / Name / GroupId"
                         }
                       }
                     }
@@ -3706,7 +3697,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Name 不能缺省（传空串表示清空）"
                         }
                       }
                     }
@@ -4025,7 +4016,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "素材组不存在或已删除"
                         }
                       }
                     }

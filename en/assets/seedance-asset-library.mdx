@@ -41,7 +41,7 @@ Authentication failures return HTTP 401:
     "Version": "2024-01-01",
     "Error": {
       "Code": "InvalidAuthorization",
-      "Message": "API Key 无效"
+      "Message": "Invalid API key"
     }
   }
 }
@@ -61,7 +61,7 @@ Content-Type: application/json
 | Action | Yes | Operation name, see [Actions](#actions) |
 | Version | Yes | Always `2024-01-01` |
 
-Body fields are PascalCase and only the fields documented for each Action are accepted (including those inside `Filter`). Extra or misspelled fields return HTTP 400 `InvalidParameter` (`不支持的参数：xxx`, unsupported parameter) instead of being silently ignored.
+Body fields are PascalCase and only the fields documented for each Action are accepted (including those inside `Filter`). Extra or misspelled fields return HTTP 400 `InvalidParameter` ("unsupported parameter: xxx") instead of being silently ignored.
 
 **Success** (HTTP 200):
 
@@ -269,4 +269,4 @@ When an asset's `Status` is `Failed`, `Error.Code` is one of the following. Fix 
 | 429 | `RequestLimitExceeded` | Too many requests, retry later |
 | 500 | `InternalError` | Internal error, retry later |
 
-Error messages are currently returned in Chinese; branch on the HTTP status and `Error.Code`.
+The API currently returns `Message` texts in Chinese (examples here show English translations); branch on the HTTP status and `Error.Code`.
