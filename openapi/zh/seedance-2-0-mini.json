@@ -1562,7 +1562,7 @@
         "x-mint": {
           "href": "/api-reference/seedance-2-0-mini/create-task",
           "metadata": {
-            "sidebarTitle": "API 全部参数（创建任务）",
+            "sidebarTitle": "创建视频生成任务",
             "title": "创建视频生成任务"
           }
         }

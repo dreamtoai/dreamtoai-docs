@@ -1562,7 +1562,7 @@
         "x-mint": {
           "href": "/en/api-reference/seedance-2-0-mini/create-task",
           "metadata": {
-            "sidebarTitle": "All parameters (create task)",
+            "sidebarTitle": "Create video task",
             "title": "Create video task"
           }
         }
