@@ -12,7 +12,16 @@
     "default": "dark"
   },
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "logo": {
     "light": "/logo/light.png",
@@ -23,7 +32,20 @@
   "api": {
     "examples": {
       "prefill": true,
-      "languages": ["curl", "python", "javascript", "node", "go", "java", "php", "ruby", "csharp", "swift", "kotlin", "rust"]
+      "languages": [
+        "curl",
+        "python",
+        "javascript",
+        "node",
+        "go",
+        "java",
+        "php",
+        "ruby",
+        "csharp",
+        "swift",
+        "kotlin",
+        "rust"
+      ]
     }
   },
   "navigation": {
@@ -34,7 +56,11 @@
         "groups": [
           {
             "group": "开始使用",
-            "pages": ["index", "authentication", "errors"]
+            "pages": [
+              "index",
+              "authentication",
+              "errors"
+            ]
           },
           {
             "group": "视频生成",
@@ -48,6 +74,7 @@
                   "POST /api/v3/contents/generations/tasks",
                   "GET /api/v3/contents/generations/tasks/{id}",
                   "GET /api/v3/contents/generations/tasks",
+                  "webhooks/task-callback",
                   "webhook seedanceTaskCompleted",
                   {
                     "group": "场景示例",
@@ -73,29 +100,19 @@
                 "icon": "/icons/doubao.svg",
                 "pages": [
                   "assets/seedance-asset-library",
-                  {
-                    "group": "API 参考（Action）",
-                    "icon": "code",
-                    "pages": [
-                      "POST /api/v3/assets?Action=CreateAssetGroup&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=GetAssetGroup&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=ListAssetGroups&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=UpdateAssetGroup&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=DeleteAssetGroup&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=CreateAsset&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=GetAsset&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=ListAssets&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=UpdateAsset&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=DeleteAsset&Version=2024-01-01"
-                    ]
-                  }
+                  "POST /api/v3/assets?Action=CreateAssetGroup&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=GetAssetGroup&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=ListAssetGroups&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=UpdateAssetGroup&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=DeleteAssetGroup&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=CreateAsset&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=GetAsset&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=ListAssets&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=UpdateAsset&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=DeleteAsset&Version=2024-01-01"
                 ]
               }
             ]
-          },
-          {
-            "group": "回调",
-            "pages": ["webhooks/task-callback"]
           }
         ]
       },
@@ -104,7 +121,11 @@
         "groups": [
           {
             "group": "Get started",
-            "pages": ["en/index", "en/authentication", "en/errors"]
+            "pages": [
+              "en/index",
+              "en/authentication",
+              "en/errors"
+            ]
           },
           {
             "group": "Video generation",
@@ -118,6 +139,7 @@
                   "POST /api/v3/contents/generations/tasks",
                   "GET /api/v3/contents/generations/tasks/{id}",
                   "GET /api/v3/contents/generations/tasks",
+                  "en/webhooks/task-callback",
                   "webhook seedanceTaskCompleted",
                   {
                     "group": "Scenarios",
@@ -143,29 +165,19 @@
                 "icon": "/icons/doubao.svg",
                 "pages": [
                   "en/assets/seedance-asset-library",
-                  {
-                    "group": "API reference (Actions)",
-                    "icon": "code",
-                    "pages": [
-                      "POST /api/v3/assets?Action=CreateAssetGroup&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=GetAssetGroup&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=ListAssetGroups&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=UpdateAssetGroup&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=DeleteAssetGroup&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=CreateAsset&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=GetAsset&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=ListAssets&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=UpdateAsset&Version=2024-01-01",
-                      "POST /api/v3/assets?Action=DeleteAsset&Version=2024-01-01"
-                    ]
-                  }
+                  "POST /api/v3/assets?Action=CreateAssetGroup&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=GetAssetGroup&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=ListAssetGroups&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=UpdateAssetGroup&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=DeleteAssetGroup&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=CreateAsset&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=GetAsset&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=ListAssets&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=UpdateAsset&Version=2024-01-01",
+                  "POST /api/v3/assets?Action=DeleteAsset&Version=2024-01-01"
                 ]
               }
             ]
-          },
-          {
-            "group": "Callbacks",
-            "pages": ["en/webhooks/task-callback"]
           }
         ]
       }
