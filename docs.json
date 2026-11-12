@@ -394,20 +394,12 @@
       "destination": "/video/models/seedance-2-0-fast/scenarios/fast-draft"
     },
     {
-      "source": "/video/seedance-2-0/scenarios/:slug",
-      "destination": "/video/models/seedance-2-0/scenarios/:slug"
-    },
-    {
       "source": "/en/video/seedance-2-0/scenarios/seedance-2-5-long-video",
       "destination": "/en/video/models/seedance-2-5/scenarios/seedance-2-5-long-video"
     },
     {
       "source": "/en/video/seedance-2-0/scenarios/fast-draft",
       "destination": "/en/video/models/seedance-2-0-fast/scenarios/fast-draft"
-    },
-    {
-      "source": "/en/video/seedance-2-0/scenarios/:slug",
-      "destination": "/en/video/models/seedance-2-0/scenarios/:slug"
     },
     {
       "source": "/api-reference/seedance/create-task",
@@ -440,6 +432,94 @@
     {
       "source": "/en/api-reference/seedance/task-callback",
       "destination": "/en/api-reference/seedance-2-0/task-callback"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/asset-reference",
+      "destination": "/video/models/seedance-2-0/scenarios/asset-reference"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/first-last-frame",
+      "destination": "/video/models/seedance-2-0/scenarios/first-last-frame"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/frames",
+      "destination": "/video/models/seedance-2-0/scenarios/frames"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/image-to-video",
+      "destination": "/video/models/seedance-2-0/scenarios/image-to-video"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/multi-image-reference",
+      "destination": "/video/models/seedance-2-0/scenarios/multi-image-reference"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/reference-audio",
+      "destination": "/video/models/seedance-2-0/scenarios/reference-audio"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/smart-duration-callback",
+      "destination": "/video/models/seedance-2-0/scenarios/smart-duration-callback"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/text-to-video",
+      "destination": "/video/models/seedance-2-0/scenarios/text-to-video"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/video-edit",
+      "destination": "/video/models/seedance-2-0/scenarios/video-edit"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/video-extend",
+      "destination": "/video/models/seedance-2-0/scenarios/video-extend"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/web-search",
+      "destination": "/video/models/seedance-2-0/scenarios/web-search"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/asset-reference",
+      "destination": "/en/video/models/seedance-2-0/scenarios/asset-reference"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/first-last-frame",
+      "destination": "/en/video/models/seedance-2-0/scenarios/first-last-frame"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/frames",
+      "destination": "/en/video/models/seedance-2-0/scenarios/frames"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/image-to-video",
+      "destination": "/en/video/models/seedance-2-0/scenarios/image-to-video"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/multi-image-reference",
+      "destination": "/en/video/models/seedance-2-0/scenarios/multi-image-reference"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/reference-audio",
+      "destination": "/en/video/models/seedance-2-0/scenarios/reference-audio"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/smart-duration-callback",
+      "destination": "/en/video/models/seedance-2-0/scenarios/smart-duration-callback"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/text-to-video",
+      "destination": "/en/video/models/seedance-2-0/scenarios/text-to-video"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/video-edit",
+      "destination": "/en/video/models/seedance-2-0/scenarios/video-edit"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/video-extend",
+      "destination": "/en/video/models/seedance-2-0/scenarios/video-extend"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/web-search",
+      "destination": "/en/video/models/seedance-2-0/scenarios/web-search"
     }
   ]
 }
