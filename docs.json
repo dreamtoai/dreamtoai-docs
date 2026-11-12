@@ -398,10 +398,6 @@
       "destination": "/video/models/seedance-2-0/scenarios/:slug"
     },
     {
-      "source": "/api-reference/seedance/:slug",
-      "destination": "/api-reference/seedance-2-0/:slug"
-    },
-    {
       "source": "/en/video/seedance-2-0/scenarios/seedance-2-5-long-video",
       "destination": "/en/video/models/seedance-2-5/scenarios/seedance-2-5-long-video"
     },
@@ -414,8 +410,36 @@
       "destination": "/en/video/models/seedance-2-0/scenarios/:slug"
     },
     {
-      "source": "/en/api-reference/seedance/:slug",
-      "destination": "/en/api-reference/seedance-2-0/:slug"
+      "source": "/api-reference/seedance/create-task",
+      "destination": "/api-reference/seedance-2-0/create-task"
+    },
+    {
+      "source": "/api-reference/seedance/get-task",
+      "destination": "/api-reference/seedance-2-0/get-task"
+    },
+    {
+      "source": "/api-reference/seedance/list-tasks",
+      "destination": "/api-reference/seedance-2-0/list-tasks"
+    },
+    {
+      "source": "/api-reference/seedance/task-callback",
+      "destination": "/api-reference/seedance-2-0/task-callback"
+    },
+    {
+      "source": "/en/api-reference/seedance/create-task",
+      "destination": "/en/api-reference/seedance-2-0/create-task"
+    },
+    {
+      "source": "/en/api-reference/seedance/get-task",
+      "destination": "/en/api-reference/seedance-2-0/get-task"
+    },
+    {
+      "source": "/en/api-reference/seedance/list-tasks",
+      "destination": "/en/api-reference/seedance-2-0/list-tasks"
+    },
+    {
+      "source": "/en/api-reference/seedance/task-callback",
+      "destination": "/en/api-reference/seedance-2-0/task-callback"
     }
   ]
 }
