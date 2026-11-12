@@ -1,0 +1,270 @@
+---
+title: "Seedance 素材库"
+sidebarTitle: "概述"
+description: "长期保存视频生成参考素材，在 Seedance 生成任务中通过 asset://<素材Id> 反复引用。"
+---
+
+<Warning>
+  **仅限需要长期保存、反复引用素材的用户对接。** 如果只是在单次生成任务里使用图片 / 视频 / 音频，直接在视频生成请求的 `content` 中填写可公网访问的 URL 即可，无需对接素材库。
+</Warning>
+
+## 概述
+
+素材库用于长期保存视频生成要用到的参考素材（图片 / 视频 / 音频，常用于虚拟人像形象）。素材上传一次即可在 [Seedance 2.0](/video/seedance-2-0) 的生成任务里反复引用，引用方式为 `asset://<素材Id>`。
+
+- 📦 **素材组管理**：同一形象的多份素材归入同一组，便于管理与检索
+- ⏳ **异步处理**：创建素材后立即返回 Id，状态从 `Processing` 变为 `Active` 即可使用
+- ♻️ **长期有效**：素材不随时间过期，删除前可一直引用
+- 🔁 **稳定引用**：素材 Id 由 DreamTo 签发，平台服务升级或线路切换后，已有素材 Id 与 `asset://` 引用写法保持不变，无需重新上传
+
+接口为 **Action 风格**：所有操作都是 `POST /api/v3/assets`，通过 Query 参数 `Action` 区分，请求体与响应体字段均为 PascalCase。
+
+**Base URL**: `https://api.dreamto.ai`
+
+---
+
+## 认证方式
+
+所有接口均需要在请求头中携带 API Key 进行认证：
+
+```
+Authorization: Bearer {YOUR_API_KEY}
+```
+
+认证失败时返回 HTTP 401：
+
+```json
+{
+  "ResponseMetadata": {
+    "RequestId": "req_3f9a1c2b7d4e5f60718293a4",
+    "Action": "CreateAssetGroup",
+    "Version": "2024-01-01",
+    "Error": {
+      "Code": "InvalidAuthorization",
+      "Message": "API Key 无效"
+    }
+  }
+}
+```
+
+---
+
+## 调用约定
+
+```
+POST /api/v3/assets?Action={Action}&Version=2024-01-01
+Content-Type: application/json
+```
+
+| Query 参数 | 必填 | 说明 |
+|---|---|---|
+| Action | 是 | 操作名，见 [Action 清单](#action-清单) |
+| Version | 是 | 固定为 `2024-01-01` |
+
+请求体字段名为 PascalCase，只接受各 Action 文档列出的字段（含 `Filter` 内的字段）。多传或拼错的字段返回 HTTP 400 `InvalidParameter`（`不支持的参数：xxx`），不会被静默忽略。
+
+**成功响应**（HTTP 200）：
+
+```json
+{
+  "ResponseMetadata": {
+    "RequestId": "req_3f9a1c2b7d4e5f60718293a4",
+    "Action": "CreateAsset",
+    "Version": "2024-01-01"
+  },
+  "Result": {
+    "Id": "asset-20261111083012-k3x9a7b2"
+  }
+}
+```
+
+**失败响应**（HTTP 4xx / 5xx）：不含 `Result`，错误信息在 `ResponseMetadata.Error` 中，详见 [错误码](#错误码)。
+
+> `RequestId` 为本次请求的追踪 ID，排查问题时请一并提供。
+
+---
+
+## Action 清单
+
+每个 Action 的请求参数、返回字段与错误码见对应的 API 参考页（含 Try it 在线调试，参数说明由 Gateway 源码自动生成）：
+
+| Action | 说明 |
+|---|---|
+| [CreateAssetGroup](/api-reference/assets/create-asset-group) | 创建素材组 |
+| [GetAssetGroup](/api-reference/assets/get-asset-group) | 查询单个素材组 |
+| [ListAssetGroups](/api-reference/assets/list-asset-groups) | 分页查询素材组 |
+| [UpdateAssetGroup](/api-reference/assets/update-asset-group) | 修改素材组名称 / 描述 |
+| [DeleteAssetGroup](/api-reference/assets/delete-asset-group) | 删除素材组（连同组内素材） |
+| [CreateAsset](/api-reference/assets/create-asset) | 创建素材（异步） |
+| [GetAsset](/api-reference/assets/get-asset) | 查询单个素材及处理状态 |
+| [ListAssets](/api-reference/assets/list-assets) | 分页查询素材 |
+| [UpdateAsset](/api-reference/assets/update-asset) | 修改素材名称 |
+| [DeleteAsset](/api-reference/assets/delete-asset) | 删除单个素材 |
+
+**典型流程**：CreateAssetGroup → CreateAsset → 轮询 GetAsset 直到 `Status` 为 `Active` → 在生成任务中引用 `asset://<素材Id>`。
+
+**Id 格式**：素材组 Id 形如 `group-20261111083000-p7m2q4ab`，素材 Id 形如 `asset-20261111083012-k3x9a7b2`（`<类型>-<UTC 时间 yyyymmddhhmmss>-<8 位小写字母数字>`），由 DreamTo 签发。
+
+---
+
+## 完整示例
+
+创建素材组、上传素材并等待可用：
+
+<CodeGroup>
+
+```python Python
+import os
+import time
+
+import requests
+
+API = "https://api.dreamto.ai/api/v3/assets"
+HEADERS = {"Authorization": f"Bearer {os.environ['DREAMTO_API_KEY']}"}
+
+
+def call(action: str, body: dict) -> dict:
+    resp = requests.post(
+        API,
+        params={"Action": action, "Version": "2024-01-01"},
+        headers=HEADERS,
+        json=body,
+        timeout=30,
+    )
+    data = resp.json()
+    error = data.get("ResponseMetadata", {}).get("Error")
+    if resp.status_code != 200 or error:
+        raise RuntimeError(f"{action} HTTP {resp.status_code}: {error}")
+    return data["Result"]
+
+
+group = call("CreateAssetGroup", {"Name": "虚拟人A", "Description": "主播形象素材"})
+asset = call("CreateAsset", {
+    "GroupId": group["Id"],
+    "URL": "https://example.com/figure-front.jpg",
+    "AssetType": "Image",
+    "Name": "全身正面图",
+})
+
+while True:
+    info = call("GetAsset", {"Id": asset["Id"]})
+    if info["Status"] == "Active":
+        print("ready:", f"asset://{info['Id']}")
+        break
+    if info["Status"] == "Failed":
+        raise RuntimeError(info["Error"])
+    time.sleep(4)
+```
+
+```javascript Node.js
+const API = "https://api.dreamto.ai/api/v3/assets";
+
+async function call(action, body) {
+  const resp = await fetch(`${API}?Action=${action}&Version=2024-01-01`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.DREAMTO_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await resp.json();
+  const error = data.ResponseMetadata?.Error;
+  if (!resp.ok || error) throw new Error(`${action} HTTP ${resp.status}: ${JSON.stringify(error)}`);
+  return data.Result;
+}
+
+const group = await call("CreateAssetGroup", { Name: "虚拟人A", Description: "主播形象素材" });
+const asset = await call("CreateAsset", {
+  GroupId: group.Id,
+  URL: "https://example.com/figure-front.jpg",
+  AssetType: "Image",
+  Name: "全身正面图",
+});
+
+for (;;) {
+  const info = await call("GetAsset", { Id: asset.Id });
+  if (info.Status === "Active") {
+    console.log("ready:", `asset://${info.Id}`);
+    break;
+  }
+  if (info.Status === "Failed") throw new Error(JSON.stringify(info.Error));
+  await new Promise((r) => setTimeout(r, 4000));
+}
+```
+
+</CodeGroup>
+
+说明：
+
+- CreateAsset 为**异步**：返回 Id 时素材状态为 `Processing`，变为 `Active` 后才能用于生成。处理耗时取决于文件大小，视频素材耗时更长，建议每 3~5 秒轮询一次。
+- 平台会保存一份素材副本。处理完成后，创建时传入的原始地址失效（如签名链接过期）不影响使用。
+- 单个文件不超过 100MB；文件实际类型须与 `AssetType` 一致。
+- 删除素材组会**一并删除组内全部素材**，删除后不可恢复。
+
+---
+
+## 在视频生成中使用
+
+素材变为 `Active` 后，在生成任务 `content` 的 `image_url.url` / `video_url.url` / `audio_url.url` 中填写 `asset://<素材Id>`，用法与普通 URL 相同：
+
+```bash
+curl -X POST "https://api.dreamto.ai/api/v3/contents/generations/tasks" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "content": [
+      {
+        "type": "text",
+        "text": "图片1中的人物面带笑容，向镜头介绍产品"
+      },
+      {
+        "type": "image_url",
+        "image_url": { "url": "asset://asset-20261111083012-k3x9a7b2" },
+        "role": "reference_image"
+      }
+    ],
+    "ratio": "16:9",
+    "resolution": "720p"
+  }'
+```
+
+- `model` 取值与其余参数见 [API 全部参数](/api-reference/seedance/create-task)，完整示例见 [引用素材库素材](/video/seedance-2-0/scenarios/asset-reference)。
+- 同一请求中可以同时使用 `asset://` 素材与普通 URL。
+- 提示词中通过「图片1」「视频1」「音频1」按素材在 `content` 中的顺序引用，**不要**在提示词里直接写素材 Id。
+- 引用 `Processing` / `Failed` 状态、已删除、不存在或不属于当前账号的素材时，创建任务返回 HTTP 400（`invalid_parameter`），不会扣费。
+- 素材只能被创建它的账号使用，同一账号下的各个 API Key 可共用。
+- 平台服务升级或线路切换不影响已有素材：素材 Id 与 `asset://` 引用写法保持不变，无需重新上传。
+
+---
+
+## 素材处理失败原因
+
+素材 `Status` 为 `Failed` 时，`Error.Code` 可能取值如下。请按原因修正后重新调用 CreateAsset：
+
+| Error.Code | 说明 |
+|---|---|
+| `InvalidParameter.DownloadFailed` | 素材地址无法下载（链接失效、需要鉴权、返回空内容等） |
+| `InvalidParameter.InvalidURL` | 素材地址不是公网地址 |
+| `InvalidParameter.FileTooLarge` | 文件超过 100MB |
+| `InvalidParameter.AssetTypeMismatch` | 文件实际类型与 `AssetType` 不一致 |
+| `InvalidParameter.InvalidAsset` | 文件不是有效的图片 / 视频 / 音频，或规格不符 |
+| `InvalidParameter.SensitiveContentDetected` | 素材涉敏或涉版权，审核未通过 |
+| `InvalidParameter.*`（其他） | 分辨率、时长、格式等规格不符，`Message` 中给出具体原因 |
+| `InternalError` | 处理超时，请重新创建 |
+
+---
+
+## 错误码
+
+| HTTP | Error.Code | 常见触发原因 |
+|---|---|---|
+| 400 | `InvalidActionOrVersion` | 缺少 `Action`、`Action` 不存在，或 `Version` 不是 `2024-01-01` |
+| 400 | `InvalidParameter` | 参数缺失、格式错误或超出长度限制 |
+| 401 | `InvalidAuthorization` | 缺少 API Key 或 API Key 无效 |
+| 403 | `AccessDenied` | 账号无权访问 |
+| 404 | `ResourceNotFound` | 素材 / 素材组不存在或已删除 |
+| 413 | `InvalidParameter` | 请求体超过 1MB |
+| 429 | `RequestLimitExceeded` | 请求过于频繁，请稍后重试 |
+| 500 | `InternalError` | 服务内部错误，可稍后重试 |

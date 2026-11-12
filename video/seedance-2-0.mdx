@@ -1,0 +1,402 @@
+---
+title: "Seedance 2.0 视频生成"
+sidebarTitle: "概述"
+description: "Seedance 2.0 视频生成 API：支持文本、图片、视频、音频等多模态输入生成视频。"
+---
+
+## 概述
+
+Seedance 2.0 视频生成接口，支持文本、图片、视频、音频等多模态输入生成视频。请求体与响应体全程 snake_case，只有一个生成端点，模型由 `model` 字段指定。任务为异步执行：创建后获得任务 ID，再通过查询接口或回调通知获取结果。
+
+**特性**：
+- 🎬 **标准画质**：支持 480p / 720p / 1080p 三档输出
+- 🧠 **多模态理解**：融合图片、视频、音频等参考素材
+- 🎯 **生成方式自动判定**：按素材自动区分文生视频、图生视频、首尾帧、多图参考、视频编辑与延长
+- 🎞️ **帧数控制**：支持用 `frames` 直接指定总帧数
+- ⏱️ **智能时长**：传 `duration: -1` 由模型自选时长，按实际用量计费
+- 🔊 **默认生成音频**：`generate_audio` 未传时默认生成音频
+- 🔎 **联网搜索增强**：通过 `tools` 开启，让模型参考实时信息
+- 📦 **长期素材引用**：配合 [素材库](/assets/seedance-asset-library)，用 `asset://<素材Id>` 反复引用同一素材
+- 🔔 **回调通知**：任务完成后主动推送结果，支持签名校验
+
+**Base URL**: `https://api.dreamto.ai`
+
+<Warning>
+  **接入前必看（最常见的几个坑）**
+  - 路径带 `/api` 前缀：`https://api.dreamto.ai/api/v3/contents/generations/tasks`，少写 `/api` 会返回 404。
+  - 任务成功的状态值是 `succeeded`（不是 `success`）；处理中为 `running`，失败为 `failed`。回调体里的状态值另有约定，见 [任务回调](/webhooks/task-callback)。
+  - 视频地址在 `content.video_url`；它是直链，下载时**不要**带 `Authorization` 头，并请尽快转存到你自己的存储，不要当作长期地址。
+  - `generate_audio` 默认 `true`（生成音频）；不需要声音时显式传 `false`。
+  - 请求体只接受文档列出的字段，多传字段会返回 400 `不支持的参数：xxx`，不会被静默忽略。
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="API 全部参数（创建任务）" icon="sliders" href="/api-reference/seedance/create-task">
+    每个参数的类型、默认值、取值说明与报错条件；切换请求示例后可直接 Try it。
+  </Card>
+  <Card title="场景示例" icon="wand-magic-sparkles" href="/video/seedance-2-0/scenarios/text-to-video">
+    文生视频、图生视频、首尾帧、多图参考、视频编辑 / 延长、参考音频、联网搜索等完整示例。
+  </Card>
+  <Card title="查询任务" icon="magnifying-glass" href="/api-reference/seedance/get-task">
+    轮询任务状态，成功后获取视频下载地址。
+  </Card>
+  <Card title="任务回调" icon="bell" href="/webhooks/task-callback">
+    任务结束后主动推送结果，HMAC-SHA256 签名校验。
+  </Card>
+</CardGroup>
+
+<Info>
+  参数说明与 OpenAPI 定义由 Gateway 源码自动生成，与线上校验逻辑保持一致。
+</Info>
+
+<Note>
+  **在文档里调试（Try it）**：打开 [API 全部参数](/api-reference/seedance/create-task)，点「试一试」，在 `Authorization` 中填写 `Bearer <你的 API Key>`，用右上角下拉框切换场景示例后发送。Try it 调用的是**真实接口**，创建任务会真实生成并扣费；查询结果请用下方代码或「查询任务」页面。
+</Note>
+
+---
+
+## 调用流程
+
+<Steps>
+  <Step title="创建任务">
+    `POST /api/v3/contents/generations/tasks`，返回任务 `id`（`task_` 开头）。参数校验失败的请求不会创建任务，也不会扣费。详见 [创建视频生成任务](/api-reference/seedance/create-task)。
+  </Step>
+  <Step title="获取结果">
+    轮询 [查询任务](/api-reference/seedance/get-task)，或在创建时传 `callback_url` 接收 [任务回调](/webhooks/task-callback)。`status` 为 `succeeded` 时读取 `content.video_url`，为 `failed` 时读取 `error.message`。
+  </Step>
+  <Step title="保存视频">
+    `content.video_url` 为直接下载地址，请在任务成功后及时下载并保存到你自己的存储中。
+  </Step>
+</Steps>
+
+---
+
+## 快速开始
+
+下面的代码完成「创建任务 → 轮询 → 下载视频」完整流程，复制后设置环境变量 `DREAMTO_API_KEY` 即可运行。
+
+<CodeGroup>
+
+```python Python
+import os
+import time
+
+import requests
+
+API_KEY = os.environ["DREAMTO_API_KEY"]
+BASE_URL = "https://api.dreamto.ai"
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+TASKS_URL = f"{BASE_URL}/api/v3/contents/generations/tasks"
+
+
+def create_task() -> str:
+    resp = requests.post(TASKS_URL, headers=HEADERS, timeout=60, json={
+        "model": "seedance-2.0",
+        "content": [{"type": "text", "text": "写实风格，晴朗的蓝天之下，一大片白色的雏菊花田，镜头缓缓推进"}],
+        "ratio": "16:9",
+        "duration": 5,
+        "resolution": "720p",
+    })
+    if resp.status_code != 200:
+        raise RuntimeError(f"创建失败 HTTP {resp.status_code}: {resp.json()['error']['message']}")
+    return resp.json()["id"]
+
+
+def wait_for_task(task_id: str, timeout_seconds: int = 30 * 60) -> dict:
+    started = time.time()
+    while True:
+        elapsed = time.time() - started
+        task = requests.get(f"{TASKS_URL}/{task_id}", headers=HEADERS, timeout=30).json()
+        if task["status"] == "succeeded":
+            return task
+        if task["status"] == "failed":
+            raise RuntimeError(f"任务失败: {task['error']['message']}")
+        if elapsed > timeout_seconds:
+            raise TimeoutError(f"任务 {task_id} 超过 {timeout_seconds} 秒仍未完成")
+        # 前 30 秒每 3 秒，2 分钟内每 5 秒，之后每 10 秒
+        time.sleep(3 if elapsed < 30 else 5 if elapsed < 120 else 10)
+
+
+def download(video_url: str, path: str) -> None:
+    # 下载地址是直链，不要携带 Authorization 头
+    with requests.get(video_url, stream=True, timeout=300) as resp:
+        resp.raise_for_status()
+        with open(path, "wb") as file:
+            for chunk in resp.iter_content(chunk_size=1 << 20):
+                file.write(chunk)
+
+
+task_id = create_task()
+print("任务已创建:", task_id)
+task = wait_for_task(task_id)
+download(task["content"]["video_url"], f"{task_id}.mp4")
+print("已保存:", f"{task_id}.mp4", "用量:", task.get("usage"))
+```
+
+```javascript Node.js
+import { writeFile } from 'node:fs/promises';
+
+const API_KEY = process.env.DREAMTO_API_KEY;
+const BASE_URL = 'https://api.dreamto.ai';
+const TASKS_URL = `${BASE_URL}/api/v3/contents/generations/tasks`;
+const headers = { Authorization: `Bearer ${API_KEY}`, 'Content-Type': 'application/json' };
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// 1. 创建任务
+const created = await fetch(TASKS_URL, {
+  method: 'POST',
+  headers,
+  body: JSON.stringify({
+    model: 'seedance-2.0',
+    content: [{ type: 'text', text: '写实风格，晴朗的蓝天之下，一大片白色的雏菊花田，镜头缓缓推进' }],
+    ratio: '16:9',
+    duration: 5,
+    resolution: '720p',
+  }),
+});
+const createBody = await created.json();
+if (!created.ok) throw new Error(`创建失败 HTTP ${created.status}: ${createBody.error.message}`);
+const taskId = createBody.id;
+console.log('任务已创建:', taskId);
+
+// 2. 轮询直到结束
+const started = Date.now();
+let task;
+while (true) {
+  task = await (await fetch(`${TASKS_URL}/${taskId}`, { headers })).json();
+  if (task.status === 'succeeded') break;
+  if (task.status === 'failed') throw new Error(`任务失败: ${task.error.message}`);
+  const elapsed = (Date.now() - started) / 1000;
+  if (elapsed > 30 * 60) throw new Error(`任务 ${taskId} 超时`);
+  await sleep(elapsed < 30 ? 3000 : elapsed < 120 ? 5000 : 10000);
+}
+
+// 3. 下载视频（直链，不带 Authorization 头）
+const video = await fetch(task.content.video_url);
+if (!video.ok) throw new Error(`下载失败 HTTP ${video.status}`);
+await writeFile(`${taskId}.mp4`, Buffer.from(await video.arrayBuffer()));
+console.log('已保存:', `${taskId}.mp4`, '用量:', task.usage);
+```
+
+```bash cURL
+# 1. 创建任务，返回 {"id": "task_..."}
+curl https://api.dreamto.ai/api/v3/contents/generations/tasks \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "content": [{"type": "text", "text": "写实风格，晴朗的蓝天之下，一大片白色的雏菊花田，镜头缓缓推进"}],
+    "ratio": "16:9",
+    "duration": 5,
+    "resolution": "720p"
+  }'
+
+# 2. 查询任务（task_xxx 换成上一步返回的 id），直到 status 为 succeeded 或 failed
+curl https://api.dreamto.ai/api/v3/contents/generations/tasks/task_xxx \
+  -H "Authorization: Bearer $DREAMTO_API_KEY"
+
+# 3. 下载视频（content.video_url 是直链，不带 Authorization 头）
+curl -L -o output.mp4 "<content.video_url>"
+```
+
+</CodeGroup>
+
+### 成功响应
+
+查询接口在任务成功时返回（字段仅在有对应信息时出现，请按「可能不存在」做兼容解析）：
+
+```json
+{
+  "id": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
+  "model": "seedance-2.0",
+  "status": "succeeded",
+  "content": {
+    "video_url": "https://example-cdn.com/videos/2026/11/11/output.mp4"
+  },
+  "created_at": 1794384000,
+  "updated_at": 1794384196,
+  "duration": 5,
+  "ratio": "16:9",
+  "resolution": "720p",
+  "output_format": "mp4",
+  "usage": {
+    "completion_tokens": 108900,
+    "total_tokens": 108900
+  },
+  "request_id": "req_b2c4d6e8f0a1b3c5d7e9f1a2"
+}
+```
+
+`usage` 为本次生成的计费用量；失败任务返回 `error.code`（`task_failed`）与 `error.message`。
+
+---
+
+## 认证方式
+
+所有接口均需要在请求头中携带 API Key：
+
+```
+Authorization: Bearer {YOUR_API_KEY}
+```
+
+API Key 的获取与使用说明见 [认证方式](/authentication)。
+
+---
+
+## model 取值
+
+`model` 为**必填**字段，本文档对应的取值为：
+
+| model | 说明 |
+|-------|------|
+| `seedance-2.0` | Seedance 2.0 标准档 |
+
+`model` 缺失、不存在或当前账号未开放时返回 4xx 错误，详见 [错误码](#错误码)。查询接口中的 `model` 会原样回显创建任务时传入的值。
+
+---
+
+## 默认值与取值范围
+
+| 字段 | 默认值 | 取值范围 |
+|------|--------|---------|
+| `ratio` | `adaptive` | `adaptive` / `16:9` / `9:16` / `1:1` / `4:3` / `3:4` / `21:9` |
+| `duration` | `5` | 4 ~ 15 秒（整数），或 `-1` 智能时长 |
+| `resolution` | `720p` | `480p` / `720p` / `1080p` |
+| `frames` | 不传 | 正整数，与 `duration` 二选一，`frames` 优先 |
+| `generate_audio` | `true` | `true` / `false` |
+| `output_format` | 不传（默认 `mp4`） | `mp4` / `mov` |
+| `watermark` | `false` | `true` / `false` |
+| `bitrate_mode` | 不传（等同 `standard`） | `standard` / `high` |
+
+枚举值区分大小写，取值范围之外的值返回 HTTP 400（`invalid_parameter`），`error.param` 指出出错字段。请求体只接受文档列出的字段，传入表外字段返回 400（`不支持的参数：xxx`）。每个参数的完整说明见 [API 全部参数](/api-reference/seedance/create-task)。
+
+---
+
+## 素材与生成方式
+
+`content` 中必须至少包含一个 `text` 提示词，可再附带参考素材。生成方式由素材自动决定，无需传 `omni_reference_task_type`：
+
+| 传入的素材 | 生成方式 | 示例 |
+|---|---|---|
+| 仅 `text` | 文生视频 | [文生视频](/video/seedance-2-0/scenarios/text-to-video) |
+| `image_url` + `role: first_frame` | 图生视频（首帧） | [图生视频](/video/seedance-2-0/scenarios/image-to-video) |
+| `first_frame` + `last_frame` | 首尾帧过渡 | [首尾帧生视频](/video/seedance-2-0/scenarios/first-last-frame) |
+| 多个 `role: reference_image` | 多图参考 | [多图参考生视频](/video/seedance-2-0/scenarios/multi-image-reference) |
+| `video_url`（`reference_video`） | 视频编辑 / 延长 | [视频编辑](/video/seedance-2-0/scenarios/video-edit)、[视频延长](/video/seedance-2-0/scenarios/video-extend) |
+| `audio_url`（`reference_audio`） | 参考音频 | [参考音频](/video/seedance-2-0/scenarios/reference-audio) |
+
+**素材规格**（上限由模型决定，超限时任务以失败终态返回原因）：
+
+| 类型 | 数量 | 格式与限制 |
+|---|---|---|
+| 图片 | 最多 9 张 | jpeg / png / webp / bmp / tiff / gif，宽高比 0.4 ~ 2.5，边长 300 ~ 6000 px，单张最大 30 MB |
+| 视频 | 最多 3 个 | mp4 / mov，480p / 720p，2 ~ 15 秒，24 ~ 60 FPS，单个最大 50 MB |
+| 音频 | 最多 3 个 | wav / mp3，2 ~ 15 秒，单个最大 15 MB |
+
+素材 `url` 须为可公网访问的 `http` / `https` 地址，或素材库引用 `asset://<素材Id>`。在提示词中通过「图片1」「图片2」「视频1」「音频1」按顺序引用对应素材。
+
+---
+
+## 回调通知
+
+创建任务时提供 `callback_url`，任务结束（成功或失败）后平台向该地址发送 POST 请求。返回任意 2xx 视为投递成功，失败会在 1 分钟、5 分钟、30 分钟后重试。回调体结构与查询接口不同，签名算法、重试规则与校验代码见 [任务回调](/webhooks/task-callback)。
+
+<Tip>
+  回调只是加速通知的手段，请同时保留对查询接口的兜底轮询，并以查询接口返回的任务状态为准。
+</Tip>
+
+---
+
+## 错误码
+
+错误通过 HTTP 状态码与 `error` 对象返回：
+
+```json
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "duration 仅支持 4~15 秒或 -1(智能时长)",
+    "type": "invalid_request_error",
+    "http_status": 400,
+    "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+    "param": "duration"
+  },
+  "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+}
+```
+
+| HTTP | error.code | 常见触发原因 |
+|------|-----------|-------------|
+| 400 | `invalid_parameter` | 参数校验失败，`error.param` 指出字段；引用的素材未就绪或不可用 |
+| 400 | `invalid_request` | 请求格式错误等其他请求错误 |
+| 401 | `unauthorized` | API Key 无效或缺失 |
+| 402 | `insufficient_balance` | 余额不足 |
+| 403 | `forbidden` | 无权限访问该资源 |
+| 404 | `not_found` | 任务不存在；或模型不存在 / 未开放 |
+| 429 | `rate_limit_exceeded` | 请求过于频繁 |
+| 500 | `api_error` | 服务器内部错误，可重试 |
+| 502 / 503 / 504 | `service_unavailable` | 服务暂时不可用，可重试 |
+
+任务在生成过程中失败时，查询接口返回 HTTP 200，任务 `status` 为 `failed`，`error.code` 为 `task_failed`。完整说明见 [错误码](/errors)。
+
+---
+
+## 最佳实践
+
+### 1. 轮询策略
+
+- 前 30 秒：每 3 秒查询一次
+- 30 秒 ~ 2 分钟：每 5 秒查询一次
+- 2 分钟后：每 10 秒查询一次
+
+同时提供 `callback_url` 时，可以把轮询间隔适当放大，作为回调丢失时的兜底。
+
+### 2. 结果保存
+
+`content.video_url` 为直接下载地址，请在任务成功后及时下载保存到你自己的存储中。
+
+### 3. Prompt 建议
+
+- 提示词长度：3 ~ 20,000 字符
+- 提示词 = 主体 + 运动，背景 + 运动，镜头 + 运动
+- 可以指定镜头运动（推进、拉远、环绕等）
+- 通过「图片1」「图片2」「视频1」「音频1」引用 content 中对应位置的参考素材
+- 生成结果不符合预期时，把抽象描述换成具象描述
+- 有明确效果预期时，建议先用生图模型生成符合预期的图片，再用图生视频
+
+---
+
+## 常见问题
+
+<AccordionGroup>
+  <Accordion title="Q1: frames 和 duration 都传了会怎样？">
+    `frames` 优先，`duration` 被忽略。使用 `frames` 时按实际生成用量计费。
+  </Accordion>
+  <Accordion title="Q2: 为什么传 duration 报错了？">
+    `duration` 只支持 4 ~ 15 之间的整数秒，或 `-1`（智能时长）。小数、字符串或范围外的值都会返回 HTTP 400（`duration 仅支持 4~15 秒或 -1(智能时长)`）。传 `-1` 时由模型自选时长，任务结束后按实际用量结算。
+  </Accordion>
+  <Accordion title="Q3: 查询响应里为什么缺少 duration、resolution 这些字段？">
+    这些字段仅在有对应信息时返回，恒定存在的只有 `id` / `model` / `status` / `created_at` / `updated_at` / `request_id`。请按「字段可能不存在」的方式做兼容解析。
+  </Accordion>
+  <Accordion title="Q4: 我传的 model 会被改写吗？">
+    不会。查询响应里的 `model` 原样回显创建任务时传入的值。
+  </Accordion>
+  <Accordion title="Q5: content 中可以不传 text 吗？">
+    不可以。必须包含至少一个 `text` 类型的内容项作为提示词，否则请求被拒绝（HTTP 400）。
+  </Accordion>
+  <Accordion title="Q6: 为什么返回「不支持的参数：xxx」？">
+    请求体只接受 [API 全部参数](/api-reference/seedance/create-task) 中列出的字段，多传的字段（例如拼写错误或其他平台的专有字段）会被拒绝，以免参数被静默忽略。请删除该字段后重试。
+  </Accordion>
+  <Accordion title="Q7: 视频链接可以长期使用吗？">
+    `content.video_url` 为直接下载地址，请在任务成功后及时下载保存，不要将其作为长期访问地址。
+  </Accordion>
+  <Accordion title="Q8: 回调和轮询应该用哪个？">
+    推荐两者结合：用 `callback_url` 及时获知结果，同时保留低频轮询兜底。回调重试耗尽或你的服务不可达时，仍可通过查询接口获取最终状态。
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## 技术支持
+
+如有疑问，请联系 DreamTo 技术支持团队，并提供响应头中的 `X-Request-Id` 与任务 `id`。

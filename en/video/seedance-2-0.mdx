@@ -1,0 +1,402 @@
+---
+title: "Seedance 2.0 video generation"
+sidebarTitle: "Overview"
+description: "Seedance 2.0 video generation API: generate videos from text, image, video and audio inputs."
+---
+
+## Overview
+
+The Seedance 2.0 video generation API turns text, images, videos and audio into video. Requests and responses use snake_case throughout; there is a single generation endpoint and the model is selected with `model`. Tasks run asynchronously: creation returns a task ID, and you get the result by polling or through a callback.
+
+**Features**:
+- 🎬 **Standard quality**: 480p / 720p / 1080p output
+- 🧠 **Multimodal understanding**: combines reference images, videos and audio
+- 🎯 **Automatic mode**: text-to-video, image-to-video, first/last frame, multi-image reference, video edit and extension are derived from the material
+- 🎞️ **Frame control**: set the exact frame count with `frames`
+- ⏱️ **Smart duration**: `duration: -1` lets the model choose the length; billed by actual usage
+- 🔊 **Audio by default**: audio is generated unless `generate_audio` is `false`
+- 🔎 **Web search**: enable with `tools` to use real-time information
+- 📦 **Long-lived assets**: reuse material from the [asset library](/en/assets/seedance-asset-library) via `asset://<asset Id>`
+- 🔔 **Callbacks**: results are pushed when tasks finish, with signature verification
+
+**Base URL**: `https://api.dreamto.ai`
+
+<Warning>
+  **Read before integrating (the most common mistakes)**
+  - The path includes the `/api` prefix: `https://api.dreamto.ai/api/v3/contents/generations/tasks`. Without `/api` you get 404.
+  - A successful task has status `succeeded` (not `success`); in progress is `running`, failure is `failed`. Callback bodies use their own status values, see [Task callback](/en/webhooks/task-callback).
+  - The video is at `content.video_url`. It is a direct link: do **not** send the `Authorization` header when downloading, and copy it to your own storage soon; do not treat it as a permanent URL.
+  - `generate_audio` defaults to `true` (audio is generated); pass `false` explicitly if you do not want sound.
+  - The request body only accepts documented fields. Extra fields return 400 `不支持的参数：xxx` (unsupported parameter) instead of being silently ignored.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="All parameters (create task)" icon="sliders" href="/en/api-reference/seedance/create-task">
+    Type, default, allowed values and error conditions of every parameter; switch the request example and try it live.
+  </Card>
+  <Card title="Scenarios" icon="wand-magic-sparkles" href="/en/video/seedance-2-0/scenarios/text-to-video">
+    Complete examples: text-to-video, image-to-video, first/last frame, multi-image reference, video edit / extension, reference audio, web search and more.
+  </Card>
+  <Card title="Get task" icon="magnifying-glass" href="/en/api-reference/seedance/get-task">
+    Poll the task status and get the video URL on success.
+  </Card>
+  <Card title="Task callback" icon="bell" href="/en/webhooks/task-callback">
+    Results pushed when tasks finish, verified with HMAC-SHA256.
+  </Card>
+</CardGroup>
+
+<Info>
+  Parameter docs and the OpenAPI definition are generated from the Gateway source code, so they always match the live validation.
+</Info>
+
+<Note>
+  **Try it in the docs**: open [All parameters](/en/api-reference/seedance/create-task), click "Try it", enter `Bearer <your API key>` as `Authorization`, pick a scenario from the example dropdown and send. Try it calls the **live API**: creating a task really generates a video and is billed. Fetch the result with the code below or the "Get task" page.
+</Note>
+
+---
+
+## Flow
+
+<Steps>
+  <Step title="Create a task">
+    `POST /api/v3/contents/generations/tasks` returns the task `id` (prefixed with `task_`). Requests rejected by validation create no task and are not charged. See [Create video task](/en/api-reference/seedance/create-task).
+  </Step>
+  <Step title="Get the result">
+    Poll [Get task](/en/api-reference/seedance/get-task), or pass `callback_url` at creation to receive a [task callback](/en/webhooks/task-callback). On `succeeded` read `content.video_url`; on `failed` read `error.message`.
+  </Step>
+  <Step title="Save the video">
+    `content.video_url` is a direct download URL. Download it to your own storage soon after the task succeeds.
+  </Step>
+</Steps>
+
+---
+
+## Quick start
+
+The code below runs the full "create task → poll → download video" flow. Copy it, set the `DREAMTO_API_KEY` environment variable and run.
+
+<CodeGroup>
+
+```python Python
+import os
+import time
+
+import requests
+
+API_KEY = os.environ["DREAMTO_API_KEY"]
+BASE_URL = "https://api.dreamto.ai"
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+TASKS_URL = f"{BASE_URL}/api/v3/contents/generations/tasks"
+
+
+def create_task() -> str:
+    resp = requests.post(TASKS_URL, headers=HEADERS, timeout=60, json={
+        "model": "seedance-2.0",
+        "content": [{"type": "text", "text": "Photorealistic, a vast field of white daisies under a clear blue sky, slow camera push-in"}],
+        "ratio": "16:9",
+        "duration": 5,
+        "resolution": "720p",
+    })
+    if resp.status_code != 200:
+        raise RuntimeError(f"Create failed HTTP {resp.status_code}: {resp.json()['error']['message']}")
+    return resp.json()["id"]
+
+
+def wait_for_task(task_id: str, timeout_seconds: int = 30 * 60) -> dict:
+    started = time.time()
+    while True:
+        elapsed = time.time() - started
+        task = requests.get(f"{TASKS_URL}/{task_id}", headers=HEADERS, timeout=30).json()
+        if task["status"] == "succeeded":
+            return task
+        if task["status"] == "failed":
+            raise RuntimeError(f"Task failed: {task['error']['message']}")
+        if elapsed > timeout_seconds:
+            raise TimeoutError(f"Task {task_id} not finished after {timeout_seconds} seconds")
+        # Every 3 s for the first 30 s, every 5 s up to 2 min, then every 10 s
+        time.sleep(3 if elapsed < 30 else 5 if elapsed < 120 else 10)
+
+
+def download(video_url: str, path: str) -> None:
+    # The download URL is a direct link: do not send the Authorization header
+    with requests.get(video_url, stream=True, timeout=300) as resp:
+        resp.raise_for_status()
+        with open(path, "wb") as file:
+            for chunk in resp.iter_content(chunk_size=1 << 20):
+                file.write(chunk)
+
+
+task_id = create_task()
+print("Task created:", task_id)
+task = wait_for_task(task_id)
+download(task["content"]["video_url"], f"{task_id}.mp4")
+print("Saved:", f"{task_id}.mp4", "usage:", task.get("usage"))
+```
+
+```javascript Node.js
+import { writeFile } from 'node:fs/promises';
+
+const API_KEY = process.env.DREAMTO_API_KEY;
+const BASE_URL = 'https://api.dreamto.ai';
+const TASKS_URL = `${BASE_URL}/api/v3/contents/generations/tasks`;
+const headers = { Authorization: `Bearer ${API_KEY}`, 'Content-Type': 'application/json' };
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// 1. Create the task
+const created = await fetch(TASKS_URL, {
+  method: 'POST',
+  headers,
+  body: JSON.stringify({
+    model: 'seedance-2.0',
+    content: [{ type: 'text', text: 'Photorealistic, a vast field of white daisies under a clear blue sky, slow camera push-in' }],
+    ratio: '16:9',
+    duration: 5,
+    resolution: '720p',
+  }),
+});
+const createBody = await created.json();
+if (!created.ok) throw new Error(`Create failed HTTP ${created.status}: ${createBody.error.message}`);
+const taskId = createBody.id;
+console.log('Task created:', taskId);
+
+// 2. Poll until the task finishes
+const started = Date.now();
+let task;
+while (true) {
+  task = await (await fetch(`${TASKS_URL}/${taskId}`, { headers })).json();
+  if (task.status === 'succeeded') break;
+  if (task.status === 'failed') throw new Error(`Task failed: ${task.error.message}`);
+  const elapsed = (Date.now() - started) / 1000;
+  if (elapsed > 30 * 60) throw new Error(`Task ${taskId} timed out`);
+  await sleep(elapsed < 30 ? 3000 : elapsed < 120 ? 5000 : 10000);
+}
+
+// 3. Download the video (direct link, no Authorization header)
+const video = await fetch(task.content.video_url);
+if (!video.ok) throw new Error(`Download failed HTTP ${video.status}`);
+await writeFile(`${taskId}.mp4`, Buffer.from(await video.arrayBuffer()));
+console.log('Saved:', `${taskId}.mp4`, 'usage:', task.usage);
+```
+
+```bash cURL
+# 1. Create the task; returns {"id": "task_..."}
+curl https://api.dreamto.ai/api/v3/contents/generations/tasks \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "content": [{"type": "text", "text": "Photorealistic, a vast field of white daisies under a clear blue sky, slow camera push-in"}],
+    "ratio": "16:9",
+    "duration": 5,
+    "resolution": "720p"
+  }'
+
+# 2. Get the task (replace task_xxx with the returned id) until status is succeeded or failed
+curl https://api.dreamto.ai/api/v3/contents/generations/tasks/task_xxx \
+  -H "Authorization: Bearer $DREAMTO_API_KEY"
+
+# 3. Download the video (content.video_url is a direct link: no Authorization header)
+curl -L -o output.mp4 "<content.video_url>"
+```
+
+</CodeGroup>
+
+### Successful response
+
+Get task returns the following once the task succeeds (fields appear only when the information exists, so parse them as optional):
+
+```json
+{
+  "id": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
+  "model": "seedance-2.0",
+  "status": "succeeded",
+  "content": {
+    "video_url": "https://example-cdn.com/videos/2026/11/11/output.mp4"
+  },
+  "created_at": 1794384000,
+  "updated_at": 1794384196,
+  "duration": 5,
+  "ratio": "16:9",
+  "resolution": "720p",
+  "output_format": "mp4",
+  "usage": {
+    "completion_tokens": 108900,
+    "total_tokens": 108900
+  },
+  "request_id": "req_b2c4d6e8f0a1b3c5d7e9f1a2"
+}
+```
+
+`usage` is the billed usage of this generation; failed tasks return `error.code` (`task_failed`) and `error.message`.
+
+---
+
+## Authentication
+
+Every endpoint requires an API Key in the request header:
+
+```
+Authorization: Bearer {YOUR_API_KEY}
+```
+
+See [Authentication](/en/authentication) for how to get and use an API Key.
+
+---
+
+## Model
+
+`model` is **required**. The value for this page is:
+
+| model | Description |
+|-------|------|
+| `seedance-2.0` | Seedance 2.0 standard tier |
+
+A missing, unknown or not-enabled `model` returns a 4xx error, see [Errors](#errors). The query endpoint echoes the `model` given at creation unchanged.
+
+---
+
+## Defaults and ranges
+
+| Field | Default | Allowed values |
+|------|--------|---------|
+| `ratio` | `adaptive` | `adaptive` / `16:9` / `9:16` / `1:1` / `4:3` / `3:4` / `21:9` |
+| `duration` | `5` | 4–15 seconds (integer), or `-1` for smart duration |
+| `resolution` | `720p` | `480p` / `720p` / `1080p` |
+| `frames` | omitted | Positive integer; alternative to `duration`, `frames` wins |
+| `generate_audio` | `true` | `true` / `false` |
+| `output_format` | omitted (`mp4`) | `mp4` / `mov` |
+| `watermark` | `false` | `true` / `false` |
+| `bitrate_mode` | omitted (= `standard`) | `standard` / `high` |
+
+Enum values are case-sensitive; values outside the range return HTTP 400 (`invalid_parameter`) with `error.param` naming the field. Only documented fields are accepted; any other field returns 400 (unsupported parameter). Every parameter is described in [All parameters](/en/api-reference/seedance/create-task).
+
+---
+
+## Material and generation modes
+
+`content` must contain at least one `text` prompt and may add reference material. The generation mode is derived from the material, so `omni_reference_task_type` is not needed:
+
+| Material | Mode | Example |
+|---|---|---|
+| `text` only | Text to video | [Text to video](/en/video/seedance-2-0/scenarios/text-to-video) |
+| `image_url` with `role: first_frame` | Image to video (first frame) | [Image to video](/en/video/seedance-2-0/scenarios/image-to-video) |
+| `first_frame` + `last_frame` | First/last frame transition | [First and last frame](/en/video/seedance-2-0/scenarios/first-last-frame) |
+| Several `role: reference_image` | Multi-image reference | [Multi-image reference](/en/video/seedance-2-0/scenarios/multi-image-reference) |
+| `video_url` (`reference_video`) | Video edit / extension | [Video editing](/en/video/seedance-2-0/scenarios/video-edit), [Video extension](/en/video/seedance-2-0/scenarios/video-extend) |
+| `audio_url` (`reference_audio`) | Reference audio | [Reference audio](/en/video/seedance-2-0/scenarios/reference-audio) |
+
+**Material limits** (enforced by the model; exceeding them makes the task end as `failed` with the reason):
+
+| Type | Count | Format and limits |
+|---|---|---|
+| Image | up to 9 | jpeg / png / webp / bmp / tiff / gif, aspect ratio 0.4–2.5, sides 300–6000 px, max 30 MB each |
+| Video | up to 3 | mp4 / mov, 480p / 720p, 2–15 s, 24–60 FPS, max 50 MB each |
+| Audio | up to 3 | wav / mp3, 2–15 s, max 15 MB each |
+
+Material `url`s must be public `http` / `https` URLs or asset-library references `asset://<asset Id>`. In the prompt, refer to material by position: "image 1", "image 2", "video 1", "audio 1" (图片1 / 视频1 / 音频1).
+
+---
+
+## Callbacks
+
+If `callback_url` is given at creation, the platform POSTs to it when the task finishes (succeeded or failed). Any 2xx counts as delivered; failures are retried after 1, 5 and 30 minutes. The callback body differs from the query response; see [Task callback](/en/webhooks/task-callback) for the signature algorithm, retries and verification code.
+
+<Tip>
+  Callbacks only speed up notification. Keep fallback polling and treat the query endpoint as the source of truth.
+</Tip>
+
+---
+
+## Errors
+
+Errors come with an HTTP status and an `error` object:
+
+```json
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "duration 仅支持 4~15 秒或 -1(智能时长)",
+    "type": "invalid_request_error",
+    "http_status": 400,
+    "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+    "param": "duration"
+  },
+  "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+}
+```
+
+| HTTP | error.code | Typical cause |
+|------|-----------|-------------|
+| 400 | `invalid_parameter` | Validation failed (`error.param` names the field); referenced asset not ready or unavailable |
+| 400 | `invalid_request` | Malformed request or other request errors |
+| 401 | `unauthorized` | Missing or invalid API Key |
+| 402 | `insufficient_balance` | Insufficient balance |
+| 403 | `forbidden` | No access to the resource |
+| 404 | `not_found` | Task not found; or model unknown / not enabled |
+| 429 | `rate_limit_exceeded` | Too many requests |
+| 500 | `api_error` | Internal error, retryable |
+| 502 / 503 / 504 | `service_unavailable` | Temporarily unavailable, retryable |
+
+A task that fails during generation is returned by the query endpoint with HTTP 200, `status: failed` and `error.code: task_failed`. Error messages are currently in Chinese. See [Errors](/en/errors).
+
+---
+
+## Best practices
+
+### 1. Polling
+
+- First 30 seconds: every 3 seconds
+- 30 seconds to 2 minutes: every 5 seconds
+- After 2 minutes: every 10 seconds
+
+When you also use `callback_url`, poll less often as a fallback for lost callbacks.
+
+### 2. Saving results
+
+`content.video_url` is a direct download URL; download and store the video soon after the task succeeds.
+
+### 3. Prompt tips
+
+- Prompt length: 3–20,000 characters
+- Prompt = subject + motion, background + motion, camera + motion
+- Specify camera moves (push in, pull out, orbit…)
+- Refer to material in `content` by position: "image 1", "image 2", "video 1", "audio 1"
+- If the result is off, replace abstract wording with concrete descriptions
+- For a precise look, generate a matching image first and then use image-to-video
+
+---
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Q1: What if I pass both frames and duration?">
+    `frames` wins and `duration` is ignored. With `frames`, billing follows actual usage.
+  </Accordion>
+  <Accordion title="Q2: Why is my duration rejected?">
+    `duration` accepts integers 4–15 or `-1` (smart duration). Decimals, strings and out-of-range values return HTTP 400. With `-1` the model picks the length and you are billed for actual usage.
+  </Accordion>
+  <Accordion title="Q3: Why are duration or resolution missing from the query response?">
+    They appear only when the information exists. Only `id` / `model` / `status` / `created_at` / `updated_at` / `request_id` are always present; parse the rest as optional.
+  </Accordion>
+  <Accordion title="Q4: Is my model value rewritten?">
+    No. The query response echoes the `model` you sent unchanged.
+  </Accordion>
+  <Accordion title="Q5: Can content omit text?">
+    No. At least one `text` item is required as the prompt, otherwise the request is rejected with HTTP 400.
+  </Accordion>
+  <Accordion title="Q6: Why do I get an unsupported parameter error (不支持的参数：xxx)?">
+    The body accepts only the fields listed in [All parameters](/en/api-reference/seedance/create-task). Extra fields (typos or other platforms' proprietary fields) are rejected so they are not silently ignored. Remove the field and retry.
+  </Accordion>
+  <Accordion title="Q7: Can I keep using the video URL?">
+    `content.video_url` is a direct download URL. Download and store the video promptly instead of using it as a long-term URL.
+  </Accordion>
+  <Accordion title="Q8: Callback or polling?">
+    Use both: `callback_url` for timely notification and low-frequency polling as a fallback. If callback retries are exhausted or your server is unreachable, the query endpoint still returns the final status.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Support
+
+Contact DreamTo support with the `X-Request-Id` response header and the task `id`.

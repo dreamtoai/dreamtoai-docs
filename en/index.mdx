@@ -1,0 +1,70 @@
+---
+title: "DreamTo API Docs"
+sidebarTitle: "Introduction"
+description: "Call DreamTo video generation, asset library and task callbacks through a unified HTTP API."
+---
+
+Welcome to the DreamTo Open Platform. These docs explain how to call the platform over HTTP. Currently available: **Seedance 2.0 video generation**, the **Seedance asset library** and **task callbacks**.
+
+**Base URL**: `https://api.dreamto.ai`
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/en/authentication">
+    Authenticate with an API Key in the `Authorization: Bearer` header.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/en/errors">
+    Unified error shape, HTTP status codes and troubleshooting with `request_id`.
+  </Card>
+  <Card title="Seedance 2.0 video generation" icon="film" href="/en/video/seedance-2-0">
+    Text-to-video, image-to-video, first/last frame, multi-image reference, video edit / extension, web search.
+  </Card>
+  <Card title="All parameters · Try it" icon="sliders" href="/en/api-reference/seedance/create-task">
+    Every parameter explained with its allowed values; pick a scenario example and try it live.
+  </Card>
+  <Card title="Seedance asset library" icon="box-archive" href="/en/assets/seedance-asset-library">
+    Store reference material long-term and reuse it in tasks via `asset://<asset Id>`.
+  </Card>
+  <Card title="Task callback" icon="bell" href="/en/webhooks/task-callback">
+    Results are pushed when tasks finish, signed with HMAC-SHA256.
+  </Card>
+</CardGroup>
+
+## Quickstart
+
+<Steps>
+  <Step title="Get an API Key">
+    Sign in to the DreamTo console and create an API Key on the **API Key** page.
+  </Step>
+  <Step title="Create a video task">
+    ```bash
+    curl -X POST "https://api.dreamto.ai/api/v3/contents/generations/tasks" \
+      -H "Authorization: Bearer $DREAMTO_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "seedance-2.0",
+        "content": [
+          { "type": "text", "text": "An orange cat stretches on a sunny windowsill, slow motion" }
+        ],
+        "ratio": "16:9",
+        "duration": 5,
+        "resolution": "720p"
+      }'
+    ```
+    On success you get the task ID: `{"id": "task_...", "request_id": "req_..."}`.
+  </Step>
+  <Step title="Get the result">
+    ```bash
+    curl "https://api.dreamto.ai/api/v3/contents/generations/tasks/task_xxx" \
+      -H "Authorization: Bearer $DREAMTO_API_KEY"
+    ```
+    When `status` is `succeeded`, download the video from `content.video_url`. You can also pass `callback_url` at creation to have the result pushed to you. See the [scenarios](/en/video/seedance-2-0/scenarios/text-to-video) for more.
+  </Step>
+</Steps>
+
+## Conventions
+
+- Requests and responses are JSON, UTF-8 encoded.
+- Video task endpoints use snake_case fields; the asset library is Action-style with PascalCase fields.
+- Every response carries an `X-Request-Id` header, and video task response bodies also carry a top-level `request_id`. Include it and the task `id` when contacting support.
+- Timestamps (`created_at` / `updated_at`) are Unix seconds; asset library times are UTC ISO 8601 strings.
+- Switch between 中文 and English at the top. Parameter docs and the OpenAPI definition in the API reference are generated from the Gateway source code.

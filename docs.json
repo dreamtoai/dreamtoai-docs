@@ -1,72 +1,186 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "DreamTo API",
+  "description": "DreamTo 开放平台 API 对接文档：视频生成、素材库与回调通知。",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#345C2D",
+    "light": "#AFFF9F",
+    "dark": "#345C2D"
   },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "pages": [
-      {
-        "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:support@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
-    }
+  "appearance": {
+    "default": "dark"
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+  },
+  "logo": {
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png",
+    "href": "https://www.dreamto.ai"
+  },
+  "favicon": "/logo/favicon.png",
+  "api": {
+    "examples": {
+      "prefill": true,
+      "languages": ["curl", "python", "javascript", "node", "go", "java", "php", "ruby", "csharp", "swift", "kotlin", "rust"]
+    }
+  },
+  "navigation": {
+    "languages": [
+      {
+        "language": "zh",
+        "default": true,
+        "groups": [
+          {
+            "group": "开始使用",
+            "pages": ["index", "authentication", "errors"]
+          },
+          {
+            "group": "视频生成",
+            "openapi": "openapi/zh.json",
+            "pages": [
+              {
+                "group": "Seedance 2.0",
+                "icon": "/icons/doubao.svg",
+                "pages": [
+                  "video/seedance-2-0",
+                  "POST /api/v3/contents/generations/tasks",
+                  "GET /api/v3/contents/generations/tasks/{id}",
+                  "GET /api/v3/contents/generations/tasks",
+                  "webhook seedanceTaskCompleted",
+                  {
+                    "group": "场景示例",
+                    "icon": "wand-magic-sparkles",
+                    "pages": [
+                      "video/seedance-2-0/scenarios/text-to-video",
+                      "video/seedance-2-0/scenarios/image-to-video",
+                      "video/seedance-2-0/scenarios/first-last-frame",
+                      "video/seedance-2-0/scenarios/multi-image-reference",
+                      "video/seedance-2-0/scenarios/video-edit",
+                      "video/seedance-2-0/scenarios/video-extend",
+                      "video/seedance-2-0/scenarios/reference-audio",
+                      "video/seedance-2-0/scenarios/web-search",
+                      "video/seedance-2-0/scenarios/asset-reference",
+                      "video/seedance-2-0/scenarios/frames",
+                      "video/seedance-2-0/scenarios/smart-duration-callback"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Seedance 素材库",
+                "icon": "/icons/doubao.svg",
+                "pages": [
+                  "assets/seedance-asset-library",
+                  {
+                    "group": "API 参考（Action）",
+                    "icon": "code",
+                    "pages": [
+                      "POST /api/v3/assets?Action=CreateAssetGroup&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=GetAssetGroup&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=ListAssetGroups&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=UpdateAssetGroup&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=DeleteAssetGroup&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=CreateAsset&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=GetAsset&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=ListAssets&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=UpdateAsset&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=DeleteAsset&Version=2024-01-01"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "group": "回调",
+            "pages": ["webhooks/task-callback"]
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": ["en/index", "en/authentication", "en/errors"]
+          },
+          {
+            "group": "Video generation",
+            "openapi": "openapi/en.json",
+            "pages": [
+              {
+                "group": "Seedance 2.0",
+                "icon": "/icons/doubao.svg",
+                "pages": [
+                  "en/video/seedance-2-0",
+                  "POST /api/v3/contents/generations/tasks",
+                  "GET /api/v3/contents/generations/tasks/{id}",
+                  "GET /api/v3/contents/generations/tasks",
+                  "webhook seedanceTaskCompleted",
+                  {
+                    "group": "Scenarios",
+                    "icon": "wand-magic-sparkles",
+                    "pages": [
+                      "en/video/seedance-2-0/scenarios/text-to-video",
+                      "en/video/seedance-2-0/scenarios/image-to-video",
+                      "en/video/seedance-2-0/scenarios/first-last-frame",
+                      "en/video/seedance-2-0/scenarios/multi-image-reference",
+                      "en/video/seedance-2-0/scenarios/video-edit",
+                      "en/video/seedance-2-0/scenarios/video-extend",
+                      "en/video/seedance-2-0/scenarios/reference-audio",
+                      "en/video/seedance-2-0/scenarios/web-search",
+                      "en/video/seedance-2-0/scenarios/asset-reference",
+                      "en/video/seedance-2-0/scenarios/frames",
+                      "en/video/seedance-2-0/scenarios/smart-duration-callback"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Seedance asset library",
+                "icon": "/icons/doubao.svg",
+                "pages": [
+                  "en/assets/seedance-asset-library",
+                  {
+                    "group": "API reference (Actions)",
+                    "icon": "code",
+                    "pages": [
+                      "POST /api/v3/assets?Action=CreateAssetGroup&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=GetAssetGroup&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=ListAssetGroups&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=UpdateAssetGroup&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=DeleteAssetGroup&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=CreateAsset&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=GetAsset&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=ListAssets&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=UpdateAsset&Version=2024-01-01",
+                      "POST /api/v3/assets?Action=DeleteAsset&Version=2024-01-01"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Callbacks",
+            "pages": ["en/webhooks/task-callback"]
+          }
+        ]
+      }
     ]
+  },
+  "navbar": {
+    "primary": {
+      "type": "button",
+      "label": "Console",
+      "href": "https://www.dreamto.ai"
+    }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "website": "https://www.dreamto.ai"
     }
   }
 }

@@ -1,0 +1,98 @@
+---
+title: "Authentication"
+description: "All endpoints use Bearer token authentication with an API Key."
+---
+
+## Get an API Key
+
+Sign in to the DreamTo console and create and copy an API Key on the **API Key** page. One account can have several API Keys, e.g. for different services or environments.
+
+<Warning>
+  An API Key is an account credential. Keep it on your servers only; never ship it in frontend code, mobile app packages or public repositories. If you suspect a leak, delete it in the console immediately and create a new one.
+</Warning>
+
+## Send it with each request
+
+Every endpoint requires the API Key in the request header:
+
+```
+Authorization: Bearer {YOUR_API_KEY}
+```
+
+<Tip>
+  When reading the API Key from config or environment variables, strip surrounding whitespace and stray quotes, otherwise it is treated as invalid.
+</Tip>
+
+<CodeGroup>
+
+```bash curl
+curl "https://api.dreamto.ai/api/v3/contents/generations/tasks?page_size=1" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY"
+```
+
+```python Python
+import os
+import requests
+
+resp = requests.get(
+    "https://api.dreamto.ai/api/v3/contents/generations/tasks",
+    params={"page_size": 1},
+    headers={"Authorization": f"Bearer {os.environ['DREAMTO_API_KEY'].strip()}"},
+    timeout=30,
+)
+print(resp.status_code, resp.json())
+```
+
+```javascript Node.js
+const resp = await fetch(
+  "https://api.dreamto.ai/api/v3/contents/generations/tasks?page_size=1",
+  { headers: { Authorization: `Bearer ${process.env.DREAMTO_API_KEY.trim()}` } }
+);
+console.log(resp.status, await resp.json());
+```
+
+</CodeGroup>
+
+## Authentication failures
+
+A missing or invalid API Key returns HTTP 401.
+
+Video task endpoints (`/api/v3/contents/generations/tasks*`):
+
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "API Key 无效",
+    "type": "authentication_error",
+    "http_status": 401,
+    "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+  },
+  "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+}
+```
+
+Asset library endpoints (`/api/v3/assets`) use the `ResponseMetadata` envelope:
+
+```json
+{
+  "ResponseMetadata": {
+    "RequestId": "req_3f9a1c2b7d4e5f60718293a4",
+    "Action": "CreateAssetGroup",
+    "Version": "2024-01-01",
+    "Error": {
+      "Code": "InvalidAuthorization",
+      "Message": "API Key 无效"
+    }
+  }
+}
+```
+
+<Note>
+  Error `message` texts are currently returned in Chinese; branch on the HTTP status and error code rather than the message.
+</Note>
+
+## Data ownership
+
+- Query a video task with the API Key that created it; tasks you cannot access or that do not exist return HTTP 404. The task list only returns tasks created by the current API Key.
+- Asset groups and assets belong to the account and are shared by all API Keys of that account; other accounts cannot query or reference them.

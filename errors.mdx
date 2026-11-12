@@ -1,0 +1,106 @@
+---
+title: "错误码"
+description: "视频任务接口与素材库接口的错误结构、HTTP 状态码与处理建议。"
+---
+
+DreamTo 接口通过**真实 HTTP 状态码 + 结构化错误体**返回错误。建议客户端优先按 HTTP 状态码做分支（可重试 / 需改参数 / 需充值），再用错误码做细分。
+
+## 视频任务接口
+
+适用于 `/api/v3/contents/generations/tasks` 下的全部接口（创建、查询、列表）。
+
+```json
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "duration 仅支持 4~15 秒或 -1(智能时长)",
+    "type": "invalid_request_error",
+    "http_status": 400,
+    "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+    "param": "duration"
+  },
+  "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| error.code | string | 错误码，见下表 |
+| error.message | string | 可直接展示给用户的错误描述 |
+| error.type | string | 错误大类 |
+| error.http_status | int | 与响应 HTTP 状态码一致 |
+| error.request_id | string | 本次请求 ID，与响应头 `X-Request-Id` 相同 |
+| error.param | string | 出错的参数名（仅参数校验错误返回，如 `duration`、`content[1]`） |
+| request_id | string | 本次请求 ID（顶层冗余，便于日志采集） |
+
+### 错误码列表
+
+| HTTP | error.code | 常见触发原因 | 处理建议 |
+|------|-----------|-------------|---------|
+| 400 | `invalid_parameter` | 参数校验未通过，`param` 指出具体字段，如 `content 不能为空`、`content 中必须包含 text 类型的提示词`、`duration 仅支持 4~15 秒或 -1(智能时长)`、`不支持的参数：xxx` | 按 `message` 修改参数后重试 |
+| 400 | `invalid_request` | 请求格式错误或业务规则不允许 | 修改请求后重试 |
+| 401 | `unauthorized` | API Key 缺失或无效 | 检查 `Authorization` 请求头 |
+| 402 | `insufficient_balance` | 账户余额不足 | 充值后重试 |
+| 403 | `forbidden` | 无权访问该资源或模型 | 联系我们开通权限 |
+| 404 | `not_found` | 任务不存在或不属于当前 API Key；模型不存在或未开放 | 核对任务 ID、API Key 与 `model` |
+| 429 | `rate_limit_exceeded` | 请求频率超过限制 | 退避后重试 |
+| 500 | `api_error` | 服务内部错误 | 稍后重试 |
+| 502 / 503 / 504 | `service_unavailable` | 服务暂时不可用或处理超时 | 稍后重试 |
+
+### 任务失败
+
+任务创建成功后在生成过程中失败时，查询接口返回 HTTP 200，任务对象的 `status` 为 `failed`，并带 `error` 对象：
+
+```json
+{
+  "id": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
+  "model": "seedance-2.0",
+  "status": "failed",
+  "error": {
+    "code": "task_failed",
+    "message": "视频生成失败，请重试"
+  },
+  "created_at": 1794384000,
+  "updated_at": 1794384120,
+  "request_id": "req_b2c4d6e8f0a1b3c5d7e9f1a2"
+}
+```
+
+任务失败终态的 `error.code` 固定为 `task_failed`，`error.message` 为可读的失败原因。
+
+## 素材库接口
+
+适用于 `POST /api/v3/assets?Action=...`。失败时不含 `Result`，错误信息在 `ResponseMetadata.Error` 中：
+
+```json
+{
+  "ResponseMetadata": {
+    "RequestId": "req_3f9a1c2b7d4e5f60718293a4",
+    "Action": "GetAsset",
+    "Version": "2024-01-01",
+    "Error": {
+      "Code": "ResourceNotFound",
+      "Message": "素材不存在或已删除"
+    }
+  }
+}
+```
+
+| HTTP | Error.Code | 常见触发原因 |
+|---|---|---|
+| 400 | `InvalidActionOrVersion` | 缺少 `Action`、`Action` 不存在，或 `Version` 不是 `2024-01-01` |
+| 400 | `InvalidParameter` | 参数缺失、格式错误或超出长度限制 |
+| 401 | `InvalidAuthorization` | 缺少 API Key 或 API Key 无效 |
+| 403 | `AccessDenied` | 账号无权访问 |
+| 404 | `ResourceNotFound` | 素材 / 素材组不存在或已删除 |
+| 413 | `InvalidParameter` | 请求体超过 1MB |
+| 429 | `RequestLimitExceeded` | 请求过于频繁，请稍后重试 |
+| 500 | `InternalError` | 服务内部错误，可稍后重试 |
+
+素材处理失败（`Status` 为 `Failed`）的原因码见 [素材处理失败原因](/assets/seedance-asset-library#素材处理失败原因)。
+
+## 排查建议
+
+- 所有响应（成功与失败）都带 `X-Request-Id` 响应头，是本次请求的唯一标识。联系技术支持时请提供该值与任务 `id` / 素材 `Id`。
+- `error.message` 已是面向用户的可读文本，可以直接展示，无需二次解析。
+- 4xx 错误（429 除外）通常需要修改请求后再重试；429 与 5xx 可以按指数退避重试。

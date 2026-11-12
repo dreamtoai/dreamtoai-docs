@@ -1,0 +1,110 @@
+---
+title: "Errors"
+description: "Error shapes, HTTP status codes and handling advice for the video task and asset library APIs."
+---
+
+DreamTo returns errors as **real HTTP status codes plus a structured error body**. Branch on the HTTP status first (retry / fix parameters / top up), then refine with the error code.
+
+<Note>
+  Error `message` texts are currently returned in Chinese. They are safe to show to users as-is; for program logic use the HTTP status, `error.code` and `error.param`.
+</Note>
+
+## Video task API
+
+Applies to every endpoint under `/api/v3/contents/generations/tasks` (create, query, list).
+
+```json
+{
+  "error": {
+    "code": "invalid_parameter",
+    "message": "duration 仅支持 4~15 秒或 -1(智能时长)",
+    "type": "invalid_request_error",
+    "http_status": 400,
+    "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+    "param": "duration"
+  },
+  "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+}
+```
+
+| Field | Type | Description |
+|------|------|------|
+| error.code | string | Error code, see below |
+| error.message | string | Readable error description |
+| error.type | string | Error category |
+| error.http_status | int | Same as the HTTP status code |
+| error.request_id | string | Request ID, same as the `X-Request-Id` header |
+| error.param | string | Offending parameter (validation errors only, e.g. `duration`, `content[1]`) |
+| request_id | string | Request ID (top-level copy for log collection) |
+
+### Error codes
+
+| HTTP | error.code | Typical cause | What to do |
+|------|-----------|-------------|---------|
+| 400 | `invalid_parameter` | Validation failed; `param` names the field, e.g. empty `content`, no `text` prompt, `duration` out of range, unsupported parameter | Fix the parameter per `message` and retry |
+| 400 | `invalid_request` | Malformed request or not allowed by business rules | Fix the request and retry |
+| 401 | `unauthorized` | Missing or invalid API Key | Check the `Authorization` header |
+| 402 | `insufficient_balance` | Insufficient balance | Top up and retry |
+| 403 | `forbidden` | No access to the resource or model | Contact us to enable access |
+| 404 | `not_found` | Task missing or not owned by this API Key; model unknown or not enabled | Check the task ID, API Key and `model` |
+| 429 | `rate_limit_exceeded` | Rate limit exceeded | Back off and retry |
+| 500 | `api_error` | Internal error | Retry later |
+| 502 / 503 / 504 | `service_unavailable` | Temporarily unavailable or timed out | Retry later |
+
+### Failed tasks
+
+When a created task fails during generation, the query endpoint returns HTTP 200 with `status: failed` and an `error` object:
+
+```json
+{
+  "id": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
+  "model": "seedance-2.0",
+  "status": "failed",
+  "error": {
+    "code": "task_failed",
+    "message": "视频生成失败，请重试"
+  },
+  "created_at": 1794384000,
+  "updated_at": 1794384120,
+  "request_id": "req_b2c4d6e8f0a1b3c5d7e9f1a2"
+}
+```
+
+`error.code` is always `task_failed` for failed tasks; `error.message` is the readable reason.
+
+## Asset library API
+
+Applies to `POST /api/v3/assets?Action=...`. Failed responses have no `Result`; the error is in `ResponseMetadata.Error`:
+
+```json
+{
+  "ResponseMetadata": {
+    "RequestId": "req_3f9a1c2b7d4e5f60718293a4",
+    "Action": "GetAsset",
+    "Version": "2024-01-01",
+    "Error": {
+      "Code": "ResourceNotFound",
+      "Message": "素材不存在或已删除"
+    }
+  }
+}
+```
+
+| HTTP | Error.Code | Typical cause |
+|---|---|---|
+| 400 | `InvalidActionOrVersion` | Missing or unknown `Action`, or `Version` is not `2024-01-01` |
+| 400 | `InvalidParameter` | Missing, malformed or too long parameters |
+| 401 | `InvalidAuthorization` | Missing or invalid API Key |
+| 403 | `AccessDenied` | The account has no access |
+| 404 | `ResourceNotFound` | Asset / group missing or deleted |
+| 413 | `InvalidParameter` | Request body larger than 1 MB |
+| 429 | `RequestLimitExceeded` | Too many requests |
+| 500 | `InternalError` | Internal error, retry later |
+
+Asset processing failure codes (`Status` = `Failed`) are listed in [Processing failures](/en/assets/seedance-asset-library#processing-failures).
+
+## Troubleshooting
+
+- Every response, success or failure, carries the `X-Request-Id` header. Include it and the task `id` / asset `Id` when contacting support.
+- `error.message` is already human-readable; no need to parse it further.
+- 4xx errors (except 429) usually need a corrected request; 429 and 5xx can be retried with exponential backoff.

@@ -1,0 +1,94 @@
+---
+title: "认证方式"
+description: "所有接口都使用 API Key 进行 Bearer Token 认证。"
+---
+
+## 获取 API Key
+
+登录 DreamTo 控制台，在 **API Key** 页面创建并复制 API Key。同一账号可以创建多个 API Key，分别用于不同业务或环境。
+
+<Warning>
+  API Key 等同于账号凭据，请只在服务端保存和使用，不要写入前端代码、移动端安装包或公开仓库。怀疑泄露时请立即在控制台删除并重新创建。
+</Warning>
+
+## 在请求中携带
+
+所有接口均需要在请求头中携带 API Key 进行认证：
+
+```
+Authorization: Bearer {YOUR_API_KEY}
+```
+
+<Tip>
+  从配置或环境变量读取 API Key 时，请去掉首尾空白与误拷贝的引号，否则会被判定为无效 Key。
+</Tip>
+
+<CodeGroup>
+
+```bash curl
+curl "https://api.dreamto.ai/api/v3/contents/generations/tasks?page_size=1" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY"
+```
+
+```python Python
+import os
+import requests
+
+resp = requests.get(
+    "https://api.dreamto.ai/api/v3/contents/generations/tasks",
+    params={"page_size": 1},
+    headers={"Authorization": f"Bearer {os.environ['DREAMTO_API_KEY'].strip()}"},
+    timeout=30,
+)
+print(resp.status_code, resp.json())
+```
+
+```javascript Node.js
+const resp = await fetch(
+  "https://api.dreamto.ai/api/v3/contents/generations/tasks?page_size=1",
+  { headers: { Authorization: `Bearer ${process.env.DREAMTO_API_KEY.trim()}` } }
+);
+console.log(resp.status, await resp.json());
+```
+
+</CodeGroup>
+
+## 认证失败
+
+缺少 API Key 或 API Key 无效时返回 HTTP 401。
+
+视频任务接口（`/api/v3/contents/generations/tasks*`）的错误结构：
+
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "API Key 无效",
+    "type": "authentication_error",
+    "http_status": 401,
+    "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+  },
+  "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+}
+```
+
+素材库接口（`/api/v3/assets`）使用 `ResponseMetadata` 结构：
+
+```json
+{
+  "ResponseMetadata": {
+    "RequestId": "req_3f9a1c2b7d4e5f60718293a4",
+    "Action": "CreateAssetGroup",
+    "Version": "2024-01-01",
+    "Error": {
+      "Code": "InvalidAuthorization",
+      "Message": "API Key 无效"
+    }
+  }
+}
+```
+
+## 数据归属
+
+- 视频任务请使用创建它的 API Key 查询；无权访问或不存在的任务返回 HTTP 404。任务列表接口只返回当前 API Key 创建的任务。
+- 素材库中的素材组与素材归属于账号，同一账号下的各个 API Key 可以共用；其他账号无法查询或引用。

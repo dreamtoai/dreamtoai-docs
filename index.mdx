@@ -1,20 +1,70 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "DreamTo API 文档"
+sidebarTitle: "简介"
+description: "通过统一的 HTTP 接口调用 DreamTo 平台的视频生成、素材库与任务回调能力。"
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+欢迎使用 DreamTo 开放平台。本文档介绍如何通过 HTTP 接口调用平台能力，当前已开放 **Seedance 2.0 视频生成**、**Seedance 素材库** 与 **任务回调通知**。
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+**Base URL**: `https://api.dreamto.ai`
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+<CardGroup cols={2}>
+  <Card title="认证方式" icon="key" href="/authentication">
+    使用 API Key 通过 `Authorization: Bearer` 请求头完成认证。
+  </Card>
+  <Card title="错误码" icon="triangle-exclamation" href="/errors">
+    统一的错误结构、HTTP 状态码与 `request_id` 排查方式。
+  </Card>
+  <Card title="Seedance 2.0 视频生成" icon="film" href="/video/seedance-2-0">
+    文生视频、图生视频、首尾帧、多图参考、视频编辑 / 延长、联网搜索增强。
+  </Card>
+  <Card title="API 全部参数 · 在线调试" icon="sliders" href="/api-reference/seedance/create-task">
+    每个参数的中英文说明与取值介绍，选择场景示例后直接 Try it。
+  </Card>
+  <Card title="Seedance 素材库" icon="box-archive" href="/assets/seedance-asset-library">
+    长期保存参考素材，在生成任务中通过 `asset://<素材Id>` 反复引用。
+  </Card>
+  <Card title="任务回调" icon="bell" href="/webhooks/task-callback">
+    任务完成后主动推送结果，支持 HMAC-SHA256 签名校验。
+  </Card>
+</CardGroup>
+
+## 快速开始
+
+<Steps>
+  <Step title="获取 API Key">
+    登录 DreamTo 控制台，在 **API Key** 页面创建 API Key。
+  </Step>
+  <Step title="创建视频生成任务">
+    ```bash
+    curl -X POST "https://api.dreamto.ai/api/v3/contents/generations/tasks" \
+      -H "Authorization: Bearer $DREAMTO_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "seedance-2.0",
+        "content": [
+          { "type": "text", "text": "一只橘猫在阳光下的窗台上伸懒腰，慢镜头" }
+        ],
+        "ratio": "16:9",
+        "duration": 5,
+        "resolution": "720p"
+      }'
+    ```
+    创建成功返回任务 ID：`{"id": "task_...", "request_id": "req_..."}`。
+  </Step>
+  <Step title="查询任务结果">
+    ```bash
+    curl "https://api.dreamto.ai/api/v3/contents/generations/tasks/task_xxx" \
+      -H "Authorization: Bearer $DREAMTO_API_KEY"
+    ```
+    `status` 为 `succeeded` 时，从 `content.video_url` 下载视频；也可以在创建任务时传 `callback_url`，由平台主动推送结果。更多用法见 [场景示例](/video/seedance-2-0/scenarios/text-to-video)。
+  </Step>
+</Steps>
+
+## 通用约定
+
+- 请求与响应均为 JSON，编码 UTF-8。
+- 视频任务接口字段全程使用 snake_case；素材库接口为 Action 风格，字段使用 PascalCase。
+- 每个响应都带 `X-Request-Id` 响应头，视频任务接口的响应体顶层同时带 `request_id`。排查问题时请提供该值与任务 `id`。
+- 时间戳字段（`created_at` / `updated_at`）为 Unix 秒；素材库时间字段为 UTC ISO 8601 字符串。
+- 文档右上角可切换中文 / English；API 参考页的参数说明与 OpenAPI 定义由 Gateway 源码自动生成。

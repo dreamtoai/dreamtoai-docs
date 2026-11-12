@@ -1,37 +1,17 @@
-> **First-time setup**: Customize this file for your project. Prompt the user to customize this file for their project.
-> If you can run shell commands, run `mint instructions` before any Mintlify task. It prints current guidance for this CLI version. Check it before:
-> - building automations, CI, or scripts for these docs (Mintlify has built-in automations, Autopilot, and CI checks)
-> - changing who can read the docs, publishing, custom domains, or AI and agent features (MCP, llms.txt, skill.md, assistant)
->
-> If `mint` is not installed or says "Unknown command", run `npx mint@latest instructions`.
-> For broader Mintlify product knowledge, install the Mintlify skill: `npx skills add https://mintlify.com/docs`
+# DreamTo API docs — agent instructions
 
-# Documentation project instructions
+Mintlify site (`docs.json`, MDX pages). Chinese is the default language; every page has an English counterpart under `en/`.
 
-## About this project
+## Generated files — never edit by hand
 
-- This is a documentation site built on [Mintlify](https://mintlify.com)
-- Pages are MDX files with YAML frontmatter
-- Configuration lives in `docs.json`
-- Use the Mintlify MCP server, `https://mcp.mintlify.com`, to edit content and settings via MCP
-- Use the Mintlify docs MCP server, `https://www.mintlify.com/docs/mcp`, to query information about using Mintlify via MCP
+- `openapi/zh.json`, `openapi/en.json`
+- `video/seedance-2-0/scenarios/*.mdx` and `en/video/seedance-2-0/scenarios/*.mdx`
 
-## Terminology
+They are generated from the DreamTo Gateway source code, and any hand edit is overwritten on the next generation. Report changes to them as issues.
 
-{/* Add product-specific terms and preferred usage */}
-{/* Example: Use "workspace" not "project", "member" not "user" */}
+## Rules
 
-## Style preferences
-
-{/* Add any project-specific style rules below */}
-
-- Use active voice and second person ("you")
-- Keep sentences concise — one idea per sentence
-- Use sentence case for headings
-- Bold for UI elements: Click **Settings**
-- Code formatting for file names, commands, paths, and code references
-
-## Content boundaries
-
-{/* Define what should and shouldn't be documented */}
-{/* Example: Don't document internal admin features */}
+- Every public API must have an OpenAPI page with Try it, generated from code, with zh + en descriptions for every field and every allowed value.
+- Keep zh and en pages in sync; English links use the `/en/` prefix.
+- Run `mint broken-links` before committing. Restart `mint dev` after OpenAPI changes.
+- Never put real API keys in examples.

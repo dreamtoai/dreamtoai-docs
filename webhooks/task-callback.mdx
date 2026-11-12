@@ -1,0 +1,223 @@
+---
+title: "任务回调"
+description: "任务进入终态后，DreamTo 向创建任务时提供的 callback_url 推送结果，并使用 HMAC-SHA256 签名。"
+---
+
+## 概述
+
+创建视频生成任务时传入 `callback_url`，任务完成（成功或失败）后，平台会向该地址发送一次 `POST` 请求通知结果。回调体结构与查询接口不同，请单独实现解析。
+
+```json
+{
+  "model": "seedance-2.0",
+  "content": [{ "type": "text", "text": "一只橘猫在阳光下的窗台上伸懒腰，慢镜头" }],
+  "callback_url": "https://your-server.example.com/dreamto/callback"
+}
+```
+
+- `callback_url` 必须是 `http` / `https` 地址，否则创建任务返回 HTTP 400（`callback_url 必须是 http/https 地址`）。
+- 回调地址解析到私网、回环或链路本地地址时，平台拒绝投递，请使用可公网访问的地址。
+- 回调只是加速通知的手段，建议同时保留对 [查询任务状态](/api-reference/seedance/get-task) 的低频轮询兜底。
+
+该回调的 OpenAPI 定义与逐字段说明见 [任务完成回调](/api-reference/seedance/task-callback)。
+
+---
+
+## 请求格式
+
+**Headers**
+
+| Header | 说明 |
+|---|---|
+| `Content-Type` | 固定 `application/json` |
+| `X-DreamTo-Event` | 事件类型，当前固定为 `task.completed` |
+| `X-DreamTo-Timestamp` | 签名时间戳，与 body 中的 `timestamp` 相同（UTC，ISO 8601，如 `2026-11-11T08:03:16Z`）；每次投递（含重试）重新生成 |
+| `X-DreamTo-Signature` | 签名（小写 hex）。账号未生成 Webhook 签名密钥时**不发送**该头 |
+
+**Body**
+
+```json
+{
+  "event": "task.completed",
+  "taskId": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
+  "status": "success",
+  "result": ["https://example-cdn.com/videos/2026/11/11/output.mp4"],
+  "errorMsg": "",
+  "timestamp": "2026-11-11T08:03:16Z",
+  "signature": "5d0c1b7e9a..."
+}
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| event | string | 事件类型，固定 `task.completed` |
+| taskId | string | 任务 ID，与创建接口返回的 `id` 相同（`task_` 开头） |
+| status | string | `success`（成功）/ `failed`（失败）。注意与查询接口的 `succeeded` / `failed` 取值不同 |
+| result | string[] | 成功时为视频下载地址数组；失败时为 `[]` |
+| errorMsg | string | 失败原因；成功时为空串 |
+| timestamp | string | 签名时间戳，与 `X-DreamTo-Timestamp` 相同 |
+| signature | string | 签名，与 `X-DreamTo-Signature` 相同；未生成密钥时为空串 |
+
+失败回调示例：
+
+```json
+{
+  "event": "task.completed",
+  "taskId": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
+  "status": "failed",
+  "result": [],
+  "errorMsg": "视频生成失败，请重试",
+  "timestamp": "2026-11-11T08:02:00Z",
+  "signature": "a41f09c2d3..."
+}
+```
+
+<Note>
+  `result` 中的视频地址为直接下载地址，请在收到回调后及时下载保存。
+</Note>
+
+---
+
+## 签名密钥
+
+签名密钥（Webhook 签名密钥）按账号生成，在 **控制台 → API Key 页面 → Webhook 签名密钥** 中查看、生成或重置：
+
+- 密钥格式为 `whsec_` 加 48 位小写十六进制字符，例如 `whsec_3c6e0b8a5f1d4e2c9b7a6f5e4d3c2b1a0f9e8d7c6b5a4f3e`。
+- 重置后旧密钥**立即失效**，之后发出的回调都使用新密钥签名，请先更新服务端配置再重置，或在切换期间同时接受新旧密钥。
+- 未生成密钥时，回调不带 `X-DreamTo-Signature` 头，body 中 `signature` 为空串。生产环境强烈建议生成密钥并校验签名。
+
+---
+
+## 签名算法
+
+```
+signature = hex( HMAC_SHA256( key = secret, message = timestamp + "." + taskId + "." + status ) )
+```
+
+- `secret`：控制台中的完整 Webhook 签名密钥字符串（含 `whsec_` 前缀），按 UTF-8 编码作为 HMAC 密钥。
+- `timestamp`、`taskId`、`status`：取回调 body 中对应字段的原始字符串值，用英文句点 `.` 连接。
+- 结果为小写十六进制字符串。
+
+以上文成功回调为例，参与签名的字符串为：
+
+```
+2026-11-11T08:03:16Z.task_8c1d2e3f4a5b6c7d8e9f0a1b.success
+```
+
+### 校验步骤
+
+1. 读取请求头 `X-DreamTo-Signature` 与 `X-DreamTo-Timestamp`，并解析 JSON body。
+2. 确认请求头中的时间戳与 body 中的 `timestamp` 一致。
+3. 用你的密钥按上述算法计算签名，并与 `X-DreamTo-Signature` 做**常量时间比较**。
+4. 校验通过后再处理业务；校验失败返回 `401`，不要处理该回调。
+
+<Tip>
+  签名覆盖 `timestamp`、`taskId` 与 `status`。如需对结果地址做强校验，可在收到回调后用 `taskId` 调用 [查询任务状态](/api-reference/seedance/get-task) 获取权威结果。
+</Tip>
+
+### 校验代码
+
+<CodeGroup>
+
+```python Python
+import hashlib
+import hmac
+import json
+import os
+
+from flask import Flask, abort, request
+
+app = Flask(__name__)
+WEBHOOK_SECRET = os.environ["DREAMTO_WEBHOOK_SECRET"]  # whsec_...
+
+
+def expected_signature(secret: str, timestamp: str, task_id: str, status: str) -> str:
+    message = f"{timestamp}.{task_id}.{status}".encode("utf-8")
+    return hmac.new(secret.encode("utf-8"), message, hashlib.sha256).hexdigest()
+
+
+@app.post("/dreamto/callback")
+def dreamto_callback():
+    payload = json.loads(request.get_data())
+    signature = request.headers.get("X-DreamTo-Signature", "")
+    timestamp = request.headers.get("X-DreamTo-Timestamp", "")
+
+    if not signature or timestamp != payload.get("timestamp"):
+        abort(401)
+    expected = expected_signature(
+        WEBHOOK_SECRET, payload["timestamp"], payload["taskId"], payload["status"]
+    )
+    if not hmac.compare_digest(expected, signature):
+        abort(401)
+
+    # 按 taskId 幂等处理：同一任务可能因重试收到多次回调
+    if payload["status"] == "success":
+        video_url = payload["result"][0]
+        # TODO: 尽快下载 video_url 并保存
+    else:
+        error_msg = payload["errorMsg"]
+        # TODO: 记录失败原因
+    return "", 204
+```
+
+```javascript Node.js
+import crypto from "node:crypto";
+import express from "express";
+
+const app = express();
+const WEBHOOK_SECRET = process.env.DREAMTO_WEBHOOK_SECRET; // whsec_...
+
+function expectedSignature(secret, timestamp, taskId, status) {
+  return crypto
+    .createHmac("sha256", secret)
+    .update(`${timestamp}.${taskId}.${status}`, "utf8")
+    .digest("hex");
+}
+
+function safeEqual(a, b) {
+  const left = Buffer.from(a, "utf8");
+  const right = Buffer.from(b, "utf8");
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+app.post("/dreamto/callback", express.json(), (req, res) => {
+  const payload = req.body;
+  const signature = req.get("X-DreamTo-Signature") || "";
+  const timestamp = req.get("X-DreamTo-Timestamp") || "";
+
+  if (!signature || timestamp !== payload.timestamp) return res.sendStatus(401);
+  const expected = expectedSignature(WEBHOOK_SECRET, payload.timestamp, payload.taskId, payload.status);
+  if (!safeEqual(expected, signature)) return res.sendStatus(401);
+
+  // 按 taskId 幂等处理：同一任务可能因重试收到多次回调
+  if (payload.status === "success") {
+    const videoUrl = payload.result[0];
+    // TODO: 尽快下载 videoUrl 并保存
+  } else {
+    // TODO: 记录 payload.errorMsg
+  }
+  res.sendStatus(204);
+});
+
+app.listen(3000);
+```
+
+</CodeGroup>
+
+---
+
+## 投递与重试
+
+| 项目 | 规则 |
+|---|---|
+| 请求方法 | `POST` |
+| 超时 | 10 秒 |
+| 成功判定 | 返回任意 `2xx` 状态码 |
+| 重试 | 首次投递失败后，分别在 1 分钟、5 分钟、30 分钟后重试，共最多投递 4 次 |
+| 地址限制 | 仅 `http` / `https`；解析到私网 / 回环 / 链路本地地址时拒绝投递 |
+
+**建议**：
+
+- 收到回调后先快速返回 `2xx`，再异步处理下载等耗时操作，避免超时触发重试。
+- 以 `taskId` 做幂等去重：网络抖动或超时可能导致同一任务收到多次回调。
+- 重试全部失败后不再投递，请通过 [查询任务状态](/api-reference/seedance/get-task) 或 [查询任务列表](/api-reference/seedance/list-tasks) 补偿获取结果。

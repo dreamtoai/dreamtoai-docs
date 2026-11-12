@@ -1,0 +1,272 @@
+---
+title: "Seedance asset library"
+sidebarTitle: "Overview"
+description: "Store reference material for video generation long-term and reuse it in Seedance tasks via asset://<asset Id>."
+---
+
+<Warning>
+  **Only needed if you store and reuse material long-term.** To use an image / video / audio in a single task, simply put a public URL in the task `content`; no asset library integration is required.
+</Warning>
+
+## Overview
+
+The asset library stores reference material for video generation (images / videos / audio, typically for virtual human avatars). Upload once and reuse it in [Seedance 2.0](/en/video/seedance-2-0) tasks as `asset://<asset Id>`.
+
+- 📦 **Asset groups**: keep all material of one subject in the same group for management and search
+- ⏳ **Asynchronous processing**: creation returns an Id immediately; the asset is usable once `Processing` becomes `Active`
+- ♻️ **Long-lived**: assets do not expire and can be referenced until deleted
+- 🔁 **Stable references**: Ids are issued by DreamTo; existing Ids and `asset://` references keep working across platform upgrades and route switches, no re-upload needed
+
+The API is **Action-style**: every operation is `POST /api/v3/assets`, selected by the `Action` query parameter. Request and response fields are PascalCase.
+
+**Base URL**: `https://api.dreamto.ai`
+
+---
+
+## Authentication
+
+Every endpoint requires an API Key in the request header:
+
+```
+Authorization: Bearer {YOUR_API_KEY}
+```
+
+Authentication failures return HTTP 401:
+
+```json
+{
+  "ResponseMetadata": {
+    "RequestId": "req_3f9a1c2b7d4e5f60718293a4",
+    "Action": "CreateAssetGroup",
+    "Version": "2024-01-01",
+    "Error": {
+      "Code": "InvalidAuthorization",
+      "Message": "API Key 无效"
+    }
+  }
+}
+```
+
+---
+
+## Conventions
+
+```
+POST /api/v3/assets?Action={Action}&Version=2024-01-01
+Content-Type: application/json
+```
+
+| Query parameter | Required | Description |
+|---|---|---|
+| Action | Yes | Operation name, see [Actions](#actions) |
+| Version | Yes | Always `2024-01-01` |
+
+Body fields are PascalCase and only the fields documented for each Action are accepted (including those inside `Filter`). Extra or misspelled fields return HTTP 400 `InvalidParameter` (`不支持的参数：xxx`, unsupported parameter) instead of being silently ignored.
+
+**Success** (HTTP 200):
+
+```json
+{
+  "ResponseMetadata": {
+    "RequestId": "req_3f9a1c2b7d4e5f60718293a4",
+    "Action": "CreateAsset",
+    "Version": "2024-01-01"
+  },
+  "Result": {
+    "Id": "asset-20261111083012-k3x9a7b2"
+  }
+}
+```
+
+**Failure** (HTTP 4xx / 5xx): no `Result`; the error is in `ResponseMetadata.Error`, see [Errors](#errors).
+
+> `RequestId` traces the request; include it when contacting support.
+
+---
+
+## Actions
+
+Each Action's parameters, result fields and errors are on its API reference page (with Try it; parameter docs are generated from the Gateway source code):
+
+| Action | Description |
+|---|---|
+| [CreateAssetGroup](/en/api-reference/assets/create-asset-group) | Create an asset group |
+| [GetAssetGroup](/en/api-reference/assets/get-asset-group) | Get one asset group |
+| [ListAssetGroups](/en/api-reference/assets/list-asset-groups) | List asset groups |
+| [UpdateAssetGroup](/en/api-reference/assets/update-asset-group) | Rename / re-describe a group |
+| [DeleteAssetGroup](/en/api-reference/assets/delete-asset-group) | Delete a group (and its assets) |
+| [CreateAsset](/en/api-reference/assets/create-asset) | Create an asset (asynchronous) |
+| [GetAsset](/en/api-reference/assets/get-asset) | Get one asset and its status |
+| [ListAssets](/en/api-reference/assets/list-assets) | List assets |
+| [UpdateAsset](/en/api-reference/assets/update-asset) | Rename an asset |
+| [DeleteAsset](/en/api-reference/assets/delete-asset) | Delete an asset |
+
+**Typical flow**: CreateAssetGroup → CreateAsset → poll GetAsset until `Status` is `Active` → reference `asset://<asset Id>` in tasks.
+
+**Id format**: group Ids look like `group-20261111083000-p7m2q4ab`, asset Ids like `asset-20261111083012-k3x9a7b2` (`<type>-<UTC yyyymmddhhmmss>-<8 lowercase alphanumerics>`), issued by DreamTo.
+
+---
+
+## Complete example
+
+Create a group, upload an asset and wait until it is ready:
+
+<CodeGroup>
+
+```python Python
+import os
+import time
+
+import requests
+
+API = "https://api.dreamto.ai/api/v3/assets"
+HEADERS = {"Authorization": f"Bearer {os.environ['DREAMTO_API_KEY']}"}
+
+
+def call(action: str, body: dict) -> dict:
+    resp = requests.post(
+        API,
+        params={"Action": action, "Version": "2024-01-01"},
+        headers=HEADERS,
+        json=body,
+        timeout=30,
+    )
+    data = resp.json()
+    error = data.get("ResponseMetadata", {}).get("Error")
+    if resp.status_code != 200 or error:
+        raise RuntimeError(f"{action} HTTP {resp.status_code}: {error}")
+    return data["Result"]
+
+
+group = call("CreateAssetGroup", {"Name": "Avatar A", "Description": "Host avatar material"})
+asset = call("CreateAsset", {
+    "GroupId": group["Id"],
+    "URL": "https://example.com/figure-front.jpg",
+    "AssetType": "Image",
+    "Name": "Full-body front",
+})
+
+while True:
+    info = call("GetAsset", {"Id": asset["Id"]})
+    if info["Status"] == "Active":
+        print("ready:", f"asset://{info['Id']}")
+        break
+    if info["Status"] == "Failed":
+        raise RuntimeError(info["Error"])
+    time.sleep(4)
+```
+
+```javascript Node.js
+const API = "https://api.dreamto.ai/api/v3/assets";
+
+async function call(action, body) {
+  const resp = await fetch(`${API}?Action=${action}&Version=2024-01-01`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.DREAMTO_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await resp.json();
+  const error = data.ResponseMetadata?.Error;
+  if (!resp.ok || error) throw new Error(`${action} HTTP ${resp.status}: ${JSON.stringify(error)}`);
+  return data.Result;
+}
+
+const group = await call("CreateAssetGroup", { Name: "Avatar A", Description: "Host avatar material" });
+const asset = await call("CreateAsset", {
+  GroupId: group.Id,
+  URL: "https://example.com/figure-front.jpg",
+  AssetType: "Image",
+  Name: "Full-body front",
+});
+
+for (;;) {
+  const info = await call("GetAsset", { Id: asset.Id });
+  if (info.Status === "Active") {
+    console.log("ready:", `asset://${info.Id}`);
+    break;
+  }
+  if (info.Status === "Failed") throw new Error(JSON.stringify(info.Error));
+  await new Promise((r) => setTimeout(r, 4000));
+}
+```
+
+</CodeGroup>
+
+Notes:
+
+- CreateAsset is **asynchronous**: the asset is `Processing` when the Id is returned and usable once `Active`. Processing time depends on file size and videos take longer; poll every 3–5 seconds.
+- The platform keeps its own copy, so the original URL may expire after processing (e.g. a signed link).
+- Max 100 MB per file; the actual file type must match `AssetType`.
+- Deleting a group **deletes all of its assets**; deletion is permanent.
+
+---
+
+## Using assets in video tasks
+
+Once an asset is `Active`, put `asset://<asset Id>` in `image_url.url` / `video_url.url` / `audio_url.url` of the task `content`, just like a normal URL:
+
+```bash
+curl -X POST "https://api.dreamto.ai/api/v3/contents/generations/tasks" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "content": [
+      {
+        "type": "text",
+        "text": "The person in image 1 smiles and presents the product to the camera"
+      },
+      {
+        "type": "image_url",
+        "image_url": { "url": "asset://asset-20261111083012-k3x9a7b2" },
+        "role": "reference_image"
+      }
+    ],
+    "ratio": "16:9",
+    "resolution": "720p"
+  }'
+```
+
+- See [All parameters](/en/api-reference/seedance/create-task) for `model` and the other parameters, and [Asset library reference](/en/video/seedance-2-0/scenarios/asset-reference) for a full example.
+- Assets and plain URLs can be mixed in one request.
+- Refer to material in the prompt by position ("image 1", "video 1", "audio 1"); **never** put asset Ids in the prompt.
+- Referencing an asset that is `Processing` / `Failed`, deleted, missing or owned by another account returns HTTP 400 (`invalid_parameter`) and is not charged.
+- Assets can only be used by the account that created them; all API Keys of that account share them.
+- Platform upgrades and route switches do not affect existing assets: Ids and `asset://` references stay the same.
+
+---
+
+## Processing failures
+
+When an asset's `Status` is `Failed`, `Error.Code` is one of the following. Fix the cause and call CreateAsset again:
+
+| Error.Code | Description |
+|---|---|
+| `InvalidParameter.DownloadFailed` | The URL could not be downloaded (expired, needs auth, empty response…) |
+| `InvalidParameter.InvalidURL` | The URL is not a public address |
+| `InvalidParameter.FileTooLarge` | File larger than 100 MB |
+| `InvalidParameter.AssetTypeMismatch` | Actual file type differs from `AssetType` |
+| `InvalidParameter.InvalidAsset` | Not a valid image / video / audio, or wrong spec |
+| `InvalidParameter.SensitiveContentDetected` | Rejected by moderation (sensitive or copyrighted content) |
+| `InvalidParameter.*` (others) | Resolution, duration or format out of spec; `Message` gives details |
+| `InternalError` | Processing timed out; create it again |
+
+---
+
+## Errors
+
+| HTTP | Error.Code | Typical cause |
+|---|---|---|
+| 400 | `InvalidActionOrVersion` | Missing or unknown `Action`, or `Version` is not `2024-01-01` |
+| 400 | `InvalidParameter` | Missing, malformed or too long parameters |
+| 401 | `InvalidAuthorization` | Missing or invalid API Key |
+| 403 | `AccessDenied` | The account has no access |
+| 404 | `ResourceNotFound` | Asset / group missing or deleted |
+| 413 | `InvalidParameter` | Request body larger than 1 MB |
+| 429 | `RequestLimitExceeded` | Too many requests, retry later |
+| 500 | `InternalError` | Internal error, retry later |
+
+Error messages are currently returned in Chinese; branch on the HTTP status and `Error.Code`.

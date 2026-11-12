@@ -1,0 +1,223 @@
+---
+title: "Task callback"
+description: "When a task reaches a final state, DreamTo pushes the result to the callback_url given at creation, signed with HMAC-SHA256."
+---
+
+## Overview
+
+Pass `callback_url` when creating a video task. When the task finishes (succeeded or failed), the platform sends one `POST` request to that URL with the result. The callback body differs from the query response; parse it separately.
+
+```json
+{
+  "model": "seedance-2.0",
+  "content": [{ "type": "text", "text": "An orange cat stretches on a sunny windowsill, slow motion" }],
+  "callback_url": "https://your-server.example.com/dreamto/callback"
+}
+```
+
+- `callback_url` must be an `http` / `https` URL, otherwise task creation returns HTTP 400.
+- If the URL resolves to a private, loopback or link-local address, delivery is refused; use a publicly reachable address.
+- Callbacks only speed up notification. Keep low-frequency polling of [Get task](/en/api-reference/seedance/get-task) as a fallback.
+
+The OpenAPI definition of this callback, with field-level docs, is at [Task completed callback](/en/api-reference/seedance/task-callback).
+
+---
+
+## Request
+
+**Headers**
+
+| Header | Description |
+|---|---|
+| `Content-Type` | Always `application/json` |
+| `X-DreamTo-Event` | Event type, currently always `task.completed` |
+| `X-DreamTo-Timestamp` | Signature timestamp, same as the body `timestamp` (UTC, ISO 8601, e.g. `2026-11-11T08:03:16Z`); regenerated on every delivery, including retries |
+| `X-DreamTo-Signature` | Signature (lowercase hex). **Not sent** when the account has no webhook signing secret |
+
+**Body**
+
+```json
+{
+  "event": "task.completed",
+  "taskId": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
+  "status": "success",
+  "result": ["https://example-cdn.com/videos/2026/11/11/output.mp4"],
+  "errorMsg": "",
+  "timestamp": "2026-11-11T08:03:16Z",
+  "signature": "5d0c1b7e9a..."
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| event | string | Event type, always `task.completed` |
+| taskId | string | Task ID, same as the `id` returned at creation (`task_` prefix) |
+| status | string | `success` or `failed`. Note this differs from the query endpoint's `succeeded` / `failed` |
+| result | string[] | Video download URLs on success; `[]` on failure |
+| errorMsg | string | Failure reason; empty string on success |
+| timestamp | string | Signature timestamp, same as `X-DreamTo-Timestamp` |
+| signature | string | Signature, same as `X-DreamTo-Signature`; empty string without a secret |
+
+Failure callback example:
+
+```json
+{
+  "event": "task.completed",
+  "taskId": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
+  "status": "failed",
+  "result": [],
+  "errorMsg": "视频生成失败，请重试",
+  "timestamp": "2026-11-11T08:02:00Z",
+  "signature": "a41f09c2d3..."
+}
+```
+
+<Note>
+  URLs in `result` are direct download URLs; download and store the video soon after receiving the callback.
+</Note>
+
+---
+
+## Signing secret
+
+The webhook signing secret is per account. View, generate or reset it in **Console → API Key page → Webhook signing secret**:
+
+- Format: `whsec_` followed by 48 lowercase hex characters, e.g. `whsec_3c6e0b8a5f1d4e2c9b7a6f5e4d3c2b1a0f9e8d7c6b5a4f3e`.
+- After a reset the old secret is **invalid immediately** and all later callbacks are signed with the new one. Update your server first, or accept both secrets during the switch.
+- Without a secret, callbacks carry no `X-DreamTo-Signature` header and the body `signature` is empty. Generating a secret and verifying signatures is strongly recommended in production.
+
+---
+
+## Signature algorithm
+
+```
+signature = hex( HMAC_SHA256( key = secret, message = timestamp + "." + taskId + "." + status ) )
+```
+
+- `secret`: the full webhook signing secret from the console (including the `whsec_` prefix), UTF-8 encoded as the HMAC key.
+- `timestamp`, `taskId`, `status`: the raw string values from the callback body, joined with a period `.`.
+- The result is a lowercase hex string.
+
+For the success callback above, the signed message is:
+
+```
+2026-11-11T08:03:16Z.task_8c1d2e3f4a5b6c7d8e9f0a1b.success
+```
+
+### Verification steps
+
+1. Read the `X-DreamTo-Signature` and `X-DreamTo-Timestamp` headers and parse the JSON body.
+2. Check that the header timestamp equals the body `timestamp`.
+3. Compute the signature with your secret and compare it with `X-DreamTo-Signature` in **constant time**.
+4. Process the callback only after verification succeeds; otherwise return `401` and ignore it.
+
+<Tip>
+  The signature covers `timestamp`, `taskId` and `status`. For strong verification of the result URL, call [Get task](/en/api-reference/seedance/get-task) with `taskId` after receiving the callback.
+</Tip>
+
+### Verification code
+
+<CodeGroup>
+
+```python Python
+import hashlib
+import hmac
+import json
+import os
+
+from flask import Flask, abort, request
+
+app = Flask(__name__)
+WEBHOOK_SECRET = os.environ["DREAMTO_WEBHOOK_SECRET"]  # whsec_...
+
+
+def expected_signature(secret: str, timestamp: str, task_id: str, status: str) -> str:
+    message = f"{timestamp}.{task_id}.{status}".encode("utf-8")
+    return hmac.new(secret.encode("utf-8"), message, hashlib.sha256).hexdigest()
+
+
+@app.post("/dreamto/callback")
+def dreamto_callback():
+    payload = json.loads(request.get_data())
+    signature = request.headers.get("X-DreamTo-Signature", "")
+    timestamp = request.headers.get("X-DreamTo-Timestamp", "")
+
+    if not signature or timestamp != payload.get("timestamp"):
+        abort(401)
+    expected = expected_signature(
+        WEBHOOK_SECRET, payload["timestamp"], payload["taskId"], payload["status"]
+    )
+    if not hmac.compare_digest(expected, signature):
+        abort(401)
+
+    # Be idempotent on taskId: retries can deliver the same task more than once
+    if payload["status"] == "success":
+        video_url = payload["result"][0]
+        # TODO: download video_url promptly and store it
+    else:
+        error_msg = payload["errorMsg"]
+        # TODO: record the failure reason
+    return "", 204
+```
+
+```javascript Node.js
+import crypto from "node:crypto";
+import express from "express";
+
+const app = express();
+const WEBHOOK_SECRET = process.env.DREAMTO_WEBHOOK_SECRET; // whsec_...
+
+function expectedSignature(secret, timestamp, taskId, status) {
+  return crypto
+    .createHmac("sha256", secret)
+    .update(`${timestamp}.${taskId}.${status}`, "utf8")
+    .digest("hex");
+}
+
+function safeEqual(a, b) {
+  const left = Buffer.from(a, "utf8");
+  const right = Buffer.from(b, "utf8");
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+app.post("/dreamto/callback", express.json(), (req, res) => {
+  const payload = req.body;
+  const signature = req.get("X-DreamTo-Signature") || "";
+  const timestamp = req.get("X-DreamTo-Timestamp") || "";
+
+  if (!signature || timestamp !== payload.timestamp) return res.sendStatus(401);
+  const expected = expectedSignature(WEBHOOK_SECRET, payload.timestamp, payload.taskId, payload.status);
+  if (!safeEqual(expected, signature)) return res.sendStatus(401);
+
+  // Be idempotent on taskId: retries can deliver the same task more than once
+  if (payload.status === "success") {
+    const videoUrl = payload.result[0];
+    // TODO: download videoUrl promptly and store it
+  } else {
+    // TODO: record payload.errorMsg
+  }
+  res.sendStatus(204);
+});
+
+app.listen(3000);
+```
+
+</CodeGroup>
+
+---
+
+## Delivery and retries
+
+| Item | Rule |
+|---|---|
+| Method | `POST` |
+| Timeout | 10 seconds |
+| Success | Any `2xx` status code |
+| Retries | After a failed first attempt, retried after 1, 5 and 30 minutes; at most 4 deliveries |
+| Address | `http` / `https` only; private / loopback / link-local addresses are refused |
+
+**Recommendations**:
+
+- Return `2xx` quickly and process downloads asynchronously to avoid timeouts and retries.
+- Deduplicate on `taskId`: network issues or timeouts can deliver the same task more than once.
+- After all retries fail no further callbacks are sent; recover results through [Get task](/en/api-reference/seedance/get-task) or [List tasks](/en/api-reference/seedance/list-tasks).
