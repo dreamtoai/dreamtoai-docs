@@ -1,8 +1,7 @@
 ---
 title: "Seedance 2.0 Fast 视频生成"
-sidebarTitle: "Seedance 2.0 Fast"
+sidebarTitle: "概述"
 description: "Seedance 2.0 Fast 视频生成：生成更快，适合批量试提示词与出草稿，支持 480p / 720p。"
-icon: "/icons/doubao.svg"
 ---
 
 {/* 本页由 apps/gateway/internal/service/seedance_v3_model_pages_test.go 自动生成，请勿手工修改。 */}
@@ -34,7 +33,7 @@ icon: "/icons/doubao.svg"
 | `real_person_mode` | `false` | `true` / `false` |
 | `omni_reference_task_type` | — | 本模型不使用，传入合法值会被忽略 |
 
-其余参数（`seed`、`watermark`、`return_last_frame`、`bitrate_mode`、`tools`、`callback_url` 等）见 [API 全部参数](/api-reference/seedance/create-task)。
+其余参数（`seed`、`watermark`、`return_last_frame`、`bitrate_mode`、`tools`、`callback_url` 等）见 [API 全部参数](/api-reference/seedance-2-0-fast/create-task)。
 
 ## 参考素材
 
@@ -150,21 +149,21 @@ for (;;) {
 
 </CodeGroup>
 
-完整轮询策略、超时处理与下载示例见 [Seedance 通用说明](/video/seedance-2-0)；查询接口见 [查询任务](/api-reference/seedance/get-task)。
+完整轮询策略、超时处理与下载示例见 [Seedance 通用说明](/video/seedance-2-0)；查询接口见 [查询任务](/api-reference/seedance-2-0-fast/get-task)。
 
-## 场景示例
+## 使用示例
 
-以下示例的请求体把 `model` 换成 `seedance-2.0-fast` 即可使用：
+以下示例的请求体都已填好 `model`，可直接复制使用：
 
-- [文生视频](/video/seedance-2-0/scenarios/text-to-video)
-- [图生视频（首帧）](/video/seedance-2-0/scenarios/image-to-video)
-- [首尾帧生视频](/video/seedance-2-0/scenarios/first-last-frame)
-- [多图参考生视频](/video/seedance-2-0/scenarios/multi-image-reference)
-- [参考音频](/video/seedance-2-0/scenarios/reference-audio)
-- [联网搜索增强](/video/seedance-2-0/scenarios/web-search)
-- [引用素材库素材](/video/seedance-2-0/scenarios/asset-reference)
-- [指定帧数](/video/seedance-2-0/scenarios/frames)
-- [Fast / Mini 快速出片](/video/seedance-2-0/scenarios/fast-draft)
+- [文生视频](/video/models/seedance-2-0-fast/scenarios/text-to-video)
+- [图生视频（首帧）](/video/models/seedance-2-0-fast/scenarios/image-to-video)
+- [首尾帧生视频](/video/models/seedance-2-0-fast/scenarios/first-last-frame)
+- [多图参考生视频](/video/models/seedance-2-0-fast/scenarios/multi-image-reference)
+- [参考音频](/video/models/seedance-2-0-fast/scenarios/reference-audio)
+- [联网搜索增强](/video/models/seedance-2-0-fast/scenarios/web-search)
+- [引用素材库素材](/video/models/seedance-2-0-fast/scenarios/asset-reference)
+- [指定帧数](/video/models/seedance-2-0-fast/scenarios/frames)
+- [Fast / Mini 快速出片](/video/models/seedance-2-0-fast/scenarios/fast-draft)
 
 ## 本模型常见报错
 

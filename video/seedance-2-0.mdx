@@ -31,13 +31,13 @@ Seedance 视频生成接口，支持 **Seedance 2.5**、**Seedance 2.0**、**See
 </Warning>
 
 <CardGroup cols={2}>
-  <Card title="API 全部参数（创建任务）" icon="sliders" href="/api-reference/seedance/create-task">
+  <Card title="API 全部参数（创建任务）" icon="sliders" href="/api-reference/seedance-2-0/create-task">
     每个参数的类型、默认值、取值说明与报错条件；切换请求示例后可直接 Try it。
   </Card>
-  <Card title="场景示例" icon="wand-magic-sparkles" href="/video/seedance-2-0/scenarios/text-to-video">
+  <Card title="场景示例" icon="wand-magic-sparkles" href="/video/models/seedance-2-0/scenarios/text-to-video">
     文生视频、图生视频、首尾帧、多图参考、视频编辑 / 延长、参考音频、联网搜索等完整示例。
   </Card>
-  <Card title="查询任务" icon="magnifying-glass" href="/api-reference/seedance/get-task">
+  <Card title="查询任务" icon="magnifying-glass" href="/api-reference/seedance-2-0/get-task">
     轮询任务状态，成功后获取视频下载地址。
   </Card>
   <Card title="任务回调" icon="bell" href="/webhooks/task-callback">
@@ -50,7 +50,7 @@ Seedance 视频生成接口，支持 **Seedance 2.5**、**Seedance 2.0**、**See
 </Info>
 
 <Note>
-  **在文档里调试（Try it）**：打开 [API 全部参数](/api-reference/seedance/create-task)，点「试一试」，在 `Authorization` 中填写 `Bearer <你的 API Key>`，用右上角下拉框切换场景示例后发送。Try it 调用的是**真实接口**，创建任务会真实生成并扣费；查询结果请用下方代码或「查询任务」页面。
+  **在文档里调试（Try it）**：打开 [API 全部参数](/api-reference/seedance-2-0/create-task)，点「试一试」，在 `Authorization` 中填写 `Bearer <你的 API Key>`，用右上角下拉框切换场景示例后发送。Try it 调用的是**真实接口**，创建任务会真实生成并扣费；查询结果请用下方代码或「查询任务」页面。
 </Note>
 
 ---
@@ -59,10 +59,10 @@ Seedance 视频生成接口，支持 **Seedance 2.5**、**Seedance 2.0**、**See
 
 <Steps>
   <Step title="创建任务">
-    `POST /api/v3/contents/generations/tasks`，返回任务 `id`（`task_` 开头）。参数校验失败的请求不会创建任务，也不会扣费。详见 [创建视频生成任务](/api-reference/seedance/create-task)。
+    `POST /api/v3/contents/generations/tasks`，返回任务 `id`（`task_` 开头）。参数校验失败的请求不会创建任务，也不会扣费。详见 [创建视频生成任务](/api-reference/seedance-2-0/create-task)。
   </Step>
   <Step title="获取结果">
-    轮询 [查询任务](/api-reference/seedance/get-task)，或在创建时传 `callback_url` 接收 [任务回调](/webhooks/task-callback)。`status` 为 `succeeded` 时读取 `content.video_url`，为 `failed` 时读取 `error.message`。
+    轮询 [查询任务](/api-reference/seedance-2-0/get-task)，或在创建时传 `callback_url` 接收 [任务回调](/webhooks/task-callback)。`status` 为 `succeeded` 时读取 `content.video_url`，为 `failed` 时读取 `error.message`。
   </Step>
   <Step title="保存视频">
     `content.video_url` 为直接下载地址，请在任务成功后及时下载并保存到你自己的存储中。
@@ -255,7 +255,7 @@ API Key 的获取与使用说明见 [认证方式](/authentication)。
 | [`seedance-2.0-mini`](/video/models/seedance-2-0-mini) | Seedance 2.0 Mini，轻量版 | 4 ~ 15 秒，默认 `5` | 480p / 720p | 图片 9、视频 3、音频 3 | 不支持 |
 
 - 平台按所选 `model` 校验 `duration` 与 `resolution`：例如给 `seedance-2.0-fast` 传 `1080p`、给 `seedance-2.0` 传 `duration: 20` 都会返回 400，不会创建任务、不会扣费。
-- 选型建议：先用 Fast / Mini 低分辨率试提示词，效果确定后把 `model` 换成 `seedance-2.0` 或 `seedance-2.5` 出成片（见 [Fast / Mini 快速出片](/video/seedance-2-0/scenarios/fast-draft)）；需要超过 15 秒或更多参考素材时用 `seedance-2.5`（见 [Seedance 2.5 长视频](/video/seedance-2-0/scenarios/seedance-2-5-long-video)）。
+- 选型建议：先用 Fast / Mini 低分辨率试提示词，效果确定后把 `model` 换成 `seedance-2.0` 或 `seedance-2.5` 出成片（见 [Fast / Mini 快速出片](/video/models/seedance-2-0-fast/scenarios/fast-draft)）；需要超过 15 秒或更多参考素材时用 `seedance-2.5`（见 [Seedance 2.5 长视频](/video/models/seedance-2-5/scenarios/seedance-2-5-long-video)）。
 - 各模型价格以控制台模型价格页为准。
 
 `model` 缺失、不存在或当前账号未开放时返回 4xx 错误，详见 [错误码](#错误码)。查询接口中的 `model` 会原样回显创建任务时传入的值。
@@ -275,7 +275,7 @@ API Key 的获取与使用说明见 [认证方式](/authentication)。
 | `watermark` | `false` | `true` / `false` |
 | `bitrate_mode` | 不传（等同 `standard`） | `standard` / `high` |
 
-枚举值区分大小写，取值范围之外的值返回 HTTP 400（`invalid_parameter`），`error.param` 指出出错字段。请求体只接受文档列出的字段，传入表外字段返回 400（`不支持的参数：xxx`）。每个参数的完整说明见 [API 全部参数](/api-reference/seedance/create-task)。
+枚举值区分大小写，取值范围之外的值返回 HTTP 400（`invalid_parameter`），`error.param` 指出出错字段。请求体只接受文档列出的字段，传入表外字段返回 400（`不支持的参数：xxx`）。每个参数的完整说明见 [API 全部参数](/api-reference/seedance-2-0/create-task)。
 
 ---
 
@@ -285,12 +285,12 @@ API Key 的获取与使用说明见 [认证方式](/authentication)。
 
 | 传入的素材 | 生成方式 | 示例 |
 |---|---|---|
-| 仅 `text` | 文生视频 | [文生视频](/video/seedance-2-0/scenarios/text-to-video) |
-| `image_url` + `role: first_frame` | 图生视频（首帧） | [图生视频](/video/seedance-2-0/scenarios/image-to-video) |
-| `first_frame` + `last_frame` | 首尾帧过渡 | [首尾帧生视频](/video/seedance-2-0/scenarios/first-last-frame) |
-| 多个 `role: reference_image` | 多图参考 | [多图参考生视频](/video/seedance-2-0/scenarios/multi-image-reference) |
-| `video_url`（`reference_video`） | 视频编辑 / 延长（仅 2.5 / 2.0） | [视频编辑](/video/seedance-2-0/scenarios/video-edit)、[视频延长](/video/seedance-2-0/scenarios/video-extend) |
-| `audio_url`（`reference_audio`） | 参考音频 | [参考音频](/video/seedance-2-0/scenarios/reference-audio) |
+| 仅 `text` | 文生视频 | [文生视频](/video/models/seedance-2-0/scenarios/text-to-video) |
+| `image_url` + `role: first_frame` | 图生视频（首帧） | [图生视频](/video/models/seedance-2-0/scenarios/image-to-video) |
+| `first_frame` + `last_frame` | 首尾帧过渡 | [首尾帧生视频](/video/models/seedance-2-0/scenarios/first-last-frame) |
+| 多个 `role: reference_image` | 多图参考 | [多图参考生视频](/video/models/seedance-2-0/scenarios/multi-image-reference) |
+| `video_url`（`reference_video`） | 视频编辑 / 延长（仅 2.5 / 2.0） | [视频编辑](/video/models/seedance-2-0/scenarios/video-edit)、[视频延长](/video/models/seedance-2-0/scenarios/video-extend) |
+| `audio_url`（`reference_audio`） | 参考音频 | [参考音频](/video/models/seedance-2-0/scenarios/reference-audio) |
 
 **素材规格**（上限由模型决定，超限时任务以失败终态返回原因）：
 
@@ -392,7 +392,7 @@ API Key 的获取与使用说明见 [认证方式](/authentication)。
     不可以。必须包含至少一个 `text` 类型的内容项作为提示词，否则请求被拒绝（HTTP 400）。
   </Accordion>
   <Accordion title="Q6: 为什么返回「不支持的参数：xxx」？">
-    请求体只接受 [API 全部参数](/api-reference/seedance/create-task) 中列出的字段，多传的字段（例如拼写错误或其他平台的专有字段）会被拒绝，以免参数被静默忽略。请删除该字段后重试。
+    请求体只接受 [API 全部参数](/api-reference/seedance-2-0/create-task) 中列出的字段，多传的字段（例如拼写错误或其他平台的专有字段）会被拒绝，以免参数被静默忽略。请删除该字段后重试。
   </Accordion>
   <Accordion title="Q7: 视频链接可以长期使用吗？">
     `content.video_url` 为直接下载地址，请在任务成功后及时下载保存，不要将其作为长期访问地址。

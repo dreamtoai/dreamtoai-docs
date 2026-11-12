@@ -18,9 +18,9 @@ Pass `callback_url` when creating a video task. When the task finishes (succeede
 
 - `callback_url` must be an `http` / `https` URL, otherwise task creation returns HTTP 400.
 - If the URL resolves to a private, loopback or link-local address, delivery is refused; use a publicly reachable address.
-- Callbacks only speed up notification. Keep low-frequency polling of [Get task](/en/api-reference/seedance/get-task) as a fallback.
+- Callbacks only speed up notification. Keep low-frequency polling of [Get task](/en/api-reference/seedance-2-0/get-task) as a fallback.
 
-The OpenAPI definition of this callback, with field-level docs, is at [Task completed callback](/en/api-reference/seedance/task-callback).
+The OpenAPI definition of this callback, with field-level docs, is at [Task completed callback](/en/api-reference/seedance-2-0/task-callback).
 
 ---
 
@@ -113,7 +113,7 @@ For the success callback above, the signed message is:
 4. Process the callback only after verification succeeds; otherwise return `401` and ignore it.
 
 <Tip>
-  The signature covers `timestamp`, `taskId` and `status`. For strong verification of the result URL, call [Get task](/en/api-reference/seedance/get-task) with `taskId` after receiving the callback.
+  The signature covers `timestamp`, `taskId` and `status`. For strong verification of the result URL, call [Get task](/en/api-reference/seedance-2-0/get-task) with `taskId` after receiving the callback.
 </Tip>
 
 ### Verification code
@@ -221,4 +221,4 @@ app.listen(3000);
 
 - Return `2xx` quickly and process downloads asynchronously to avoid timeouts and retries.
 - Deduplicate on `taskId`: network issues or timeouts can deliver the same task more than once.
-- After all retries fail no further callbacks are sent; recover results through [Get task](/en/api-reference/seedance/get-task) or [List tasks](/en/api-reference/seedance/list-tasks).
+- After all retries fail no further callbacks are sent; recover results through [Get task](/en/api-reference/seedance-2-0/get-task) or [List tasks](/en/api-reference/seedance-2-0/list-tasks).

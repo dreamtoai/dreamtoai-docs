@@ -18,7 +18,7 @@ description: "通过统一的 HTTP 接口调用 DreamTo 平台的视频生成、
   <Card title="Seedance 2 视频生成" icon="film" href="/video/seedance-2-0">
     文生视频、图生视频、首尾帧、多图参考、视频编辑 / 延长、联网搜索增强。
   </Card>
-  <Card title="API 全部参数 · 在线调试" icon="sliders" href="/api-reference/seedance/create-task">
+  <Card title="API 全部参数 · 在线调试" icon="sliders" href="/api-reference/seedance-2-0/create-task">
     每个参数的中英文说明与取值介绍，选择场景示例后直接 Try it。
   </Card>
   <Card title="Seedance 素材库" icon="box-archive" href="/assets/seedance-asset-library">
@@ -57,7 +57,7 @@ description: "通过统一的 HTTP 接口调用 DreamTo 平台的视频生成、
     curl "https://api.dreamto.ai/api/v3/contents/generations/tasks/task_xxx" \
       -H "Authorization: Bearer $DREAMTO_API_KEY"
     ```
-    `status` 为 `succeeded` 时，从 `content.video_url` 下载视频；也可以在创建任务时传 `callback_url`，由平台主动推送结果。更多用法见 [场景示例](/video/seedance-2-0/scenarios/text-to-video)。
+    `status` 为 `succeeded` 时，从 `content.video_url` 下载视频；也可以在创建任务时传 `callback_url`，由平台主动推送结果。更多用法见 [场景示例](/video/models/seedance-2-0/scenarios/text-to-video)。
   </Step>
 </Steps>
 

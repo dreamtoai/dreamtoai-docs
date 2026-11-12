@@ -1,8 +1,7 @@
 ---
 title: "Seedance 2.5 视频生成"
-sidebarTitle: "Seedance 2.5"
+sidebarTitle: "概述"
 description: "Seedance 2.5 视频生成：最新一代模型，单次最长 30 秒，支持更多参考素材，可显式指定参考 / 编辑 / 延长。"
-icon: "/icons/doubao.svg"
 ---
 
 {/* 本页由 apps/gateway/internal/service/seedance_v3_model_pages_test.go 自动生成，请勿手工修改。 */}
@@ -33,7 +32,7 @@ icon: "/icons/doubao.svg"
 | `real_person_mode` | `true` | `true` / `false` |
 | `omni_reference_task_type` | 不传（按素材判定） | `auto` / `reference` / `edit` / `extend` |
 
-其余参数（`seed`、`watermark`、`return_last_frame`、`bitrate_mode`、`tools`、`callback_url` 等）见 [API 全部参数](/api-reference/seedance/create-task)。
+其余参数（`seed`、`watermark`、`return_last_frame`、`bitrate_mode`、`tools`、`callback_url` 等）见 [API 全部参数](/api-reference/seedance-2-5/create-task)。
 
 ## 参考素材
 
@@ -149,24 +148,24 @@ for (;;) {
 
 </CodeGroup>
 
-完整轮询策略、超时处理与下载示例见 [Seedance 通用说明](/video/seedance-2-0)；查询接口见 [查询任务](/api-reference/seedance/get-task)。
+完整轮询策略、超时处理与下载示例见 [Seedance 通用说明](/video/seedance-2-0)；查询接口见 [查询任务](/api-reference/seedance-2-5/get-task)。
 
-## 场景示例
+## 使用示例
 
-以下示例的请求体把 `model` 换成 `seedance-2.5` 即可使用：
+以下示例的请求体都已填好 `model`，可直接复制使用：
 
-- [文生视频](/video/seedance-2-0/scenarios/text-to-video)
-- [图生视频（首帧）](/video/seedance-2-0/scenarios/image-to-video)
-- [首尾帧生视频](/video/seedance-2-0/scenarios/first-last-frame)
-- [多图参考生视频](/video/seedance-2-0/scenarios/multi-image-reference)
-- [视频编辑](/video/seedance-2-0/scenarios/video-edit)
-- [视频延长](/video/seedance-2-0/scenarios/video-extend)
-- [参考音频](/video/seedance-2-0/scenarios/reference-audio)
-- [联网搜索增强](/video/seedance-2-0/scenarios/web-search)
-- [引用素材库素材](/video/seedance-2-0/scenarios/asset-reference)
-- [指定帧数](/video/seedance-2-0/scenarios/frames)
-- [智能时长 + 回调通知](/video/seedance-2-0/scenarios/smart-duration-callback)
-- [Seedance 2.5 长视频](/video/seedance-2-0/scenarios/seedance-2-5-long-video)
+- [文生视频](/video/models/seedance-2-5/scenarios/text-to-video)
+- [图生视频（首帧）](/video/models/seedance-2-5/scenarios/image-to-video)
+- [首尾帧生视频](/video/models/seedance-2-5/scenarios/first-last-frame)
+- [多图参考生视频](/video/models/seedance-2-5/scenarios/multi-image-reference)
+- [视频编辑](/video/models/seedance-2-5/scenarios/video-edit)
+- [视频延长](/video/models/seedance-2-5/scenarios/video-extend)
+- [参考音频](/video/models/seedance-2-5/scenarios/reference-audio)
+- [联网搜索增强](/video/models/seedance-2-5/scenarios/web-search)
+- [引用素材库素材](/video/models/seedance-2-5/scenarios/asset-reference)
+- [指定帧数](/video/models/seedance-2-5/scenarios/frames)
+- [智能时长 + 回调通知](/video/models/seedance-2-5/scenarios/smart-duration-callback)
+- [Seedance 2.5 长视频](/video/models/seedance-2-5/scenarios/seedance-2-5-long-video)
 
 ## 本模型常见报错
 

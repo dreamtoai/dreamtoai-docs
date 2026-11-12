@@ -230,7 +230,7 @@ curl -X POST "https://api.dreamto.ai/api/v3/contents/generations/tasks" \
   }'
 ```
 
-- See [All parameters](/en/api-reference/seedance/create-task) for `model` and the other parameters, and [Asset library reference](/en/video/seedance-2-0/scenarios/asset-reference) for a full example.
+- See [All parameters](/en/api-reference/seedance-2-0/create-task) for `model` and the other parameters, and [Asset library reference](/en/video/models/seedance-2-0/scenarios/asset-reference) for a full example.
 - Assets and plain URLs can be mixed in one request.
 - Refer to material in the prompt by position ("image 1", "video 1", "audio 1"); **never** put asset Ids in the prompt.
 - Referencing an asset that is `Processing` / `Failed`, deleted, missing or owned by another account returns HTTP 400 (`invalid_parameter`) and is not charged.

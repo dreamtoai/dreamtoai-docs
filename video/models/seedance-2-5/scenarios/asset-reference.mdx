@@ -1,0 +1,120 @@
+---
+title: "引用素材库素材"
+description: "用 asset://<素材Id> 反复引用素材库中的长期素材。"
+---
+
+{/* 本页由 apps/gateway/internal/service/seedance_v3_openapi_test.go 自动生成，请勿手工修改。 */}
+
+先在素材库 CreateAsset，等待状态变为 `Active`，再把 `asset://<素材Id>` 填入 `image_url.url` / `video_url.url` / `audio_url.url`。同一请求可以混用素材与普通 URL；提示词中仍按顺序用「图片1」引用，不要写素材 Id。引用未就绪或不属于当前账号的素材返回 400，不扣费。
+
+<Tip>
+  想直接调试？打开 [创建视频生成任务](/api-reference/seedance-2-5/create-task)，在请求示例下拉框中选择「引用素材库素材」，填入 API Key 后点击 **Try it**。
+</Tip>
+
+## 请求示例
+
+示例中的 `$DREAMTO_API_KEY` 为你的 API Key。
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.dreamto.ai/api/v3/contents/generations/tasks" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.5",
+    "content": [
+      {
+        "type": "text",
+        "text": "图片1中的人物面带笑容，向镜头介绍产品"
+      },
+      {
+        "type": "image_url",
+        "image_url": {
+          "url": "asset://asset-20261111083012-k3x9a7b2"
+        },
+        "role": "reference_image"
+      }
+    ],
+    "ratio": "16:9",
+    "resolution": "720p"
+  }'
+```
+
+```python Python
+import os
+import requests
+
+payload = {
+    "model": "seedance-2.5",
+    "content": [
+        {
+            "type": "text",
+            "text": "图片1中的人物面带笑容，向镜头介绍产品"
+        },
+        {
+            "type": "image_url",
+            "image_url": {
+                "url": "asset://asset-20261111083012-k3x9a7b2"
+            },
+            "role": "reference_image"
+        }
+    ],
+    "ratio": "16:9",
+    "resolution": "720p"
+}
+
+resp = requests.post(
+    "https://api.dreamto.ai/api/v3/contents/generations/tasks",
+    headers={"Authorization": f"Bearer {os.environ['DREAMTO_API_KEY']}"},
+    json=payload,
+    timeout=60,
+)
+print(resp.status_code, resp.json())  # {'id': 'task_...', 'request_id': 'req_...'}
+```
+
+```javascript Node.js
+const payload = {
+  "model": "seedance-2.5",
+  "content": [
+    {
+      "type": "text",
+      "text": "图片1中的人物面带笑容，向镜头介绍产品"
+    },
+    {
+      "type": "image_url",
+      "image_url": {
+        "url": "asset://asset-20261111083012-k3x9a7b2"
+      },
+      "role": "reference_image"
+    }
+  ],
+  "ratio": "16:9",
+  "resolution": "720p"
+};
+
+const resp = await fetch("https://api.dreamto.ai/api/v3/contents/generations/tasks", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.DREAMTO_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(payload),
+});
+console.log(resp.status, await resp.json()); // { id: 'task_...', request_id: 'req_...' }
+```
+
+</CodeGroup>
+
+## 响应
+
+创建成功返回 HTTP 200。`request_id` 与响应头 `X-Request-Id` 相同，排查问题时请提供：
+
+```json
+{
+  "id": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
+  "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+}
+```
+
+拿到任务 `id` 后，调用 [查询任务](/api-reference/seedance-2-5/get-task) 轮询结果，`status` 为 `succeeded` 时读取 `content.video_url`。全部请求参数与取值说明见 [创建视频生成任务](/api-reference/seedance-2-5/create-task)。

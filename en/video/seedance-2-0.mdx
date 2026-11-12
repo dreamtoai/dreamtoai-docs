@@ -31,13 +31,13 @@ The Seedance video generation API serves four models, **Seedance 2.5**, **Seedan
 </Warning>
 
 <CardGroup cols={2}>
-  <Card title="All parameters (create task)" icon="sliders" href="/en/api-reference/seedance/create-task">
+  <Card title="All parameters (create task)" icon="sliders" href="/en/api-reference/seedance-2-0/create-task">
     Type, default, allowed values and error conditions of every parameter; switch the request example and try it live.
   </Card>
-  <Card title="Scenarios" icon="wand-magic-sparkles" href="/en/video/seedance-2-0/scenarios/text-to-video">
+  <Card title="Scenarios" icon="wand-magic-sparkles" href="/en/video/models/seedance-2-0/scenarios/text-to-video">
     Complete examples: text-to-video, image-to-video, first/last frame, multi-image reference, video edit / extension, reference audio, web search and more.
   </Card>
-  <Card title="Get task" icon="magnifying-glass" href="/en/api-reference/seedance/get-task">
+  <Card title="Get task" icon="magnifying-glass" href="/en/api-reference/seedance-2-0/get-task">
     Poll the task status and get the video URL on success.
   </Card>
   <Card title="Task callback" icon="bell" href="/en/webhooks/task-callback">
@@ -50,7 +50,7 @@ The Seedance video generation API serves four models, **Seedance 2.5**, **Seedan
 </Info>
 
 <Note>
-  **Try it in the docs**: open [All parameters](/en/api-reference/seedance/create-task), click "Try it", enter `Bearer <your API key>` as `Authorization`, pick a scenario from the example dropdown and send. Try it calls the **live API**: creating a task really generates a video and is billed. Fetch the result with the code below or the "Get task" page.
+  **Try it in the docs**: open [All parameters](/en/api-reference/seedance-2-0/create-task), click "Try it", enter `Bearer <your API key>` as `Authorization`, pick a scenario from the example dropdown and send. Try it calls the **live API**: creating a task really generates a video and is billed. Fetch the result with the code below or the "Get task" page.
 </Note>
 
 ---
@@ -59,10 +59,10 @@ The Seedance video generation API serves four models, **Seedance 2.5**, **Seedan
 
 <Steps>
   <Step title="Create a task">
-    `POST /api/v3/contents/generations/tasks` returns the task `id` (prefixed with `task_`). Requests rejected by validation create no task and are not charged. See [Create video task](/en/api-reference/seedance/create-task).
+    `POST /api/v3/contents/generations/tasks` returns the task `id` (prefixed with `task_`). Requests rejected by validation create no task and are not charged. See [Create video task](/en/api-reference/seedance-2-0/create-task).
   </Step>
   <Step title="Get the result">
-    Poll [Get task](/en/api-reference/seedance/get-task), or pass `callback_url` at creation to receive a [task callback](/en/webhooks/task-callback). On `succeeded` read `content.video_url`; on `failed` read `error.message`.
+    Poll [Get task](/en/api-reference/seedance-2-0/get-task), or pass `callback_url` at creation to receive a [task callback](/en/webhooks/task-callback). On `succeeded` read `content.video_url`; on `failed` read `error.message`.
   </Step>
   <Step title="Save the video">
     `content.video_url` is a direct download URL. Download it to your own storage soon after the task succeeds.
@@ -255,7 +255,7 @@ See [Authentication](/en/authentication) for how to get and use an API Key.
 | [`seedance-2.0-mini`](/en/video/models/seedance-2-0-mini) | Seedance 2.0 Mini, lightweight | 4–15 s, default `5` | 480p / 720p | 9 images, 3 videos, 3 audios | No |
 
 - The platform validates `duration` and `resolution` against the chosen `model`: for example `1080p` on `seedance-2.0-fast` or `duration: 20` on `seedance-2.0` returns 400; no task is created and nothing is billed.
-- Choosing a model: try prompts with Fast / Mini at low resolution, then switch `model` to `seedance-2.0` or `seedance-2.5` for the final cut (see [Fast / Mini drafts](/en/video/seedance-2-0/scenarios/fast-draft)); use `seedance-2.5` for more than 15 seconds or more reference media (see [Seedance 2.5 long video](/en/video/seedance-2-0/scenarios/seedance-2-5-long-video)).
+- Choosing a model: try prompts with Fast / Mini at low resolution, then switch `model` to `seedance-2.0` or `seedance-2.5` for the final cut (see [Fast / Mini drafts](/en/video/models/seedance-2-0-fast/scenarios/fast-draft)); use `seedance-2.5` for more than 15 seconds or more reference media (see [Seedance 2.5 long video](/en/video/models/seedance-2-5/scenarios/seedance-2-5-long-video)).
 - See the console model pricing page for the price of each model.
 
 A missing, unknown or not-enabled `model` returns a 4xx error, see [Errors](#errors). The query endpoint echoes the `model` given at creation unchanged.
@@ -275,7 +275,7 @@ A missing, unknown or not-enabled `model` returns a 4xx error, see [Errors](#err
 | `watermark` | `false` | `true` / `false` |
 | `bitrate_mode` | omitted (= `standard`) | `standard` / `high` |
 
-Enum values are case-sensitive; values outside the range return HTTP 400 (`invalid_parameter`) with `error.param` naming the field. Only documented fields are accepted; any other field returns 400 (unsupported parameter). Every parameter is described in [All parameters](/en/api-reference/seedance/create-task).
+Enum values are case-sensitive; values outside the range return HTTP 400 (`invalid_parameter`) with `error.param` naming the field. Only documented fields are accepted; any other field returns 400 (unsupported parameter). Every parameter is described in [All parameters](/en/api-reference/seedance-2-0/create-task).
 
 ---
 
@@ -285,12 +285,12 @@ Enum values are case-sensitive; values outside the range return HTTP 400 (`inval
 
 | Material | Mode | Example |
 |---|---|---|
-| `text` only | Text to video | [Text to video](/en/video/seedance-2-0/scenarios/text-to-video) |
-| `image_url` with `role: first_frame` | Image to video (first frame) | [Image to video](/en/video/seedance-2-0/scenarios/image-to-video) |
-| `first_frame` + `last_frame` | First/last frame transition | [First and last frame](/en/video/seedance-2-0/scenarios/first-last-frame) |
-| Several `role: reference_image` | Multi-image reference | [Multi-image reference](/en/video/seedance-2-0/scenarios/multi-image-reference) |
-| `video_url` (`reference_video`) | Video edit / extension (2.5 / 2.0 only) | [Video editing](/en/video/seedance-2-0/scenarios/video-edit), [Video extension](/en/video/seedance-2-0/scenarios/video-extend) |
-| `audio_url` (`reference_audio`) | Reference audio | [Reference audio](/en/video/seedance-2-0/scenarios/reference-audio) |
+| `text` only | Text to video | [Text to video](/en/video/models/seedance-2-0/scenarios/text-to-video) |
+| `image_url` with `role: first_frame` | Image to video (first frame) | [Image to video](/en/video/models/seedance-2-0/scenarios/image-to-video) |
+| `first_frame` + `last_frame` | First/last frame transition | [First and last frame](/en/video/models/seedance-2-0/scenarios/first-last-frame) |
+| Several `role: reference_image` | Multi-image reference | [Multi-image reference](/en/video/models/seedance-2-0/scenarios/multi-image-reference) |
+| `video_url` (`reference_video`) | Video edit / extension (2.5 / 2.0 only) | [Video editing](/en/video/models/seedance-2-0/scenarios/video-edit), [Video extension](/en/video/models/seedance-2-0/scenarios/video-extend) |
+| `audio_url` (`reference_audio`) | Reference audio | [Reference audio](/en/video/models/seedance-2-0/scenarios/reference-audio) |
 
 **Material limits** (enforced by the model; exceeding them makes the task end as `failed` with the reason):
 
@@ -392,7 +392,7 @@ When you also use `callback_url`, poll less often as a fallback for lost callbac
     No. At least one `text` item is required as the prompt, otherwise the request is rejected with HTTP 400.
   </Accordion>
   <Accordion title='Q6: Why do I get an "unsupported parameter" error?'>
-    The body accepts only the fields listed in [All parameters](/en/api-reference/seedance/create-task). Extra fields (typos or other platforms' proprietary fields) are rejected so they are not silently ignored. Remove the field and retry.
+    The body accepts only the fields listed in [All parameters](/en/api-reference/seedance-2-0/create-task). Extra fields (typos or other platforms' proprietary fields) are rejected so they are not silently ignored. Remove the field and retry.
   </Accordion>
   <Accordion title="Q7: Can I keep using the video URL?">
     `content.video_url` is a direct download URL. Download and store the video promptly instead of using it as a long-term URL.

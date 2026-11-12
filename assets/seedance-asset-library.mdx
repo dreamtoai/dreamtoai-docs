@@ -230,7 +230,7 @@ curl -X POST "https://api.dreamto.ai/api/v3/contents/generations/tasks" \
   }'
 ```
 
-- `model` 取值与其余参数见 [API 全部参数](/api-reference/seedance/create-task)，完整示例见 [引用素材库素材](/video/seedance-2-0/scenarios/asset-reference)。
+- `model` 取值与其余参数见 [API 全部参数](/api-reference/seedance-2-0/create-task)，完整示例见 [引用素材库素材](/video/models/seedance-2-0/scenarios/asset-reference)。
 - 同一请求中可以同时使用 `asset://` 素材与普通 URL。
 - 提示词中通过「图片1」「视频1」「音频1」按素材在 `content` 中的顺序引用，**不要**在提示词里直接写素材 Id。
 - 引用 `Processing` / `Failed` 状态、已删除、不存在或不属于当前账号的素材时，创建任务返回 HTTP 400（`invalid_parameter`），不会扣费。

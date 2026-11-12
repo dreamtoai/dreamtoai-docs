@@ -73,39 +73,122 @@
           },
           {
             "group": "视频生成",
-            "openapi": "openapi/zh.json",
             "pages": [
-              "video/models/seedance-2-5",
-              "video/models/seedance-2-0",
-              "video/models/seedance-2-0-fast",
-              "video/models/seedance-2-0-mini",
+              "video/seedance-2-0",
+              "webhooks/task-callback",
               {
-                "group": "Seedance 接口与示例",
-                "icon": "code",
+                "group": "Seedance 2.5",
+                "icon": "/icons/doubao.svg",
+                "openapi": "openapi/zh/seedance-2-5.json",
                 "pages": [
-                  "video/seedance-2-0",
+                  "video/models/seedance-2-5",
                   "POST /api/v3/contents/generations/tasks",
                   "GET /api/v3/contents/generations/tasks/{id}",
                   "GET /api/v3/contents/generations/tasks",
-                  "webhooks/task-callback",
                   "webhook seedanceTaskCompleted",
                   {
-                    "group": "场景示例",
+                    "group": "使用示例",
                     "icon": "wand-magic-sparkles",
+                    "expanded": true,
                     "pages": [
-                      "video/seedance-2-0/scenarios/text-to-video",
-                      "video/seedance-2-0/scenarios/image-to-video",
-                      "video/seedance-2-0/scenarios/first-last-frame",
-                      "video/seedance-2-0/scenarios/multi-image-reference",
-                      "video/seedance-2-0/scenarios/video-edit",
-                      "video/seedance-2-0/scenarios/video-extend",
-                      "video/seedance-2-0/scenarios/reference-audio",
-                      "video/seedance-2-0/scenarios/web-search",
-                      "video/seedance-2-0/scenarios/asset-reference",
-                      "video/seedance-2-0/scenarios/frames",
-                      "video/seedance-2-0/scenarios/smart-duration-callback",
-                      "video/seedance-2-0/scenarios/seedance-2-5-long-video",
-                      "video/seedance-2-0/scenarios/fast-draft"
+                      "video/models/seedance-2-5/scenarios/text-to-video",
+                      "video/models/seedance-2-5/scenarios/image-to-video",
+                      "video/models/seedance-2-5/scenarios/first-last-frame",
+                      "video/models/seedance-2-5/scenarios/multi-image-reference",
+                      "video/models/seedance-2-5/scenarios/video-edit",
+                      "video/models/seedance-2-5/scenarios/video-extend",
+                      "video/models/seedance-2-5/scenarios/reference-audio",
+                      "video/models/seedance-2-5/scenarios/web-search",
+                      "video/models/seedance-2-5/scenarios/asset-reference",
+                      "video/models/seedance-2-5/scenarios/frames",
+                      "video/models/seedance-2-5/scenarios/smart-duration-callback",
+                      "video/models/seedance-2-5/scenarios/seedance-2-5-long-video"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Seedance 2.0",
+                "icon": "/icons/doubao.svg",
+                "openapi": "openapi/zh/seedance-2-0.json",
+                "pages": [
+                  "video/models/seedance-2-0",
+                  "POST /api/v3/contents/generations/tasks",
+                  "GET /api/v3/contents/generations/tasks/{id}",
+                  "GET /api/v3/contents/generations/tasks",
+                  "webhook seedanceTaskCompleted",
+                  {
+                    "group": "使用示例",
+                    "icon": "wand-magic-sparkles",
+                    "expanded": true,
+                    "pages": [
+                      "video/models/seedance-2-0/scenarios/text-to-video",
+                      "video/models/seedance-2-0/scenarios/image-to-video",
+                      "video/models/seedance-2-0/scenarios/first-last-frame",
+                      "video/models/seedance-2-0/scenarios/multi-image-reference",
+                      "video/models/seedance-2-0/scenarios/video-edit",
+                      "video/models/seedance-2-0/scenarios/video-extend",
+                      "video/models/seedance-2-0/scenarios/reference-audio",
+                      "video/models/seedance-2-0/scenarios/web-search",
+                      "video/models/seedance-2-0/scenarios/asset-reference",
+                      "video/models/seedance-2-0/scenarios/frames",
+                      "video/models/seedance-2-0/scenarios/smart-duration-callback"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Seedance 2.0 Fast",
+                "icon": "/icons/doubao.svg",
+                "openapi": "openapi/zh/seedance-2-0-fast.json",
+                "pages": [
+                  "video/models/seedance-2-0-fast",
+                  "POST /api/v3/contents/generations/tasks",
+                  "GET /api/v3/contents/generations/tasks/{id}",
+                  "GET /api/v3/contents/generations/tasks",
+                  "webhook seedanceTaskCompleted",
+                  {
+                    "group": "使用示例",
+                    "icon": "wand-magic-sparkles",
+                    "expanded": true,
+                    "pages": [
+                      "video/models/seedance-2-0-fast/scenarios/text-to-video",
+                      "video/models/seedance-2-0-fast/scenarios/image-to-video",
+                      "video/models/seedance-2-0-fast/scenarios/first-last-frame",
+                      "video/models/seedance-2-0-fast/scenarios/multi-image-reference",
+                      "video/models/seedance-2-0-fast/scenarios/reference-audio",
+                      "video/models/seedance-2-0-fast/scenarios/web-search",
+                      "video/models/seedance-2-0-fast/scenarios/asset-reference",
+                      "video/models/seedance-2-0-fast/scenarios/frames",
+                      "video/models/seedance-2-0-fast/scenarios/fast-draft"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Seedance 2.0 Mini",
+                "icon": "/icons/doubao.svg",
+                "openapi": "openapi/zh/seedance-2-0-mini.json",
+                "pages": [
+                  "video/models/seedance-2-0-mini",
+                  "POST /api/v3/contents/generations/tasks",
+                  "GET /api/v3/contents/generations/tasks/{id}",
+                  "GET /api/v3/contents/generations/tasks",
+                  "webhook seedanceTaskCompleted",
+                  {
+                    "group": "使用示例",
+                    "icon": "wand-magic-sparkles",
+                    "expanded": true,
+                    "pages": [
+                      "video/models/seedance-2-0-mini/scenarios/text-to-video",
+                      "video/models/seedance-2-0-mini/scenarios/image-to-video",
+                      "video/models/seedance-2-0-mini/scenarios/first-last-frame",
+                      "video/models/seedance-2-0-mini/scenarios/multi-image-reference",
+                      "video/models/seedance-2-0-mini/scenarios/reference-audio",
+                      "video/models/seedance-2-0-mini/scenarios/web-search",
+                      "video/models/seedance-2-0-mini/scenarios/asset-reference",
+                      "video/models/seedance-2-0-mini/scenarios/frames",
+                      "video/models/seedance-2-0-mini/scenarios/fast-draft"
                     ]
                   }
                 ]
@@ -125,7 +208,8 @@
                   "POST /api/v3/assets?Action=ListAssets&Version=2024-01-01",
                   "POST /api/v3/assets?Action=UpdateAsset&Version=2024-01-01",
                   "POST /api/v3/assets?Action=DeleteAsset&Version=2024-01-01"
-                ]
+                ],
+                "openapi": "openapi/zh.json"
               }
             ]
           }
@@ -144,39 +228,122 @@
           },
           {
             "group": "Video generation",
-            "openapi": "openapi/en.json",
             "pages": [
-              "en/video/models/seedance-2-5",
-              "en/video/models/seedance-2-0",
-              "en/video/models/seedance-2-0-fast",
-              "en/video/models/seedance-2-0-mini",
+              "en/video/seedance-2-0",
+              "en/webhooks/task-callback",
               {
-                "group": "Seedance API & examples",
-                "icon": "code",
+                "group": "Seedance 2.5",
+                "icon": "/icons/doubao.svg",
+                "openapi": "openapi/en/seedance-2-5.json",
                 "pages": [
-                  "en/video/seedance-2-0",
+                  "en/video/models/seedance-2-5",
                   "POST /api/v3/contents/generations/tasks",
                   "GET /api/v3/contents/generations/tasks/{id}",
                   "GET /api/v3/contents/generations/tasks",
-                  "en/webhooks/task-callback",
                   "webhook seedanceTaskCompleted",
                   {
-                    "group": "Scenarios",
+                    "group": "Examples",
                     "icon": "wand-magic-sparkles",
+                    "expanded": true,
                     "pages": [
-                      "en/video/seedance-2-0/scenarios/text-to-video",
-                      "en/video/seedance-2-0/scenarios/image-to-video",
-                      "en/video/seedance-2-0/scenarios/first-last-frame",
-                      "en/video/seedance-2-0/scenarios/multi-image-reference",
-                      "en/video/seedance-2-0/scenarios/video-edit",
-                      "en/video/seedance-2-0/scenarios/video-extend",
-                      "en/video/seedance-2-0/scenarios/reference-audio",
-                      "en/video/seedance-2-0/scenarios/web-search",
-                      "en/video/seedance-2-0/scenarios/asset-reference",
-                      "en/video/seedance-2-0/scenarios/frames",
-                      "en/video/seedance-2-0/scenarios/smart-duration-callback",
-                      "en/video/seedance-2-0/scenarios/seedance-2-5-long-video",
-                      "en/video/seedance-2-0/scenarios/fast-draft"
+                      "en/video/models/seedance-2-5/scenarios/text-to-video",
+                      "en/video/models/seedance-2-5/scenarios/image-to-video",
+                      "en/video/models/seedance-2-5/scenarios/first-last-frame",
+                      "en/video/models/seedance-2-5/scenarios/multi-image-reference",
+                      "en/video/models/seedance-2-5/scenarios/video-edit",
+                      "en/video/models/seedance-2-5/scenarios/video-extend",
+                      "en/video/models/seedance-2-5/scenarios/reference-audio",
+                      "en/video/models/seedance-2-5/scenarios/web-search",
+                      "en/video/models/seedance-2-5/scenarios/asset-reference",
+                      "en/video/models/seedance-2-5/scenarios/frames",
+                      "en/video/models/seedance-2-5/scenarios/smart-duration-callback",
+                      "en/video/models/seedance-2-5/scenarios/seedance-2-5-long-video"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Seedance 2.0",
+                "icon": "/icons/doubao.svg",
+                "openapi": "openapi/en/seedance-2-0.json",
+                "pages": [
+                  "en/video/models/seedance-2-0",
+                  "POST /api/v3/contents/generations/tasks",
+                  "GET /api/v3/contents/generations/tasks/{id}",
+                  "GET /api/v3/contents/generations/tasks",
+                  "webhook seedanceTaskCompleted",
+                  {
+                    "group": "Examples",
+                    "icon": "wand-magic-sparkles",
+                    "expanded": true,
+                    "pages": [
+                      "en/video/models/seedance-2-0/scenarios/text-to-video",
+                      "en/video/models/seedance-2-0/scenarios/image-to-video",
+                      "en/video/models/seedance-2-0/scenarios/first-last-frame",
+                      "en/video/models/seedance-2-0/scenarios/multi-image-reference",
+                      "en/video/models/seedance-2-0/scenarios/video-edit",
+                      "en/video/models/seedance-2-0/scenarios/video-extend",
+                      "en/video/models/seedance-2-0/scenarios/reference-audio",
+                      "en/video/models/seedance-2-0/scenarios/web-search",
+                      "en/video/models/seedance-2-0/scenarios/asset-reference",
+                      "en/video/models/seedance-2-0/scenarios/frames",
+                      "en/video/models/seedance-2-0/scenarios/smart-duration-callback"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Seedance 2.0 Fast",
+                "icon": "/icons/doubao.svg",
+                "openapi": "openapi/en/seedance-2-0-fast.json",
+                "pages": [
+                  "en/video/models/seedance-2-0-fast",
+                  "POST /api/v3/contents/generations/tasks",
+                  "GET /api/v3/contents/generations/tasks/{id}",
+                  "GET /api/v3/contents/generations/tasks",
+                  "webhook seedanceTaskCompleted",
+                  {
+                    "group": "Examples",
+                    "icon": "wand-magic-sparkles",
+                    "expanded": true,
+                    "pages": [
+                      "en/video/models/seedance-2-0-fast/scenarios/text-to-video",
+                      "en/video/models/seedance-2-0-fast/scenarios/image-to-video",
+                      "en/video/models/seedance-2-0-fast/scenarios/first-last-frame",
+                      "en/video/models/seedance-2-0-fast/scenarios/multi-image-reference",
+                      "en/video/models/seedance-2-0-fast/scenarios/reference-audio",
+                      "en/video/models/seedance-2-0-fast/scenarios/web-search",
+                      "en/video/models/seedance-2-0-fast/scenarios/asset-reference",
+                      "en/video/models/seedance-2-0-fast/scenarios/frames",
+                      "en/video/models/seedance-2-0-fast/scenarios/fast-draft"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Seedance 2.0 Mini",
+                "icon": "/icons/doubao.svg",
+                "openapi": "openapi/en/seedance-2-0-mini.json",
+                "pages": [
+                  "en/video/models/seedance-2-0-mini",
+                  "POST /api/v3/contents/generations/tasks",
+                  "GET /api/v3/contents/generations/tasks/{id}",
+                  "GET /api/v3/contents/generations/tasks",
+                  "webhook seedanceTaskCompleted",
+                  {
+                    "group": "Examples",
+                    "icon": "wand-magic-sparkles",
+                    "expanded": true,
+                    "pages": [
+                      "en/video/models/seedance-2-0-mini/scenarios/text-to-video",
+                      "en/video/models/seedance-2-0-mini/scenarios/image-to-video",
+                      "en/video/models/seedance-2-0-mini/scenarios/first-last-frame",
+                      "en/video/models/seedance-2-0-mini/scenarios/multi-image-reference",
+                      "en/video/models/seedance-2-0-mini/scenarios/reference-audio",
+                      "en/video/models/seedance-2-0-mini/scenarios/web-search",
+                      "en/video/models/seedance-2-0-mini/scenarios/asset-reference",
+                      "en/video/models/seedance-2-0-mini/scenarios/frames",
+                      "en/video/models/seedance-2-0-mini/scenarios/fast-draft"
                     ]
                   }
                 ]
@@ -196,7 +363,8 @@
                   "POST /api/v3/assets?Action=ListAssets&Version=2024-01-01",
                   "POST /api/v3/assets?Action=UpdateAsset&Version=2024-01-01",
                   "POST /api/v3/assets?Action=DeleteAsset&Version=2024-01-01"
-                ]
+                ],
+                "openapi": "openapi/en.json"
               }
             ]
           }
@@ -215,5 +383,39 @@
     "socials": {
       "website": "https://www.dreamto.ai"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/video/seedance-2-0/scenarios/seedance-2-5-long-video",
+      "destination": "/video/models/seedance-2-5/scenarios/seedance-2-5-long-video"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/fast-draft",
+      "destination": "/video/models/seedance-2-0-fast/scenarios/fast-draft"
+    },
+    {
+      "source": "/video/seedance-2-0/scenarios/:slug",
+      "destination": "/video/models/seedance-2-0/scenarios/:slug"
+    },
+    {
+      "source": "/api-reference/seedance/:slug",
+      "destination": "/api-reference/seedance-2-0/:slug"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/seedance-2-5-long-video",
+      "destination": "/en/video/models/seedance-2-5/scenarios/seedance-2-5-long-video"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/fast-draft",
+      "destination": "/en/video/models/seedance-2-0-fast/scenarios/fast-draft"
+    },
+    {
+      "source": "/en/video/seedance-2-0/scenarios/:slug",
+      "destination": "/en/video/models/seedance-2-0/scenarios/:slug"
+    },
+    {
+      "source": "/en/api-reference/seedance/:slug",
+      "destination": "/en/api-reference/seedance-2-0/:slug"
+    }
+  ]
 }

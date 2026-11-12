@@ -18,9 +18,9 @@ description: "任务进入终态后，DreamTo 向创建任务时提供的 callba
 
 - `callback_url` 必须是 `http` / `https` 地址，否则创建任务返回 HTTP 400（`callback_url 必须是 http/https 地址`）。
 - 回调地址解析到私网、回环或链路本地地址时，平台拒绝投递，请使用可公网访问的地址。
-- 回调只是加速通知的手段，建议同时保留对 [查询任务状态](/api-reference/seedance/get-task) 的低频轮询兜底。
+- 回调只是加速通知的手段，建议同时保留对 [查询任务状态](/api-reference/seedance-2-0/get-task) 的低频轮询兜底。
 
-该回调的 OpenAPI 定义与逐字段说明见 [任务完成回调](/api-reference/seedance/task-callback)。
+该回调的 OpenAPI 定义与逐字段说明见 [任务完成回调](/api-reference/seedance-2-0/task-callback)。
 
 ---
 
@@ -113,7 +113,7 @@ signature = hex( HMAC_SHA256( key = secret, message = timestamp + "." + taskId +
 4. 校验通过后再处理业务；校验失败返回 `401`，不要处理该回调。
 
 <Tip>
-  签名覆盖 `timestamp`、`taskId` 与 `status`。如需对结果地址做强校验，可在收到回调后用 `taskId` 调用 [查询任务状态](/api-reference/seedance/get-task) 获取权威结果。
+  签名覆盖 `timestamp`、`taskId` 与 `status`。如需对结果地址做强校验，可在收到回调后用 `taskId` 调用 [查询任务状态](/api-reference/seedance-2-0/get-task) 获取权威结果。
 </Tip>
 
 ### 校验代码
@@ -221,4 +221,4 @@ app.listen(3000);
 
 - 收到回调后先快速返回 `2xx`，再异步处理下载等耗时操作，避免超时触发重试。
 - 以 `taskId` 做幂等去重：网络抖动或超时可能导致同一任务收到多次回调。
-- 重试全部失败后不再投递，请通过 [查询任务状态](/api-reference/seedance/get-task) 或 [查询任务列表](/api-reference/seedance/list-tasks) 补偿获取结果。
+- 重试全部失败后不再投递，请通过 [查询任务状态](/api-reference/seedance-2-0/get-task) 或 [查询任务列表](/api-reference/seedance-2-0/list-tasks) 补偿获取结果。

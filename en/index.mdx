@@ -18,7 +18,7 @@ Welcome to the DreamTo Open Platform. These docs explain how to call the platfor
   <Card title="Seedance 2 video generation" icon="film" href="/en/video/seedance-2-0">
     Text-to-video, image-to-video, first/last frame, multi-image reference, video edit / extension, web search.
   </Card>
-  <Card title="All parameters · Try it" icon="sliders" href="/en/api-reference/seedance/create-task">
+  <Card title="All parameters · Try it" icon="sliders" href="/en/api-reference/seedance-2-0/create-task">
     Every parameter explained with its allowed values; pick a scenario example and try it live.
   </Card>
   <Card title="Seedance asset library" icon="box-archive" href="/en/assets/seedance-asset-library">
@@ -57,7 +57,7 @@ Welcome to the DreamTo Open Platform. These docs explain how to call the platfor
     curl "https://api.dreamto.ai/api/v3/contents/generations/tasks/task_xxx" \
       -H "Authorization: Bearer $DREAMTO_API_KEY"
     ```
-    When `status` is `succeeded`, download the video from `content.video_url`. You can also pass `callback_url` at creation to have the result pushed to you. See the [scenarios](/en/video/seedance-2-0/scenarios/text-to-video) for more.
+    When `status` is `succeeded`, download the video from `content.video_url`. You can also pass `callback_url` at creation to have the result pushed to you. See the [scenarios](/en/video/models/seedance-2-0/scenarios/text-to-video) for more.
   </Step>
 </Steps>
 
