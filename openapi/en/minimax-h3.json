@@ -1,0 +1,1731 @@
+{
+  "components": {
+    "schemas": {
+      "MiniMaxV2ContentItem": {
+        "additionalProperties": false,
+        "description": "One input: text, image, video or audio.",
+        "properties": {
+          "type": {
+            "description": "Item type.\n\n**Allowed values:**\n- `text`: Text prompt in `text`.\n- `image_url`: Image in `image_url.url`.\n- `video_url`: Video in `video_url.url`.\n- `audio_url`: Audio in `audio_url.url`.",
+            "enum": [
+              "text",
+              "image_url",
+              "video_url",
+              "audio_url"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "description": "The prompt; required and non-empty when `type` is `text`. Up to 7000 characters for generation and Context IR, 40000 for regeneration.",
+            "type": "string"
+          },
+          "image_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "The image; required when `type` is `image_url`. JPG / JPEG / PNG / WEBP / HEIC / HEIF, up to 30 MB, 256–5760 px per side, aspect ratio 0.4–2.5."
+          },
+          "video_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "The video; required when `type` is `video_url`. MP4 / MOV (H.264 or H.265), up to 50 MB, 2–15 s per clip and 15 s in total, 23.976–60 fps."
+          },
+          "audio_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "The audio; required when `type` is `audio_url`. WAV / MP3, up to 15 MB, 2–15 s per clip and 15 s in total."
+          },
+          "role": {
+            "description": "What the item is used for. A single image without a role is treated as `first_frame`; with several images every image needs a role. `video_url` requires `reference_video`, `audio_url` requires `reference_audio`, and `text` takes no role.\n\n**Allowed values:**\n- `first_frame`: First-frame image (image-to-video), at most 1.\n- `last_frame`: Last-frame image, at most 1; pair with a first frame for first-and-last-frame generation.\n- `reference_image`: Reference image (multimodal reference), at most 9.\n- `reference_video`: Reference video (multimodal reference), at most 3.\n- `reference_audio`: Reference audio (multimodal reference), at most 3.",
+            "enum": [
+              "first_frame",
+              "last_frame",
+              "reference_image",
+              "reference_video",
+              "reference_audio"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2ContextIRRequest": {
+        "additionalProperties": false,
+        "description": "Request body of an H3 Context IR task, which analyzes the inputs and returns an enhanced structured prompt instead of a video.",
+        "properties": {
+          "model": {
+            "default": "MiniMax-H3",
+            "description": "Model name. Must be `MiniMax-H3`.\n\n**Allowed values:**\n- `MiniMax-H3`: MiniMax H3 flagship model.",
+            "enum": [
+              "MiniMax-H3"
+            ],
+            "type": "string"
+          },
+          "content": {
+            "description": "Input items with exactly one non-empty `text` item; media rules are the same as for video generation.",
+            "items": {
+              "$ref": "#/components/schemas/MiniMaxV2ContentItem"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "duration": {
+            "description": "Video duration in seconds, an integer from `4` to `15`.",
+            "format": "int64",
+            "maximum": 15,
+            "minimum": 4,
+            "type": "integer"
+          },
+          "ratio": {
+            "default": "adaptive",
+            "description": "Aspect ratio. Required for text-to-video and cannot be `adaptive`; image-to-video always follows the input image (other values are ignored); multimodal reference defaults to `adaptive`.\n\n**Allowed values:**\n- `adaptive`: Adaptive: image-to-video follows the input image, reference-to-video is decided by the model. Not available for text-to-video.\n- `21:9`: 21:9 ultra-wide.\n- `16:9`: 16:9 landscape.\n- `4:3`: 4:3 landscape.\n- `1:1`: 1:1 square.\n- `3:4`: 3:4 portrait.\n- `9:16`: 9:16 portrait.",
+            "enum": [
+              "adaptive",
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "content",
+          "duration"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2CreateTaskResponse": {
+        "additionalProperties": false,
+        "description": "Response of a successful create call.",
+        "properties": {
+          "task_id": {
+            "description": "Task ID, used to query the task.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2ErrorDetail": {
+        "additionalProperties": false,
+        "description": "Error details.",
+        "properties": {
+          "type": {
+            "description": "Error category.\n\n**Allowed values:**\n- `bad_request_error`: Invalid parameters (400).\n- `authorized_error`: Authentication failed (401 / 403).\n- `insufficient_balance_error`: Insufficient balance (402).\n- `unprocessable_entity_error`: Input contains sensitive content (422).\n- `rate_limit_error`: Rate limited (429); retry later.\n- `server_error`: Server error (500); retry later.\n- `overloaded_error`: Overloaded (529); retry later.",
+            "enum": [
+              "bad_request_error",
+              "authorized_error",
+              "insufficient_balance_error",
+              "unprocessable_entity_error",
+              "rate_limit_error",
+              "server_error",
+              "overloaded_error"
+            ],
+            "type": "string"
+          },
+          "message": {
+            "description": "Error message; the trailing number in parentheses is the error code, e.g. `(2013)`.",
+            "type": "string"
+          },
+          "http_code": {
+            "description": "HTTP status as a string.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "message",
+          "http_code"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2ErrorResponse": {
+        "additionalProperties": false,
+        "description": "Error response. The HTTP status is the error code.",
+        "properties": {
+          "type": {
+            "description": "Always `error`.",
+            "type": "string"
+          },
+          "error": {
+            "$ref": "#/components/schemas/MiniMaxV2ErrorDetail",
+            "description": "Error details."
+          },
+          "request_id": {
+            "description": "Request ID, equal to the `X-Request-Id` header. Include it when contacting support.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "error",
+          "request_id"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2MediaURL": {
+        "additionalProperties": false,
+        "description": "Media location.",
+        "properties": {
+          "url": {
+            "description": "A public `http(s)` URL or a `data:<type>;base64,<data>` URL (lowercase format). `mm_file://` is not supported. The whole request body is limited to 64 MB, so use public URLs for large files.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2RegenerationContentItem": {
+        "additionalProperties": false,
+        "description": "A regeneration input; adds the `base_video` role to the regular roles.",
+        "properties": {
+          "type": {
+            "description": "Item type.\n\n**Allowed values:**\n- `text`: Text prompt in `text`.\n- `image_url`: Image in `image_url.url`.\n- `video_url`: Video in `video_url.url`.\n- `audio_url`: Audio in `audio_url.url`.",
+            "enum": [
+              "text",
+              "image_url",
+              "video_url",
+              "audio_url"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "description": "The prompt; required and non-empty when `type` is `text`. Up to 7000 characters for generation and Context IR, 40000 for regeneration.",
+            "type": "string"
+          },
+          "image_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "The image; required when `type` is `image_url`. JPG / JPEG / PNG / WEBP / HEIC / HEIF, up to 30 MB, 256–5760 px per side, aspect ratio 0.4–2.5."
+          },
+          "video_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "The video; required when `type` is `video_url`. MP4 / MOV (H.264 or H.265), up to 50 MB, 2–15 s per clip and 15 s in total, 23.976–60 fps."
+          },
+          "audio_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "The audio; required when `type` is `audio_url`. WAV / MP3, up to 15 MB, 2–15 s per clip and 15 s in total."
+          },
+          "role": {
+            "description": "What the item is used for. The source video must be `base_video`; other roles work as for regular items.\n\n**Allowed values:**\n- `base_video`: The source video to regenerate; exactly 1.\n- `first_frame`: First-frame image used for the source video.\n- `last_frame`: Last-frame image used for the source video.\n- `reference_image`: Reference image used for the source video.\n- `reference_video`: Reference video used for the source video.\n- `reference_audio`: Reference audio used for the source video.",
+            "enum": [
+              "base_video",
+              "first_frame",
+              "last_frame",
+              "reference_image",
+              "reference_video",
+              "reference_audio"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2Task": {
+        "additionalProperties": false,
+        "description": "Task details.",
+        "properties": {
+          "id": {
+            "description": "Task ID.",
+            "type": "string"
+          },
+          "model": {
+            "description": "Model name.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Task status.\n\n**Allowed values:**\n- `queued`: Waiting in the queue.\n- `running`: In progress.\n- `succeeded`: Succeeded; read the output from `content`.\n- `failed`: Failed; read `error`. Not charged.\n- `cancelled`: Cancelled. Not charged.",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "error": {
+            "$ref": "#/components/schemas/MiniMaxV2TaskError",
+            "description": "Failure reason, only when `status` is `failed` or `cancelled`. Failed and cancelled tasks are not charged."
+          },
+          "created_at": {
+            "description": "Creation time, Unix seconds.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "updated_at": {
+            "description": "Time of the last status change, Unix seconds.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "content": {
+            "$ref": "#/components/schemas/MiniMaxV2TaskContent",
+            "description": "Task output, only when `status` is `succeeded`."
+          },
+          "resolution": {
+            "description": "Output resolution; not returned for Context IR tasks.",
+            "type": "string"
+          },
+          "duration": {
+            "description": "Video duration in seconds.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/MiniMaxV2TaskUsage",
+            "description": "Usage of the task, detailed only when `status` is `succeeded` (an empty object on failure)."
+          },
+          "ratio": {
+            "description": "Aspect ratio; an empty string when not applicable.",
+            "type": "string"
+          },
+          "task_type": {
+            "description": "Task type.\n\n**Allowed values:**\n- `generation`: Video generation (`/v2/video_generation`).\n- `h3_context_ir`: H3 Context IR (`/v2/h3_context_ir`).\n- `regeneration`: Video regeneration (`/v2/video_regeneration`).",
+            "enum": [
+              "generation",
+              "h3_context_ir",
+              "regeneration"
+            ],
+            "type": "string"
+          },
+          "modality": {
+            "description": "Output modality.\n\n**Allowed values:**\n- `video`: Video (generation and regeneration).\n- `text`: Text (Context IR).",
+            "enum": [
+              "video",
+              "text"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "model",
+          "status",
+          "created_at",
+          "updated_at",
+          "ratio",
+          "task_type",
+          "modality"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2TaskContent": {
+        "additionalProperties": false,
+        "description": "Task output.",
+        "properties": {
+          "url": {
+            "description": "Video download URL (generation and regeneration tasks), e.g. `https://api.dreamto.ai/v2/files/mmxf_<32 hex characters>`. Downloading needs no API Key and supports `Range` requests. The link is valid for at most 7 days, so download and store the video promptly. Repeated queries of a task return the same link.",
+            "type": "string"
+          },
+          "prompt": {
+            "description": "The enhanced structured prompt (Context IR tasks).",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MiniMaxV2TaskError": {
+        "additionalProperties": false,
+        "description": "Why the task failed.",
+        "properties": {
+          "code": {
+            "description": "Error code, e.g. `1026` (sensitive content).",
+            "type": "string"
+          },
+          "message": {
+            "description": "Error message.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2TaskResponse": {
+        "additionalProperties": false,
+        "description": "Query response when `response_format` is `task`. With `flat`, the fields of `task` are at the top level instead.",
+        "properties": {
+          "task": {
+            "$ref": "#/components/schemas/MiniMaxV2Task",
+            "description": "The task."
+          }
+        },
+        "required": [
+          "task"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2TaskUsage": {
+        "additionalProperties": false,
+        "description": "Task usage. Video tasks report seconds; Context IR tasks report tokens.",
+        "properties": {
+          "total_seconds": {
+            "description": "Total metered seconds = `input_seconds` + `output_seconds`.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_seconds": {
+            "description": "Seconds of reference video input.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "output_seconds": {
+            "description": "Seconds of output video.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_image_count": {
+            "description": "Number of input images (first frame + last frame + reference images).",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_audio_seconds": {
+            "description": "Seconds of reference audio input; omitted without reference audio.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_tokens": {
+            "description": "`prompt_tokens` + `completion_tokens`.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "prompt_tokens": {
+            "description": "Input tokens (for video tasks, the inputs converted to tokens).",
+            "format": "int64",
+            "type": "integer"
+          },
+          "completion_tokens": {
+            "description": "Output tokens (for video tasks, the output video converted to tokens).",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "MiniMaxV2VideoGenerationRequest": {
+        "additionalProperties": false,
+        "description": "Request body of a video generation task.",
+        "properties": {
+          "model": {
+            "default": "MiniMax-H3",
+            "description": "Model name. Must be `MiniMax-H3`.\n\n**Allowed values:**\n- `MiniMax-H3`: MiniMax H3 flagship model.",
+            "enum": [
+              "MiniMax-H3"
+            ],
+            "type": "string"
+          },
+          "content": {
+            "description": "Input items. Must include a non-empty `text` item (the prompt); images, videos and audio are told apart by `role`. Frame roles (`first_frame` / `last_frame`) cannot be combined with reference roles (`reference_image` / `reference_video` / `reference_audio`).",
+            "items": {
+              "$ref": "#/components/schemas/MiniMaxV2ContentItem"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "resolution": {
+            "description": "Output resolution.\n\n**Allowed values:**\n- `768P`: 768P.\n- `2K`: 2K.",
+            "enum": [
+              "768P",
+              "2K"
+            ],
+            "type": "string"
+          },
+          "duration": {
+            "description": "Video duration in seconds, an integer from `4` to `15`.",
+            "format": "int64",
+            "maximum": 15,
+            "minimum": 4,
+            "type": "integer"
+          },
+          "ratio": {
+            "default": "adaptive",
+            "description": "Aspect ratio. Required for text-to-video and cannot be `adaptive`; image-to-video always follows the input image (other values are ignored); multimodal reference defaults to `adaptive`.\n\n**Allowed values:**\n- `adaptive`: Adaptive: image-to-video follows the input image, reference-to-video is decided by the model. Not available for text-to-video.\n- `21:9`: 21:9 ultra-wide.\n- `16:9`: 16:9 landscape.\n- `4:3`: 4:3 landscape.\n- `1:1`: 1:1 square.\n- `3:4`: 3:4 portrait.\n- `9:16`: 9:16 portrait.",
+            "enum": [
+              "adaptive",
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "type": "string"
+          },
+          "aigc_watermark": {
+            "default": false,
+            "description": "Whether to add an AIGC watermark to the video. Defaults to `false`.",
+            "type": "boolean"
+          },
+          "response_format": {
+            "default": "task",
+            "description": "Shape of the query response for this task. Defaults to `task`.\n\n**Allowed values:**\n- `task`: Task fields are nested under `task`.\n- `flat`: Task fields are at the top level.",
+            "enum": [
+              "task",
+              "flat"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "content",
+          "resolution",
+          "duration"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2VideoRegenerationRequest": {
+        "additionalProperties": false,
+        "description": "Request body of a regeneration task, which regenerates a video matching the MiniMax-H3 768P output spec as 2K. Provide exactly one of `source_task_id` and `content`.",
+        "properties": {
+          "model": {
+            "default": "MiniMax-H3",
+            "description": "Model name. Must be `MiniMax-H3`.\n\n**Allowed values:**\n- `MiniMax-H3`: MiniMax H3 flagship model.",
+            "enum": [
+              "MiniMax-H3"
+            ],
+            "type": "string"
+          },
+          "source_task_id": {
+            "description": "Regenerate by task: the `task_id` of a `succeeded` `/v2/video_generation` task of your account created within the last 7 days. Do not combine with `content`.",
+            "type": "string"
+          },
+          "content": {
+            "description": "Regenerate from a source video: exactly one `video_url` with `role` `base_video`, plus the final prompt and all inputs used to generate that video, unchanged. The source needs an audio track, 24 fps, sides divisible by 32, 768×768 to 768×1344 pixels and 107–362 frames. Do not combine with `source_task_id`.",
+            "items": {
+              "$ref": "#/components/schemas/MiniMaxV2RegenerationContentItem"
+            },
+            "type": "array"
+          },
+          "resolution": {
+            "default": "2K",
+            "description": "Output resolution. Must be `2K`.\n\n**Allowed values:**\n- `2K`: 2K.",
+            "enum": [
+              "2K"
+            ],
+            "type": "string"
+          },
+          "aigc_watermark": {
+            "default": false,
+            "description": "Whether to add an AIGC watermark to the video. Defaults to `false`.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "model",
+          "resolution"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "Send your DreamTo API Key in the `Authorization: Bearer <API Key>` header.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "Same paths, request bodies, responses and error envelope as the official MiniMax V2 video API (`/v2/video_generation`, `/v2/video_regeneration`, `/v2/h3_context_ir`, `/v2/query/video_generation/{task_id}`). To migrate from MiniMax, change the base URL to `https://api.dreamto.ai` and use a DreamTo API Key.",
+    "title": "MiniMax H3 Video API",
+    "version": "v2"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v2/h3_context_ir": {
+      "post": {
+        "description": "Analyzes the prompt and inputs and returns an enhanced structured video prompt; no video is generated. Query the returned `task_id`; on success read `content.prompt`.",
+        "operationId": "minimaxCreateContextIR",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Context IR · text to video": {
+                  "description": "Enhance a text-only prompt.",
+                  "summary": "Context IR · text to video",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "A ginger cat runs through puddles on a neon-lit street at night."
+                      }
+                    ],
+                    "duration": 5,
+                    "ratio": "16:9"
+                  }
+                },
+                "Context IR · image to video": {
+                  "description": "Enhance a prompt together with a first-frame image.",
+                  "summary": "Context IR · image to video",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "The character turns to face the camera."
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/first-frame.jpg"
+                        },
+                        "role": "first_frame"
+                      }
+                    ],
+                    "duration": 5,
+                    "ratio": "adaptive"
+                  }
+                },
+                "Context IR · multimodal reference": {
+                  "description": "Enhance a prompt with a reference video and audio.",
+                  "summary": "Context IR · multimodal reference",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Follow the motion of video 1 and the voice of audio 1."
+                      },
+                      {
+                        "type": "video_url",
+                        "video_url": {
+                          "url": "https://your-cdn.example.com/reference.mp4"
+                        },
+                        "role": "reference_video"
+                      },
+                      {
+                        "type": "audio_url",
+                        "audio_url": {
+                          "url": "https://your-cdn.example.com/voice.mp3"
+                        },
+                        "role": "reference_audio"
+                      }
+                    ],
+                    "duration": 5
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MiniMaxV2ContextIRRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "task_id": "794576931165300894"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2CreateTaskResponse"
+                }
+              }
+            },
+            "description": "Task created.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request ID. Include it when contacting support.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "bad_request_error",
+                        "message": "invalid params, content must include a non-empty text item (prompt is required) (2013)",
+                        "http_code": "400"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid parameters, or an invalid task ID."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "authorized_error",
+                        "message": "login fail: Please carry the API secret key in the 'Authorization' field of the request header (1004)",
+                        "http_code": "401"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "insufficient_balance_error",
+                        "message": "insufficient balance (1008)",
+                        "http_code": "402"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Insufficient balance."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "unprocessable_entity_error",
+                        "message": "video description contains sensitive content (1026)",
+                        "http_code": "422"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "The input contains sensitive content."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "rate_limit_error",
+                        "message": "rate limit, please retry later (1002)",
+                        "http_code": "429"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limited; retry later."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "server_error",
+                        "message": "internal error (1000)",
+                        "http_code": "500"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Server error; retry later."
+          },
+          "529": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "overloaded_error",
+                        "message": "the service is overloaded, please retry later (1000)",
+                        "http_code": "529"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Overloaded; retry later."
+          }
+        },
+        "summary": "Create H3 Context IR task",
+        "tags": [
+          "MiniMax H3"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/minimax-h3/create-context-ir",
+          "metadata": {
+            "sidebarTitle": "Create H3 Context IR task",
+            "title": "Create H3 Context IR task"
+          }
+        }
+      }
+    },
+    "/v2/query/video_generation/{task_id}": {
+      "get": {
+        "description": "Returns the status and result of a generation, regeneration or Context IR task. Poll every 10–30 seconds; when `status` is `succeeded`, read `content.url` for video tasks or `content.prompt` for Context IR tasks.",
+        "operationId": "minimaxQueryTask",
+        "parameters": [
+          {
+            "description": "The `task_id` returned when the task was created.",
+            "example": "794576931165300894",
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "examples": [
+                "794576931165300894"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Running": {
+                    "summary": "Running",
+                    "value": {
+                      "task": {
+                        "id": "794576931165300894",
+                        "model": "MiniMax-H3",
+                        "status": "running",
+                        "created_at": 1785125529,
+                        "updated_at": 1785125529,
+                        "resolution": "2K",
+                        "duration": 5,
+                        "ratio": "16:9",
+                        "task_type": "generation",
+                        "modality": "video"
+                      }
+                    }
+                  },
+                  "Succeeded": {
+                    "summary": "Succeeded",
+                    "value": {
+                      "task": {
+                        "id": "794576931165300894",
+                        "model": "MiniMax-H3",
+                        "status": "succeeded",
+                        "created_at": 1785125529,
+                        "updated_at": 1785125946,
+                        "content": {
+                          "url": "https://api.dreamto.ai/v2/files/mmxf_3f9a1c2b7d4e5f60718293a4c5d6e7f8"
+                        },
+                        "resolution": "2K",
+                        "duration": 5,
+                        "usage": {
+                          "total_seconds": 5,
+                          "input_seconds": 0,
+                          "output_seconds": 5,
+                          "input_image_count": 1,
+                          "total_tokens": 273890,
+                          "prompt_tokens": 13500,
+                          "completion_tokens": 260390
+                        },
+                        "ratio": "16:9",
+                        "task_type": "generation",
+                        "modality": "video"
+                      }
+                    }
+                  },
+                  "Regeneration succeeded": {
+                    "summary": "Regeneration succeeded",
+                    "value": {
+                      "task": {
+                        "id": "794576931165300894",
+                        "model": "MiniMax-H3",
+                        "status": "succeeded",
+                        "created_at": 1785125529,
+                        "updated_at": 1785125946,
+                        "content": {
+                          "url": "https://api.dreamto.ai/v2/files/mmxf_3f9a1c2b7d4e5f60718293a4c5d6e7f8"
+                        },
+                        "resolution": "2K",
+                        "duration": 5,
+                        "usage": {
+                          "total_seconds": 5,
+                          "input_seconds": 0,
+                          "output_seconds": 5,
+                          "input_image_count": 0
+                        },
+                        "ratio": "",
+                        "task_type": "regeneration",
+                        "modality": "video"
+                      }
+                    }
+                  },
+                  "Context IR succeeded": {
+                    "summary": "Context IR succeeded",
+                    "value": {
+                      "task": {
+                        "id": "794576931165300894",
+                        "model": "MiniMax-H3",
+                        "status": "succeeded",
+                        "created_at": 1785702855,
+                        "updated_at": 1785702884,
+                        "content": {
+                          "prompt": "integrated_multimodal_description: [Shot 1] ..."
+                        },
+                        "duration": 5,
+                        "usage": {
+                          "total_tokens": 9090,
+                          "prompt_tokens": 5664,
+                          "completion_tokens": 3426
+                        },
+                        "ratio": "16:9",
+                        "task_type": "h3_context_ir",
+                        "modality": "text"
+                      }
+                    }
+                  },
+                  "Failed": {
+                    "summary": "Failed",
+                    "value": {
+                      "task": {
+                        "id": "794576931165300894",
+                        "model": "MiniMax-H3",
+                        "status": "failed",
+                        "error": {
+                          "code": "1026",
+                          "message": "video description contains sensitive content"
+                        },
+                        "created_at": 1785125529,
+                        "updated_at": 1785125700,
+                        "resolution": "2K",
+                        "duration": 5,
+                        "usage": {},
+                        "ratio": "16:9",
+                        "task_type": "generation",
+                        "modality": "video"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2TaskResponse"
+                }
+              }
+            },
+            "description": "Task details.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request ID. Include it when contacting support.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "bad_request_error",
+                        "message": "invalid params, invalid task_id (2013)",
+                        "http_code": "400"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid parameters, or an invalid task ID."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "authorized_error",
+                        "message": "login fail: Please carry the API secret key in the 'Authorization' field of the request header (1004)",
+                        "http_code": "401"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "rate_limit_error",
+                        "message": "rate limit, please retry later (1002)",
+                        "http_code": "429"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limited; retry later."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "server_error",
+                        "message": "internal error (1000)",
+                        "http_code": "500"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Server error; retry later."
+          }
+        },
+        "summary": "Query task",
+        "tags": [
+          "MiniMax H3"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/minimax-h3/query-task",
+          "metadata": {
+            "sidebarTitle": "Query task",
+            "title": "Query task"
+          }
+        }
+      }
+    },
+    "/v2/video_generation": {
+      "post": {
+        "description": "Creates an asynchronous video generation task: text-to-video, image-to-video (first frame / last frame / both) or multimodal reference-to-video. Returns a `task_id`; poll the query endpoint for the result. Invalid parameters return 400 without creating or charging a task; failed tasks are not charged.",
+        "operationId": "minimaxCreateVideoGeneration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Text to video": {
+                  "description": "Prompt only; `ratio` is required and cannot be `adaptive`.",
+                  "summary": "Text to video",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Epic space-opera teaser: a captain stands alone at a vast observation window as the last fleet jumps away in a blinding flash, the bridge shaking."
+                      }
+                    ],
+                    "resolution": "2K",
+                    "duration": 5,
+                    "ratio": "16:9"
+                  }
+                },
+                "Image to video (first frame)": {
+                  "description": "The image is the first frame; the ratio follows the image.",
+                  "summary": "Image to video (first frame)",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Slow push-in as steam rises from the ramen bowl."
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/first-frame.jpg"
+                        },
+                        "role": "first_frame"
+                      }
+                    ],
+                    "resolution": "768P",
+                    "duration": 5,
+                    "ratio": "adaptive"
+                  }
+                },
+                "First and last frame": {
+                  "description": "Transition from the first frame to the last frame.",
+                  "summary": "First and last frame",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "The character walks from the window to the door; the camera follows."
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/first-frame.jpg"
+                        },
+                        "role": "first_frame"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/last-frame.jpg"
+                        },
+                        "role": "last_frame"
+                      }
+                    ],
+                    "resolution": "768P",
+                    "duration": 6,
+                    "ratio": "adaptive"
+                  }
+                },
+                "Multimodal reference": {
+                  "description": "Follow the motion of a reference video and the voice of a reference audio.",
+                  "summary": "Multimodal reference",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "The character says: Follow the wind, live free. Voice follows audio 1."
+                      },
+                      {
+                        "type": "video_url",
+                        "video_url": {
+                          "url": "https://your-cdn.example.com/reference.mp4"
+                        },
+                        "role": "reference_video"
+                      },
+                      {
+                        "type": "audio_url",
+                        "audio_url": {
+                          "url": "https://your-cdn.example.com/voice.mp3"
+                        },
+                        "role": "reference_audio"
+                      }
+                    ],
+                    "resolution": "2K",
+                    "duration": 5,
+                    "ratio": "adaptive"
+                  }
+                },
+                "Reference images": {
+                  "description": "Keep characters and scenes consistent with up to 9 reference images.",
+                  "summary": "Reference images",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "The girl from image 1 runs down the street from image 2."
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/girl.png"
+                        },
+                        "role": "reference_image"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/street.png"
+                        },
+                        "role": "reference_image"
+                      }
+                    ],
+                    "resolution": "768P",
+                    "duration": 8,
+                    "ratio": "16:9"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MiniMaxV2VideoGenerationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "task_id": "794576931165300894"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2CreateTaskResponse"
+                }
+              }
+            },
+            "description": "Task created.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request ID. Include it when contacting support.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "bad_request_error",
+                        "message": "invalid params, content must include a non-empty text item (prompt is required) (2013)",
+                        "http_code": "400"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid parameters, or an invalid task ID."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "authorized_error",
+                        "message": "login fail: Please carry the API secret key in the 'Authorization' field of the request header (1004)",
+                        "http_code": "401"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "insufficient_balance_error",
+                        "message": "insufficient balance (1008)",
+                        "http_code": "402"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Insufficient balance."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "unprocessable_entity_error",
+                        "message": "video description contains sensitive content (1026)",
+                        "http_code": "422"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "The input contains sensitive content."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "rate_limit_error",
+                        "message": "rate limit, please retry later (1002)",
+                        "http_code": "429"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limited; retry later."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "server_error",
+                        "message": "internal error (1000)",
+                        "http_code": "500"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Server error; retry later."
+          },
+          "529": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "overloaded_error",
+                        "message": "the service is overloaded, please retry later (1000)",
+                        "http_code": "529"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Overloaded; retry later."
+          }
+        },
+        "summary": "Create video generation task",
+        "tags": [
+          "MiniMax H3"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/minimax-h3/create-video-generation",
+          "metadata": {
+            "sidebarTitle": "Create video generation task",
+            "title": "Create video generation task"
+          }
+        }
+      }
+    },
+    "/v2/video_regeneration": {
+      "post": {
+        "description": "Regenerates a MiniMax-H3 768P video as 2K, either by task (`source_task_id`) or from a source video (`base_video` in `content`); provide exactly one. Query the returned `task_id` with the query endpoint; its `task_type` is `regeneration`.",
+        "operationId": "minimaxCreateVideoRegeneration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Regenerate by task ID": {
+                  "description": "Use the `task_id` of a 768P generation task that succeeded within 7 days.",
+                  "summary": "Regenerate by task ID",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "source_task_id": "794576931165300894",
+                    "resolution": "2K"
+                  }
+                },
+                "Regenerate from a video": {
+                  "description": "Send the source video and the final prompt that produced it.",
+                  "summary": "Regenerate from a video",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "<the final prompt used for the source video>"
+                      },
+                      {
+                        "type": "video_url",
+                        "video_url": {
+                          "url": "https://your-cdn.example.com/h3-768p.mp4"
+                        },
+                        "role": "base_video"
+                      }
+                    ],
+                    "resolution": "2K"
+                  }
+                },
+                "Regenerate from a video (image to video)": {
+                  "description": "When the source came from image-to-video, also send the first-frame image.",
+                  "summary": "Regenerate from a video (image to video)",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "<the final prompt used for the source video>"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/first-frame.jpg"
+                        },
+                        "role": "first_frame"
+                      },
+                      {
+                        "type": "video_url",
+                        "video_url": {
+                          "url": "https://your-cdn.example.com/h3-768p.mp4"
+                        },
+                        "role": "base_video"
+                      }
+                    ],
+                    "resolution": "2K"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MiniMaxV2VideoRegenerationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "task_id": "794576931165300894"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2CreateTaskResponse"
+                }
+              }
+            },
+            "description": "Task created.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request ID. Include it when contacting support.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "bad_request_error",
+                        "message": "invalid params, content must include a non-empty text item (prompt is required) (2013)",
+                        "http_code": "400"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid parameters, or an invalid task ID."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "authorized_error",
+                        "message": "login fail: Please carry the API secret key in the 'Authorization' field of the request header (1004)",
+                        "http_code": "401"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "insufficient_balance_error",
+                        "message": "insufficient balance (1008)",
+                        "http_code": "402"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Insufficient balance."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "unprocessable_entity_error",
+                        "message": "video description contains sensitive content (1026)",
+                        "http_code": "422"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "The input contains sensitive content."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "rate_limit_error",
+                        "message": "rate limit, please retry later (1002)",
+                        "http_code": "429"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Rate limited; retry later."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "server_error",
+                        "message": "internal error (1000)",
+                        "http_code": "500"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Server error; retry later."
+          },
+          "529": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "overloaded_error",
+                        "message": "the service is overloaded, please retry later (1000)",
+                        "http_code": "529"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "Overloaded; retry later."
+          }
+        },
+        "summary": "Create video regeneration task",
+        "tags": [
+          "MiniMax H3"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/minimax-h3/create-video-regeneration",
+          "metadata": {
+            "sidebarTitle": "Create video regeneration task",
+            "title": "Create video regeneration task"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "MiniMax H3"
+    }
+  ]
+}

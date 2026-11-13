@@ -190,6 +190,18 @@
                 ]
               },
               {
+                "group": "MiniMax H3",
+                "icon": "film",
+                "openapi": "openapi/zh/minimax-h3.json",
+                "pages": [
+                  "video/models/minimax-h3",
+                  "POST /v2/video_generation",
+                  "POST /v2/video_regeneration",
+                  "POST /v2/h3_context_ir",
+                  "GET /v2/query/video_generation/{task_id}"
+                ]
+              },
+              {
                 "group": "Seedance 素材库",
                 "icon": "/icons/doubao.svg",
                 "pages": [
@@ -338,6 +350,18 @@
                       "en/video/models/seedance-2-0-mini/scenarios/fast-draft"
                     ]
                   }
+                ]
+              },
+              {
+                "group": "MiniMax H3",
+                "icon": "film",
+                "openapi": "openapi/en/minimax-h3.json",
+                "pages": [
+                  "en/video/models/minimax-h3",
+                  "POST /v2/video_generation",
+                  "POST /v2/video_regeneration",
+                  "POST /v2/h3_context_ir",
+                  "GET /v2/query/video_generation/{task_id}"
                 ]
               },
               {

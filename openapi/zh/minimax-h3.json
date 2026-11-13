@@ -1,0 +1,1731 @@
+{
+  "components": {
+    "schemas": {
+      "MiniMaxV2ContentItem": {
+        "additionalProperties": false,
+        "description": "一个输入项：文本、图片、视频或音频。",
+        "properties": {
+          "type": {
+            "description": "内容项类型。\n\n**可选值：**\n- `text`：文本提示词，填 `text`。\n- `image_url`：图片，填 `image_url.url`。\n- `video_url`：视频，填 `video_url.url`。\n- `audio_url`：音频，填 `audio_url.url`。",
+            "enum": [
+              "text",
+              "image_url",
+              "video_url",
+              "audio_url"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "description": "提示词，`type` 为 `text` 时必填且不能为空。生成与 Context IR 最多 7000 个字符，视频再生成最多 40000 个字符。",
+            "type": "string"
+          },
+          "image_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "图片，`type` 为 `image_url` 时必填。支持 JPG / JPEG / PNG / WEBP / HEIC / HEIF，单张 ≤ 30 MB，宽高 256 ~ 5760 像素，宽高比 0.4 ~ 2.5。"
+          },
+          "video_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "视频，`type` 为 `video_url` 时必填。MP4 / MOV（H.264 或 H.265），单个 ≤ 50 MB，每段 2 ~ 15 秒且总时长 ≤ 15 秒，帧率 23.976 ~ 60 fps。"
+          },
+          "audio_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "音频，`type` 为 `audio_url` 时必填。WAV / MP3，单个 ≤ 15 MB，每段 2 ~ 15 秒且总时长 ≤ 15 秒。"
+          },
+          "role": {
+            "description": "素材用途。只有一张图片且未填 `role` 时按 `first_frame` 处理；多张图片时每张都必须填写。`video_url` 必须填 `reference_video`，`audio_url` 必须填 `reference_audio`，`text` 不填。\n\n**可选值：**\n- `first_frame`：首帧图片（图生视频），最多 1 张。\n- `last_frame`：尾帧图片，最多 1 张；可与首帧组成首尾帧生成。\n- `reference_image`：参考图片（多模态参考），最多 9 张。\n- `reference_video`：参考视频（多模态参考），最多 3 个。\n- `reference_audio`：参考音频（多模态参考），最多 3 个。",
+            "enum": [
+              "first_frame",
+              "last_frame",
+              "reference_image",
+              "reference_video",
+              "reference_audio"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2ContextIRRequest": {
+        "additionalProperties": false,
+        "description": "创建 H3 Context IR 任务的请求体。该任务只分析素材并输出增强后的结构化提示词，不生成视频。",
+        "properties": {
+          "model": {
+            "default": "MiniMax-H3",
+            "description": "模型名称，固定为 `MiniMax-H3`。\n\n**可选值：**\n- `MiniMax-H3`：MiniMax H3 旗舰版。",
+            "enum": [
+              "MiniMax-H3"
+            ],
+            "type": "string"
+          },
+          "content": {
+            "description": "输入内容数组，必须且只能包含一个非空的 `text` 项；素材规则同创建视频生成任务。",
+            "items": {
+              "$ref": "#/components/schemas/MiniMaxV2ContentItem"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "duration": {
+            "description": "视频时长，`4` ~ `15` 秒的整数。",
+            "format": "int64",
+            "maximum": 15,
+            "minimum": 4,
+            "type": "integer"
+          },
+          "ratio": {
+            "default": "adaptive",
+            "description": "画面比例。文生视频必填且不能为 `adaptive`；图生视频固定按输入图片比例（传入其他值会被忽略）；多模态参考默认 `adaptive`。\n\n**可选值：**\n- `adaptive`：自适应：图生视频按输入图片比例，多模态参考由模型决定。文生视频不可用。\n- `21:9`：21:9 超宽屏。\n- `16:9`：16:9 横屏。\n- `4:3`：4:3 横屏。\n- `1:1`：1:1 方形。\n- `3:4`：3:4 竖屏。\n- `9:16`：9:16 竖屏。",
+            "enum": [
+              "adaptive",
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "content",
+          "duration"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2CreateTaskResponse": {
+        "additionalProperties": false,
+        "description": "创建成功的响应。",
+        "properties": {
+          "task_id": {
+            "description": "任务 Id，用于查询任务。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2ErrorDetail": {
+        "additionalProperties": false,
+        "description": "错误详情。",
+        "properties": {
+          "type": {
+            "description": "错误类别。\n\n**可选值：**\n- `bad_request_error`：参数错误（400）。\n- `authorized_error`：鉴权失败（401 / 403）。\n- `insufficient_balance_error`：余额不足（402）。\n- `unprocessable_entity_error`：输入内容不合规（422）。\n- `rate_limit_error`：触发限流（429），稍后重试。\n- `server_error`：服务端错误（500），稍后重试。\n- `overloaded_error`：服务繁忙（529），稍后重试。",
+            "enum": [
+              "bad_request_error",
+              "authorized_error",
+              "insufficient_balance_error",
+              "unprocessable_entity_error",
+              "rate_limit_error",
+              "server_error",
+              "overloaded_error"
+            ],
+            "type": "string"
+          },
+          "message": {
+            "description": "错误说明，末尾括号内为错误码，例如 `(2013)`。",
+            "type": "string"
+          },
+          "http_code": {
+            "description": "HTTP 状态码（字符串）。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "message",
+          "http_code"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2ErrorResponse": {
+        "additionalProperties": false,
+        "description": "错误响应。HTTP 状态码即错误码。",
+        "properties": {
+          "type": {
+            "description": "固定为 `error`。",
+            "type": "string"
+          },
+          "error": {
+            "$ref": "#/components/schemas/MiniMaxV2ErrorDetail",
+            "description": "错误详情。"
+          },
+          "request_id": {
+            "description": "请求 Id，与响应头 `X-Request-Id` 相同，联系支持时请提供。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "error",
+          "request_id"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2MediaURL": {
+        "additionalProperties": false,
+        "description": "素材地址。",
+        "properties": {
+          "url": {
+            "description": "公网 `http(s)` 地址，或 `data:<类型>;base64,<数据>` 形式的 Base64（格式小写）。不支持 `mm_file://`。请求体总大小 ≤ 64 MB，较大的文件请使用公网地址。",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2RegenerationContentItem": {
+        "additionalProperties": false,
+        "description": "视频再生成的输入项，比普通输入项多一个 `base_video` 用途。",
+        "properties": {
+          "type": {
+            "description": "内容项类型。\n\n**可选值：**\n- `text`：文本提示词，填 `text`。\n- `image_url`：图片，填 `image_url.url`。\n- `video_url`：视频，填 `video_url.url`。\n- `audio_url`：音频，填 `audio_url.url`。",
+            "enum": [
+              "text",
+              "image_url",
+              "video_url",
+              "audio_url"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "description": "提示词，`type` 为 `text` 时必填且不能为空。生成与 Context IR 最多 7000 个字符，视频再生成最多 40000 个字符。",
+            "type": "string"
+          },
+          "image_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "图片，`type` 为 `image_url` 时必填。支持 JPG / JPEG / PNG / WEBP / HEIC / HEIF，单张 ≤ 30 MB，宽高 256 ~ 5760 像素，宽高比 0.4 ~ 2.5。"
+          },
+          "video_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "视频，`type` 为 `video_url` 时必填。MP4 / MOV（H.264 或 H.265），单个 ≤ 50 MB，每段 2 ~ 15 秒且总时长 ≤ 15 秒，帧率 23.976 ~ 60 fps。"
+          },
+          "audio_url": {
+            "$ref": "#/components/schemas/MiniMaxV2MediaURL",
+            "description": "音频，`type` 为 `audio_url` 时必填。WAV / MP3，单个 ≤ 15 MB，每段 2 ~ 15 秒且总时长 ≤ 15 秒。"
+          },
+          "role": {
+            "description": "素材用途。源视频必须为 `base_video`，其余与普通输入项相同。\n\n**可选值：**\n- `base_video`：再生成的源视频，必须且只能有 1 个。\n- `first_frame`：生成源视频时使用的首帧图片。\n- `last_frame`：生成源视频时使用的尾帧图片。\n- `reference_image`：生成源视频时使用的参考图片。\n- `reference_video`：生成源视频时使用的参考视频。\n- `reference_audio`：生成源视频时使用的参考音频。",
+            "enum": [
+              "base_video",
+              "first_frame",
+              "last_frame",
+              "reference_image",
+              "reference_video",
+              "reference_audio"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2Task": {
+        "additionalProperties": false,
+        "description": "任务详情。",
+        "properties": {
+          "id": {
+            "description": "任务 Id。",
+            "type": "string"
+          },
+          "model": {
+            "description": "模型名称。",
+            "type": "string"
+          },
+          "status": {
+            "description": "任务状态。\n\n**可选值：**\n- `queued`：排队中。\n- `running`：生成中。\n- `succeeded`：成功，从 `content` 读取产物。\n- `failed`：失败，从 `error` 读取原因，不扣费。\n- `cancelled`：已取消，不扣费。",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "error": {
+            "$ref": "#/components/schemas/MiniMaxV2TaskError",
+            "description": "失败原因，仅 `status` 为 `failed` 或 `cancelled` 时返回。失败和取消的任务不扣费。"
+          },
+          "created_at": {
+            "description": "创建时间，Unix 秒。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "updated_at": {
+            "description": "最近一次状态更新时间，Unix 秒。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "content": {
+            "$ref": "#/components/schemas/MiniMaxV2TaskContent",
+            "description": "任务产物，仅 `status` 为 `succeeded` 时返回。"
+          },
+          "resolution": {
+            "description": "输出分辨率，Context IR 任务不返回。",
+            "type": "string"
+          },
+          "duration": {
+            "description": "视频时长（秒）。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/MiniMaxV2TaskUsage",
+            "description": "本次任务的用量，仅 `status` 为 `succeeded` 时返回明细（失败时为空对象）。"
+          },
+          "ratio": {
+            "description": "画面比例，不适用时为空字符串。",
+            "type": "string"
+          },
+          "task_type": {
+            "description": "任务类型。\n\n**可选值：**\n- `generation`：视频生成（`/v2/video_generation`）。\n- `h3_context_ir`：H3 Context IR（`/v2/h3_context_ir`）。\n- `regeneration`：视频再生成（`/v2/video_regeneration`）。",
+            "enum": [
+              "generation",
+              "h3_context_ir",
+              "regeneration"
+            ],
+            "type": "string"
+          },
+          "modality": {
+            "description": "产物类型。\n\n**可选值：**\n- `video`：视频（生成与再生成任务）。\n- `text`：文本（Context IR 任务）。",
+            "enum": [
+              "video",
+              "text"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "model",
+          "status",
+          "created_at",
+          "updated_at",
+          "ratio",
+          "task_type",
+          "modality"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2TaskContent": {
+        "additionalProperties": false,
+        "description": "任务产物。",
+        "properties": {
+          "url": {
+            "description": "视频下载地址（视频生成与再生成任务），形如 `https://api.dreamto.ai/v2/files/mmxf_<32 位十六进制>`。下载无需 API Key，支持 `Range` 断点续传；链接最长 7 天有效，请及时下载并自行保存。同一任务多次查询返回相同链接。",
+            "type": "string"
+          },
+          "prompt": {
+            "description": "增强后的结构化提示词（Context IR 任务）。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MiniMaxV2TaskError": {
+        "additionalProperties": false,
+        "description": "任务失败原因。",
+        "properties": {
+          "code": {
+            "description": "错误码，例如 `1026`（内容不合规）。",
+            "type": "string"
+          },
+          "message": {
+            "description": "错误说明。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2TaskResponse": {
+        "additionalProperties": false,
+        "description": "查询任务的响应（`response_format` 为 `task` 时）。`response_format` 为 `flat` 时，`task` 中的字段直接位于顶层。",
+        "properties": {
+          "task": {
+            "$ref": "#/components/schemas/MiniMaxV2Task",
+            "description": "任务详情。"
+          }
+        },
+        "required": [
+          "task"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2TaskUsage": {
+        "additionalProperties": false,
+        "description": "任务用量。视频任务返回秒数字段，Context IR 任务返回 Token 字段。",
+        "properties": {
+          "total_seconds": {
+            "description": "计量总秒数 = `input_seconds` + `output_seconds`。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_seconds": {
+            "description": "参考视频输入秒数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "output_seconds": {
+            "description": "输出视频秒数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_image_count": {
+            "description": "输入图片总数（首帧 + 尾帧 + 参考图）。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_audio_seconds": {
+            "description": "参考音频输入秒数，无参考音频时不返回。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_tokens": {
+            "description": "`prompt_tokens` + `completion_tokens`。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "prompt_tokens": {
+            "description": "输入 Token 数（视频任务为输入素材折算值）。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "completion_tokens": {
+            "description": "输出 Token 数（视频任务为输出视频折算值）。",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "MiniMaxV2VideoGenerationRequest": {
+        "additionalProperties": false,
+        "description": "创建视频生成任务的请求体。",
+        "properties": {
+          "model": {
+            "default": "MiniMax-H3",
+            "description": "模型名称，固定为 `MiniMax-H3`。\n\n**可选值：**\n- `MiniMax-H3`：MiniMax H3 旗舰版。",
+            "enum": [
+              "MiniMax-H3"
+            ],
+            "type": "string"
+          },
+          "content": {
+            "description": "输入内容数组。必须包含一个非空的 `text` 项（提示词）；图片、视频、音频按 `role` 区分用途。首尾帧（`first_frame` / `last_frame`）不能与参考素材（`reference_image` / `reference_video` / `reference_audio`）同时使用。",
+            "items": {
+              "$ref": "#/components/schemas/MiniMaxV2ContentItem"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "resolution": {
+            "description": "输出分辨率。\n\n**可选值：**\n- `768P`：768P。\n- `2K`：2K。",
+            "enum": [
+              "768P",
+              "2K"
+            ],
+            "type": "string"
+          },
+          "duration": {
+            "description": "视频时长，`4` ~ `15` 秒的整数。",
+            "format": "int64",
+            "maximum": 15,
+            "minimum": 4,
+            "type": "integer"
+          },
+          "ratio": {
+            "default": "adaptive",
+            "description": "画面比例。文生视频必填且不能为 `adaptive`；图生视频固定按输入图片比例（传入其他值会被忽略）；多模态参考默认 `adaptive`。\n\n**可选值：**\n- `adaptive`：自适应：图生视频按输入图片比例，多模态参考由模型决定。文生视频不可用。\n- `21:9`：21:9 超宽屏。\n- `16:9`：16:9 横屏。\n- `4:3`：4:3 横屏。\n- `1:1`：1:1 方形。\n- `3:4`：3:4 竖屏。\n- `9:16`：9:16 竖屏。",
+            "enum": [
+              "adaptive",
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "type": "string"
+          },
+          "aigc_watermark": {
+            "default": false,
+            "description": "是否在视频中添加 AIGC 标识水印，默认 `false`。",
+            "type": "boolean"
+          },
+          "response_format": {
+            "default": "task",
+            "description": "查询任务时的响应结构，默认 `task`。\n\n**可选值：**\n- `task`：任务字段放在 `task` 对象中。\n- `flat`：任务字段直接位于响应顶层。",
+            "enum": [
+              "task",
+              "flat"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "content",
+          "resolution",
+          "duration"
+        ],
+        "type": "object"
+      },
+      "MiniMaxV2VideoRegenerationRequest": {
+        "additionalProperties": false,
+        "description": "创建视频再生成任务的请求体：把符合 MiniMax-H3 768P 输出规格的视频再生成为 2K。`source_task_id` 与 `content` 必须且只能提供其一。",
+        "properties": {
+          "model": {
+            "default": "MiniMax-H3",
+            "description": "模型名称，固定为 `MiniMax-H3`。\n\n**可选值：**\n- `MiniMax-H3`：MiniMax H3 旗舰版。",
+            "enum": [
+              "MiniMax-H3"
+            ],
+            "type": "string"
+          },
+          "source_task_id": {
+            "description": "按任务 Id 再生成：本账号 7 天内创建、状态为 `succeeded` 的 `/v2/video_generation` 任务 `task_id`。不能与 `content` 同时传。",
+            "type": "string"
+          },
+          "content": {
+            "description": "按源视频再生成：必须且只能有一个 `role` 为 `base_video` 的 `video_url`（源视频），并原样提交生成该视频时的最终提示词和全部素材。源视频需有音轨、24 fps、宽高可被 32 整除、像素面积 768×768 ~ 768×1344、总帧数 107 ~ 362。不能与 `source_task_id` 同时传。",
+            "items": {
+              "$ref": "#/components/schemas/MiniMaxV2RegenerationContentItem"
+            },
+            "type": "array"
+          },
+          "resolution": {
+            "default": "2K",
+            "description": "输出分辨率，固定为 `2K`。\n\n**可选值：**\n- `2K`：2K。",
+            "enum": [
+              "2K"
+            ],
+            "type": "string"
+          },
+          "aigc_watermark": {
+            "default": false,
+            "description": "是否在视频中添加 AIGC 标识水印，默认 `false`。",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "model",
+          "resolution"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "在请求头 `Authorization: Bearer <API Key>` 中携带 DreamTo API Key。",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "与 MiniMax 官方 V2 视频接口（`/v2/video_generation`、`/v2/video_regeneration`、`/v2/h3_context_ir`、`/v2/query/video_generation/{task_id}`）路径、请求体、响应体与错误结构一致。从官方迁移时，把服务地址换成 `https://api.dreamto.ai`、API Key 换成 DreamTo 的 Key 即可。",
+    "title": "MiniMax H3 视频生成 API",
+    "version": "v2"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v2/h3_context_ir": {
+      "post": {
+        "description": "分析文本与素材，生成增强后的结构化视频提示词，不生成视频。返回的 `task_id` 用查询任务接口查询，成功后从 `content.prompt` 读取提示词。",
+        "operationId": "minimaxCreateContextIR",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Context IR · 文生视频": {
+                  "description": "增强一段纯文本提示词。",
+                  "summary": "Context IR · 文生视频",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "雨夜霓虹街头，一只橘猫在积水中奔跑。"
+                      }
+                    ],
+                    "duration": 5,
+                    "ratio": "16:9"
+                  }
+                },
+                "Context IR · 图生视频": {
+                  "description": "结合首帧图片增强提示词。",
+                  "summary": "Context IR · 图生视频",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "人物转身看向镜头。"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/first-frame.jpg"
+                        },
+                        "role": "first_frame"
+                      }
+                    ],
+                    "duration": 5,
+                    "ratio": "adaptive"
+                  }
+                },
+                "Context IR · 多模态参考": {
+                  "description": "结合参考视频与参考音频增强提示词。",
+                  "summary": "Context IR · 多模态参考",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "参考视频 1 的动作，音色参考音频 1。"
+                      },
+                      {
+                        "type": "video_url",
+                        "video_url": {
+                          "url": "https://your-cdn.example.com/reference.mp4"
+                        },
+                        "role": "reference_video"
+                      },
+                      {
+                        "type": "audio_url",
+                        "audio_url": {
+                          "url": "https://your-cdn.example.com/voice.mp3"
+                        },
+                        "role": "reference_audio"
+                      }
+                    ],
+                    "duration": 5
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MiniMaxV2ContextIRRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "task_id": "794576931165300894"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2CreateTaskResponse"
+                }
+              }
+            },
+            "description": "任务已创建。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "请求 Id，联系支持时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "bad_request_error",
+                        "message": "invalid params, content must include a non-empty text item (prompt is required) (2013)",
+                        "http_code": "400"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误，或任务 Id 无效。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "authorized_error",
+                        "message": "login fail: Please carry the API secret key in the 'Authorization' field of the request header (1004)",
+                        "http_code": "401"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "缺少或无效的 API Key。"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "insufficient_balance_error",
+                        "message": "insufficient balance (1008)",
+                        "http_code": "402"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "账户余额不足。"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "unprocessable_entity_error",
+                        "message": "video description contains sensitive content (1026)",
+                        "http_code": "422"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "输入内容不合规。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "rate_limit_error",
+                        "message": "rate limit, please retry later (1002)",
+                        "http_code": "429"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "触发限流，稍后重试。"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "server_error",
+                        "message": "internal error (1000)",
+                        "http_code": "500"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "服务端错误，稍后重试。"
+          },
+          "529": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "overloaded_error",
+                        "message": "the service is overloaded, please retry later (1000)",
+                        "http_code": "529"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "服务繁忙，稍后重试。"
+          }
+        },
+        "summary": "创建 H3 Context IR 任务",
+        "tags": [
+          "MiniMax H3"
+        ],
+        "x-mint": {
+          "href": "/api-reference/minimax-h3/create-context-ir",
+          "metadata": {
+            "sidebarTitle": "创建 H3 Context IR 任务",
+            "title": "创建 H3 Context IR 任务"
+          }
+        }
+      }
+    },
+    "/v2/query/video_generation/{task_id}": {
+      "get": {
+        "description": "查询视频生成、视频再生成或 Context IR 任务的状态与结果。建议每 10 ~ 30 秒查询一次；`status` 为 `succeeded` 时，视频任务从 `content.url` 读取视频，Context IR 任务从 `content.prompt` 读取提示词。",
+        "operationId": "minimaxQueryTask",
+        "parameters": [
+          {
+            "description": "创建任务时返回的 `task_id`。",
+            "example": "794576931165300894",
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "examples": [
+                "794576931165300894"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "生成中": {
+                    "summary": "生成中",
+                    "value": {
+                      "task": {
+                        "id": "794576931165300894",
+                        "model": "MiniMax-H3",
+                        "status": "running",
+                        "created_at": 1785125529,
+                        "updated_at": 1785125529,
+                        "resolution": "2K",
+                        "duration": 5,
+                        "ratio": "16:9",
+                        "task_type": "generation",
+                        "modality": "video"
+                      }
+                    }
+                  },
+                  "生成成功": {
+                    "summary": "生成成功",
+                    "value": {
+                      "task": {
+                        "id": "794576931165300894",
+                        "model": "MiniMax-H3",
+                        "status": "succeeded",
+                        "created_at": 1785125529,
+                        "updated_at": 1785125946,
+                        "content": {
+                          "url": "https://api.dreamto.ai/v2/files/mmxf_3f9a1c2b7d4e5f60718293a4c5d6e7f8"
+                        },
+                        "resolution": "2K",
+                        "duration": 5,
+                        "usage": {
+                          "total_seconds": 5,
+                          "input_seconds": 0,
+                          "output_seconds": 5,
+                          "input_image_count": 1,
+                          "total_tokens": 273890,
+                          "prompt_tokens": 13500,
+                          "completion_tokens": 260390
+                        },
+                        "ratio": "16:9",
+                        "task_type": "generation",
+                        "modality": "video"
+                      }
+                    }
+                  },
+                  "再生成成功": {
+                    "summary": "再生成成功",
+                    "value": {
+                      "task": {
+                        "id": "794576931165300894",
+                        "model": "MiniMax-H3",
+                        "status": "succeeded",
+                        "created_at": 1785125529,
+                        "updated_at": 1785125946,
+                        "content": {
+                          "url": "https://api.dreamto.ai/v2/files/mmxf_3f9a1c2b7d4e5f60718293a4c5d6e7f8"
+                        },
+                        "resolution": "2K",
+                        "duration": 5,
+                        "usage": {
+                          "total_seconds": 5,
+                          "input_seconds": 0,
+                          "output_seconds": 5,
+                          "input_image_count": 0
+                        },
+                        "ratio": "",
+                        "task_type": "regeneration",
+                        "modality": "video"
+                      }
+                    }
+                  },
+                  "Context IR 成功": {
+                    "summary": "Context IR 成功",
+                    "value": {
+                      "task": {
+                        "id": "794576931165300894",
+                        "model": "MiniMax-H3",
+                        "status": "succeeded",
+                        "created_at": 1785702855,
+                        "updated_at": 1785702884,
+                        "content": {
+                          "prompt": "integrated_multimodal_description: [Shot 1] ..."
+                        },
+                        "duration": 5,
+                        "usage": {
+                          "total_tokens": 9090,
+                          "prompt_tokens": 5664,
+                          "completion_tokens": 3426
+                        },
+                        "ratio": "16:9",
+                        "task_type": "h3_context_ir",
+                        "modality": "text"
+                      }
+                    }
+                  },
+                  "失败": {
+                    "summary": "失败",
+                    "value": {
+                      "task": {
+                        "id": "794576931165300894",
+                        "model": "MiniMax-H3",
+                        "status": "failed",
+                        "error": {
+                          "code": "1026",
+                          "message": "video description contains sensitive content"
+                        },
+                        "created_at": 1785125529,
+                        "updated_at": 1785125700,
+                        "resolution": "2K",
+                        "duration": 5,
+                        "usage": {},
+                        "ratio": "16:9",
+                        "task_type": "generation",
+                        "modality": "video"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2TaskResponse"
+                }
+              }
+            },
+            "description": "任务详情。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "请求 Id，联系支持时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "bad_request_error",
+                        "message": "invalid params, invalid task_id (2013)",
+                        "http_code": "400"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误，或任务 Id 无效。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "authorized_error",
+                        "message": "login fail: Please carry the API secret key in the 'Authorization' field of the request header (1004)",
+                        "http_code": "401"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "缺少或无效的 API Key。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "rate_limit_error",
+                        "message": "rate limit, please retry later (1002)",
+                        "http_code": "429"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "触发限流，稍后重试。"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "server_error",
+                        "message": "internal error (1000)",
+                        "http_code": "500"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "服务端错误，稍后重试。"
+          }
+        },
+        "summary": "查询任务",
+        "tags": [
+          "MiniMax H3"
+        ],
+        "x-mint": {
+          "href": "/api-reference/minimax-h3/query-task",
+          "metadata": {
+            "sidebarTitle": "查询任务",
+            "title": "查询任务"
+          }
+        }
+      }
+    },
+    "/v2/video_generation": {
+      "post": {
+        "description": "创建异步视频生成任务，支持文生视频、图生视频（首帧 / 尾帧 / 首尾帧）和多模态参考生视频。成功返回 `task_id`，再调用查询任务获取结果。参数错误返回 400，不建任务、不扣费；任务失败不扣费。",
+        "operationId": "minimaxCreateVideoGeneration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "文生视频": {
+                  "description": "只用提示词生成，`ratio` 必填且不能为 `adaptive`。",
+                  "summary": "文生视频",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "史诗级太空歌剧预告：女舰长独自站在巨大的观景窗前，最后一支舰队集结后跃迁离去，强光爆闪，舰桥震动。"
+                      }
+                    ],
+                    "resolution": "2K",
+                    "duration": 5,
+                    "ratio": "16:9"
+                  }
+                },
+                "图生视频（首帧）": {
+                  "description": "以图片作为首帧，比例跟随图片。",
+                  "summary": "图生视频（首帧）",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "镜头缓慢推近，热气从拉面碗里升起。"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/first-frame.jpg"
+                        },
+                        "role": "first_frame"
+                      }
+                    ],
+                    "resolution": "768P",
+                    "duration": 5,
+                    "ratio": "adaptive"
+                  }
+                },
+                "首尾帧": {
+                  "description": "从首帧自然过渡到尾帧。",
+                  "summary": "首尾帧",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "人物从窗边走到门口，镜头跟随。"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/first-frame.jpg"
+                        },
+                        "role": "first_frame"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/last-frame.jpg"
+                        },
+                        "role": "last_frame"
+                      }
+                    ],
+                    "resolution": "768P",
+                    "duration": 6,
+                    "ratio": "adaptive"
+                  }
+                },
+                "多模态参考": {
+                  "description": "参考视频的动作与参考音频的音色。",
+                  "summary": "多模态参考",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "角色说话：Follow the wind, live free。音色参考音频 1。"
+                      },
+                      {
+                        "type": "video_url",
+                        "video_url": {
+                          "url": "https://your-cdn.example.com/reference.mp4"
+                        },
+                        "role": "reference_video"
+                      },
+                      {
+                        "type": "audio_url",
+                        "audio_url": {
+                          "url": "https://your-cdn.example.com/voice.mp3"
+                        },
+                        "role": "reference_audio"
+                      }
+                    ],
+                    "resolution": "2K",
+                    "duration": 5,
+                    "ratio": "adaptive"
+                  }
+                },
+                "多图参考": {
+                  "description": "保持参考图中人物与场景的一致性，最多 9 张。",
+                  "summary": "多图参考",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "图片 1 中的女孩在图片 2 的街道上奔跑。"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/girl.png"
+                        },
+                        "role": "reference_image"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/street.png"
+                        },
+                        "role": "reference_image"
+                      }
+                    ],
+                    "resolution": "768P",
+                    "duration": 8,
+                    "ratio": "16:9"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MiniMaxV2VideoGenerationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "task_id": "794576931165300894"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2CreateTaskResponse"
+                }
+              }
+            },
+            "description": "任务已创建。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "请求 Id，联系支持时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "bad_request_error",
+                        "message": "invalid params, content must include a non-empty text item (prompt is required) (2013)",
+                        "http_code": "400"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误，或任务 Id 无效。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "authorized_error",
+                        "message": "login fail: Please carry the API secret key in the 'Authorization' field of the request header (1004)",
+                        "http_code": "401"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "缺少或无效的 API Key。"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "insufficient_balance_error",
+                        "message": "insufficient balance (1008)",
+                        "http_code": "402"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "账户余额不足。"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "unprocessable_entity_error",
+                        "message": "video description contains sensitive content (1026)",
+                        "http_code": "422"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "输入内容不合规。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "rate_limit_error",
+                        "message": "rate limit, please retry later (1002)",
+                        "http_code": "429"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "触发限流，稍后重试。"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "server_error",
+                        "message": "internal error (1000)",
+                        "http_code": "500"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "服务端错误，稍后重试。"
+          },
+          "529": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "overloaded_error",
+                        "message": "the service is overloaded, please retry later (1000)",
+                        "http_code": "529"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "服务繁忙，稍后重试。"
+          }
+        },
+        "summary": "创建视频生成任务",
+        "tags": [
+          "MiniMax H3"
+        ],
+        "x-mint": {
+          "href": "/api-reference/minimax-h3/create-video-generation",
+          "metadata": {
+            "sidebarTitle": "创建视频生成任务",
+            "title": "创建视频生成任务"
+          }
+        }
+      }
+    },
+    "/v2/video_regeneration": {
+      "post": {
+        "description": "把 MiniMax-H3 768P 视频再生成为 2K。可按任务 Id（`source_task_id`）或按源视频（`content` 中的 `base_video`）提交，二者必须且只能提供其一。返回的 `task_id` 用查询任务接口查询，`task_type` 为 `regeneration`。",
+        "operationId": "minimaxCreateVideoRegeneration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "按任务 Id 再生成": {
+                  "description": "用 7 天内成功的 768P 生成任务的 `task_id`。",
+                  "summary": "按任务 Id 再生成",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "source_task_id": "794576931165300894",
+                    "resolution": "2K"
+                  }
+                },
+                "按源视频再生成": {
+                  "description": "提交源视频及生成它时的最终提示词。",
+                  "summary": "按源视频再生成",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "<生成源视频时使用的最终提示词>"
+                      },
+                      {
+                        "type": "video_url",
+                        "video_url": {
+                          "url": "https://your-cdn.example.com/h3-768p.mp4"
+                        },
+                        "role": "base_video"
+                      }
+                    ],
+                    "resolution": "2K"
+                  }
+                },
+                "按源视频再生成（图生）": {
+                  "description": "源视频由图生视频得到时，同时提交首帧图片。",
+                  "summary": "按源视频再生成（图生）",
+                  "value": {
+                    "model": "MiniMax-H3",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "<生成源视频时使用的最终提示词>"
+                      },
+                      {
+                        "type": "image_url",
+                        "image_url": {
+                          "url": "https://your-cdn.example.com/first-frame.jpg"
+                        },
+                        "role": "first_frame"
+                      },
+                      {
+                        "type": "video_url",
+                        "video_url": {
+                          "url": "https://your-cdn.example.com/h3-768p.mp4"
+                        },
+                        "role": "base_video"
+                      }
+                    ],
+                    "resolution": "2K"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/MiniMaxV2VideoRegenerationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "task_id": "794576931165300894"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2CreateTaskResponse"
+                }
+              }
+            },
+            "description": "任务已创建。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "请求 Id，联系支持时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "bad_request_error",
+                        "message": "invalid params, content must include a non-empty text item (prompt is required) (2013)",
+                        "http_code": "400"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误，或任务 Id 无效。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "authorized_error",
+                        "message": "login fail: Please carry the API secret key in the 'Authorization' field of the request header (1004)",
+                        "http_code": "401"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "缺少或无效的 API Key。"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "insufficient_balance_error",
+                        "message": "insufficient balance (1008)",
+                        "http_code": "402"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "账户余额不足。"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "unprocessable_entity_error",
+                        "message": "video description contains sensitive content (1026)",
+                        "http_code": "422"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "输入内容不合规。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "rate_limit_error",
+                        "message": "rate limit, please retry later (1002)",
+                        "http_code": "429"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "触发限流，稍后重试。"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "server_error",
+                        "message": "internal error (1000)",
+                        "http_code": "500"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "服务端错误，稍后重试。"
+          },
+          "529": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "type": "error",
+                      "error": {
+                        "type": "overloaded_error",
+                        "message": "the service is overloaded, please retry later (1000)",
+                        "http_code": "529"
+                      },
+                      "request_id": "req_3f9a1c2b7d4e5f60718293a4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MiniMaxV2ErrorResponse"
+                }
+              }
+            },
+            "description": "服务繁忙，稍后重试。"
+          }
+        },
+        "summary": "创建视频再生成任务",
+        "tags": [
+          "MiniMax H3"
+        ],
+        "x-mint": {
+          "href": "/api-reference/minimax-h3/create-video-regeneration",
+          "metadata": {
+            "sidebarTitle": "创建视频再生成任务",
+            "title": "创建视频再生成任务"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "MiniMax H3"
+    }
+  ]
+}
