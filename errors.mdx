@@ -5,6 +5,10 @@ description: "视频任务接口与素材库接口的错误结构、HTTP 状态�
 
 DreamTo 接口通过**真实 HTTP 状态码 + 结构化错误体**返回错误。建议客户端优先按 HTTP 状态码做分支（可重试 / 需改参数 / 需充值），再用错误码做细分。
 
+<Note>
+  错误消息（`message` / `Message`）为英文。程序逻辑请依据 HTTP 状态码、`error.code` 与 `error.param` 判断，不要依赖消息文本。
+</Note>
+
 ## 视频任务接口
 
 适用于 `/api/v3/contents/generations/tasks` 下的全部接口（创建、查询、列表）。
@@ -13,7 +17,7 @@ DreamTo 接口通过**真实 HTTP 状态码 + 结构化错误体**返回错误�
 {
   "error": {
     "code": "invalid_parameter",
-    "message": "duration 仅支持 4~15 秒或 -1(智能时长)",
+    "message": "duration must be an integer from 4 to 15 seconds, or -1 (smart duration)",
     "type": "invalid_request_error",
     "http_status": 400,
     "request_id": "req_3f9a1c2b7d4e5f60718293a4",
@@ -37,7 +41,7 @@ DreamTo 接口通过**真实 HTTP 状态码 + 结构化错误体**返回错误�
 
 | HTTP | error.code | 常见触发原因 | 处理建议 |
 |------|-----------|-------------|---------|
-| 400 | `invalid_parameter` | 参数校验未通过，`param` 指出具体字段，如 `content 不能为空`、`content 中必须包含 text 类型的提示词`、`duration 仅支持 4~15 秒或 -1(智能时长)`、`不支持的参数：xxx` | 按 `message` 修改参数后重试 |
+| 400 | `invalid_parameter` | 参数校验未通过，`param` 指出具体字段，如 `content must not be empty`、`content must include a text prompt`、`duration must be an integer from 4 to 15 seconds, or -1 (smart duration)`、`unsupported parameter: xxx` | 按 `message` 修改参数后重试 |
 | 400 | `invalid_request` | 请求格式错误或业务规则不允许 | 修改请求后重试 |
 | 401 | `unauthorized` | API Key 缺失或无效 | 检查 `Authorization` 请求头 |
 | 402 | `insufficient_balance` | 账户余额不足 | 充值后重试 |
@@ -58,7 +62,7 @@ DreamTo 接口通过**真实 HTTP 状态码 + 结构化错误体**返回错误�
   "status": "failed",
   "error": {
     "code": "task_failed",
-    "message": "视频生成失败，请重试"
+    "message": "Video generation failed, please retry"
   },
   "created_at": 1794384000,
   "updated_at": 1794384120,
@@ -80,7 +84,7 @@ DreamTo 接口通过**真实 HTTP 状态码 + 结构化错误体**返回错误�
     "Version": "2024-01-01",
     "Error": {
       "Code": "ResourceNotFound",
-      "Message": "素材不存在或已删除"
+      "Message": "Asset not found or deleted"
     }
   }
 }

@@ -150,7 +150,7 @@
           },
           "duration": {
             "default": 5,
-            "description": "Video duration in seconds, `5` when omitted.\n\n- Integer `4`–`15`: generate exactly that many seconds\n- `-1`: smart duration, the model picks 4–15 s and you are billed for actual usage; the actual length is returned as `duration` when querying\n- Decimals, strings or out-of-range values: 400 \"duration only supports 4-15 seconds or -1 (smart duration)\"\n\nIgnored when `frames` is also given.",
+            "description": "Video duration in seconds, `5` when omitted.\n\n- Integer `4`–`15`: generate exactly that many seconds\n- `-1`: smart duration, the model picks 4–15 s and you are billed for actual usage; the actual length is returned as `duration` when querying\n- Decimals, strings or out-of-range values: 400 \"duration must be an integer from 4 to 15 seconds, or -1 (smart duration)\"",
             "enum": [
               -1,
               4,
@@ -169,15 +169,9 @@
             "format": "int64",
             "type": "integer"
           },
-          "frames": {
-            "description": "Total frame count, a positive integer. Alternative to `duration`; `frames` wins when both are sent.",
-            "format": "int64",
-            "minimum": 1,
-            "type": "integer"
-          },
           "resolution": {
             "default": "720p",
-            "description": "Output resolution, default `720p`; this model supports `480p` / `720p` / `1080p`. Higher resolutions take longer and cost more. Other values return 400 \"resolution only supports 480p / 720p / 1080p\".\n\n**Allowed values:**\n- `480p`: SD; fastest and cheapest, good for previews and quick iteration\n- `720p`: HD (default); balanced quality and speed\n- `1080p`: Full HD; best detail, slower and more expensive",
+            "description": "Output resolution, default `720p`; this model supports `480p` / `720p` / `1080p`. Higher resolutions take longer and cost more. Other values return 400 \"resolution must be one of: 480p, 720p, 1080p\".\n\n**Allowed values:**\n- `480p`: SD; fastest and cheapest, good for previews and quick iteration\n- `720p`: HD (default); balanced quality and speed\n- `1080p`: Full HD; best detail, slower and more expensive",
             "enum": [
               "480p",
               "720p",
@@ -268,7 +262,7 @@
             "type": "string"
           },
           "omni_reference_task_type": {
-            "description": "Reference task type, **not used** by this model: a valid value is ignored and the mode is derived from `content`. Other values return 400 \"omni_reference_task_type only supports auto / reference / edit / extend\".\n\n**Allowed values:**\n- `auto`: Auto: derived from the media in `content`\n- `reference`: Reference: generate a new video from the reference media\n- `edit`: Edit: change the content of the reference video; needs a reference video\n- `extend`: Extend: continue the reference video; needs a reference video",
+            "description": "Reference task type, **not used** by this model: a valid value is ignored and the mode is derived from `content`. Other values return 400 \"omni_reference_task_type must be one of: auto, reference, edit, extend\".\n\n**Allowed values:**\n- `auto`: Auto: derived from the media in `content`\n- `reference`: Reference: generate a new video from the reference media\n- `edit`: Edit: change the content of the reference video; needs a reference video\n- `extend`: Extend: continue the reference video; needs a reference video",
             "enum": [
               "auto",
               "reference",
@@ -401,7 +395,7 @@
             "description": "Image URL object."
           },
           "role": {
-            "description": "How the image is used. Case-sensitive; other values return 400 \"content[n].role only supports reference_image / first_frame / last_frame\".\n\n**Allowed values:**\n- `reference_image`: Reference image: subject, style or scene to draw from; multiple allowed, referenced in the prompt as \"image 1\", \"image 2\"\n- `first_frame`: First frame: the video starts from this image\n- `last_frame`: Last frame: the video ends on this image; usually paired with `first_frame` for a transition",
+            "description": "How the image is used. Case-sensitive; other values return 400 \"content[n].role must be one of: reference_image, first_frame, last_frame\".\n\n**Allowed values:**\n- `reference_image`: Reference image: subject, style or scene to draw from; multiple allowed, referenced in the prompt as \"image 1\", \"image 2\"\n- `first_frame`: First frame: the video starts from this image\n- `last_frame`: Last frame: the video ends on this image; usually paired with `first_frame` for a transition",
             "enum": [
               "reference_image",
               "first_frame",
@@ -486,12 +480,7 @@
             "type": "integer"
           },
           "duration": {
-            "description": "Actual duration of the generated video in seconds. Authoritative when the request used `duration: -1` (smart duration) or `frames`.",
-            "format": "int64",
-            "type": "integer"
-          },
-          "frames": {
-            "description": "Total frames of the generated video.",
+            "description": "Actual duration of the generated video in seconds. Authoritative when the request used `duration: -1` (smart duration).",
             "format": "int64",
             "type": "integer"
           },
@@ -675,12 +664,7 @@
             "type": "integer"
           },
           "duration": {
-            "description": "Actual duration of the generated video in seconds. Authoritative when the request used `duration: -1` (smart duration) or `frames`.",
-            "format": "int64",
-            "type": "integer"
-          },
-          "frames": {
-            "description": "Total frames of the generated video.",
+            "description": "Actual duration of the generated video in seconds. Authoritative when the request used `duration: -1` (smart duration).",
             "format": "int64",
             "type": "integer"
           },
@@ -794,7 +778,7 @@
             "type": "string"
           },
           "text": {
-            "description": "Video prompt, 3–20000 characters after trimming whitespace, otherwise 400 \"prompt must be 3-20000 characters\".\n\nTips: subject + action, background + action, camera + motion (push in, pull out, orbit…). Reference media as \"image 1\", \"video 1\", \"audio 1\"; never put asset Ids in the prompt.",
+            "description": "Video prompt, 3–20000 characters after trimming whitespace, otherwise 400 \"prompt text must be 3 to 20000 characters\".\n\nTips: subject + action, background + action, camera + motion (push in, pull out, orbit…). Reference media as \"image 1\", \"video 1\", \"audio 1\"; never put asset Ids in the prompt.",
             "maxLength": 20000,
             "minLength": 3,
             "type": "string"
@@ -1339,22 +1323,6 @@
                     "resolution": "720p"
                   }
                 },
-                "Exact frame count": {
-                  "description": "Set the total number of frames with frames.",
-                  "summary": "Exact frame count",
-                  "value": {
-                    "model": "seedance-2.0",
-                    "content": [
-                      {
-                        "type": "text",
-                        "text": "An orange cat stretches on a sunny windowsill, slow motion"
-                      }
-                    ],
-                    "ratio": "16:9",
-                    "frames": 121,
-                    "resolution": "720p"
-                  }
-                },
                 "Smart duration + callback": {
                   "description": "Let the model pick the length, get a callback and the last frame.",
                   "summary": "Smart duration + callback",
@@ -1418,7 +1386,7 @@
                     "value": {
                       "error": {
                         "code": "invalid_parameter",
-                        "message": "duration only supports 4-15 seconds or -1 (smart duration)",
+                        "message": "duration must be an integer from 4 to 15 seconds, or -1 (smart duration)",
                         "type": "invalid_request_error",
                         "http_status": 400,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4",

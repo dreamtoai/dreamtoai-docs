@@ -55,7 +55,7 @@
             "type": "array"
           },
           "Statuses": {
-            "description": "Filter by status, multiple allowed; other values return 400 \"Filter.Statuses only supports Processing / Active / Failed\".\n\n**Allowed values:**\n- `Processing`: Processing (download, moderation, storage); not yet usable\n- `Active`: Ready; reference it in tasks as `asset://<Id>`\n- `Failed`: Processing failed; see `Error`",
+            "description": "Filter by status, multiple allowed; other values return 400 \"Filter.Statuses must be one of: Processing, Active, Failed\".\n\n**Allowed values:**\n- `Processing`: Processing (download, moderation, storage); not yet usable\n- `Active`: Ready; reference it in tasks as `asset://<Id>`\n- `Failed`: Processing failed; see `Error`",
             "items": {
               "enum": [
                 "Processing",
@@ -670,7 +670,7 @@
           },
           "SortBy": {
             "default": "CreateTime",
-            "description": "Sort field, default `CreateTime`. Other values return 400 \"SortBy only supports CreateTime / UpdateTime / Name / GroupId\".\n\n**Allowed values:**\n- `CreateTime`: By creation time (default)\n- `UpdateTime`: By update time\n- `Name`: By asset name\n- `GroupId`: By owning group Id",
+            "description": "Sort field, default `CreateTime`. Other values return 400 \"SortBy must be one of: CreateTime, UpdateTime, Name, GroupId\".\n\n**Allowed values:**\n- `CreateTime`: By creation time (default)\n- `UpdateTime`: By update time\n- `Name`: By asset name\n- `GroupId`: By owning group Id",
             "enum": [
               "CreateTime",
               "UpdateTime",
@@ -681,7 +681,7 @@
           },
           "SortOrder": {
             "default": "Desc",
-            "description": "Sort direction, default `Desc`. Other values return 400 \"SortOrder only supports Desc / Asc\".\n\n**Allowed values:**\n- `Desc`: Descending (default)\n- `Asc`: Ascending",
+            "description": "Sort direction, default `Desc`. Other values return 400 \"SortOrder must be one of: Desc, Asc\".\n\n**Allowed values:**\n- `Desc`: Descending (default)\n- `Asc`: Ascending",
             "enum": [
               "Desc",
               "Asc"
@@ -882,7 +882,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "The account has no access"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -932,7 +932,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Request body exceeds 1 MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -1078,7 +1078,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name must be 1-64 characters"
+                          "Message": "Name must be 1 to 64 characters"
                         }
                       }
                     }
@@ -1128,7 +1128,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "The account has no access"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -1178,7 +1178,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Request body exceeds 1 MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -1371,7 +1371,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "The account has no access"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -1421,7 +1421,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Request body exceeds 1 MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -1614,7 +1614,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "The account has no access"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -1664,7 +1664,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Request body exceeds 1 MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -1870,7 +1870,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "The account has no access"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -1920,7 +1920,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Request body exceeds 1 MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -2122,7 +2122,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "The account has no access"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -2172,7 +2172,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Request body exceeds 1 MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -2385,7 +2385,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "The account has no access"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -2435,7 +2435,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Request body exceeds 1 MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -2610,7 +2610,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "SortBy only supports CreateTime / UpdateTime / Name / GroupId"
+                          "Message": "SortBy must be one of: CreateTime, UpdateTime, Name, GroupId"
                         }
                       }
                     }
@@ -2660,7 +2660,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "The account has no access"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -2710,7 +2710,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Request body exceeds 1 MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -2904,7 +2904,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "The account has no access"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -2954,7 +2954,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Request body exceeds 1 MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -3098,7 +3098,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name must be 1-64 characters"
+                          "Message": "Name must be 1 to 64 characters"
                         }
                       }
                     }
@@ -3148,7 +3148,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "The account has no access"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -3198,7 +3198,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Request body exceeds 1 MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }

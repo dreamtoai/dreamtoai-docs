@@ -12,7 +12,6 @@ The Seedance video generation API serves four models, **Seedance 2.5**, **Seedan
 - 🎬 **Four models, one endpoint**: 2.5 up to 30 s; 2.0 at 480p / 720p / 1080p; Fast / Mini at 480p / 720p
 - 🧠 **Multimodal understanding**: combines reference images, videos and audio
 - 🎯 **Automatic mode**: text-to-video, image-to-video, first/last frame, multi-image reference, video edit and extension are derived from the material
-- 🎞️ **Frame control**: set the exact frame count with `frames`
 - ⏱️ **Smart duration**: `duration: -1` lets the model choose the length; billed by actual usage
 - 🔊 **Audio by default**: audio is generated unless `generate_audio` is `false`
 - 🔎 **Web search**: enable with `tools` to use real-time information
@@ -269,7 +268,6 @@ A missing, unknown or not-enabled `model` returns a 4xx error, see [Errors](#err
 | `ratio` | `adaptive` | `adaptive` / `16:9` / `9:16` / `1:1` / `4:3` / `3:4` / `21:9` |
 | `duration` | `-1` on `seedance-2.5`, otherwise `5` | 4–15 seconds (4–30 on `seedance-2.5`) as an integer, or `-1` for smart duration |
 | `resolution` | `720p` | `480p` / `720p` / `1080p` (Fast / Mini: `480p` / `720p` only) |
-| `frames` | omitted | Positive integer; alternative to `duration`, `frames` wins |
 | `generate_audio` | `true` | `true` / `false` |
 | `output_format` | omitted (`mp4`) | `mp4` / `mov` |
 | `watermark` | `false` | `true` / `false` |
@@ -322,7 +320,7 @@ Errors come with an HTTP status and an `error` object:
 {
   "error": {
     "code": "invalid_parameter",
-    "message": "duration only supports 4-15 seconds or -1 (smart duration)",
+    "message": "duration must be an integer from 4 to 15 seconds, or -1 (smart duration)",
     "type": "invalid_request_error",
     "http_status": 400,
     "request_id": "req_3f9a1c2b7d4e5f60718293a4",
@@ -344,7 +342,7 @@ Errors come with an HTTP status and an `error` object:
 | 500 | `api_error` | Internal error, retryable |
 | 502 / 503 / 504 | `service_unavailable` | Temporarily unavailable, retryable |
 
-A task that fails during generation is returned by the query endpoint with HTTP 200, `status: failed` and `error.code: task_failed`. Error messages are currently in Chinese. See [Errors](/en/errors).
+A task that fails during generation is returned by the query endpoint with HTTP 200, `status: failed` and `error.code: task_failed`. See [Errors](/en/errors).
 
 ---
 
@@ -376,8 +374,8 @@ When you also use `callback_url`, poll less often as a fallback for lost callbac
 ## FAQ
 
 <AccordionGroup>
-  <Accordion title="Q1: What if I pass both frames and duration?">
-    `frames` wins and `duration` is ignored. With `frames`, billing follows actual usage.
+  <Accordion title="Q1: Can I set the frame count with frames?">
+    No. Sending `frames` returns 400 (`frames is not supported, use duration`); no task is created and nothing is billed. Use `duration` with a whole number of seconds.
   </Accordion>
   <Accordion title="Q2: Why is my duration rejected?">
     `duration` accepts integers 4–15 (4–30 on `seedance-2.5`) or `-1` (smart duration). Decimals, strings and values outside the chosen model range return HTTP 400; for more than 15 seconds switch `model` to `seedance-2.5`. With `-1` the model picks the length and you are billed for actual usage.

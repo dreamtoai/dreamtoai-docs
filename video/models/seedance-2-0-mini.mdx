@@ -18,7 +18,6 @@ description: "Seedance 2.0 Mini 视频生成：轻量版本，适合大批量、
 | `duration` | `5` | `4` ~ `15` 秒的整数，或 `-1` 智能时长 |
 | `resolution` | `720p` | `480p` / `720p` |
 | `ratio` | `adaptive` | `adaptive` / `16:9` / `9:16` / `1:1` / `4:3` / `3:4` / `21:9` |
-| `frames` | 不传 | 正整数，与 `duration` 二选一，`frames` 优先 |
 | `generate_audio` | `true` | `true` / `false` |
 | `real_person_mode` | `false` | `true` / `false` |
 | `omni_reference_task_type` | — | 本模型不使用，传入合法值会被忽略 |
@@ -146,15 +145,14 @@ for (;;) {
 - [参考音频](/video/models/seedance-2-0-mini/scenarios/reference-audio)
 - [联网搜索增强](/video/models/seedance-2-0-mini/scenarios/web-search)
 - [引用素材库素材](/video/models/seedance-2-0-mini/scenarios/asset-reference)
-- [指定帧数](/video/models/seedance-2-0-mini/scenarios/frames)
 - [Fast / Mini 快速出片](/video/models/seedance-2-0-mini/scenarios/fast-draft)
 
 ## 常见报错
 
 | 场景 | HTTP | 返回 |
 |---|---|---|
-| `duration` 超出 4 ~ 15 或不是整数 | 400 | `duration 仅支持 4~15 秒或 -1(智能时长)` |
-| `resolution` 不在 `480p` / `720p` 中 | 400 | `resolution 仅支持 480p / 720p` |
+| `duration` 超出 4 ~ 15 或不是整数 | 400 | `duration must be an integer from 4 to 15 seconds, or -1 (smart duration)` |
+| `resolution` 不在 `480p` / `720p` 中 | 400 | `resolution must be one of: 480p, 720p` |
 | 账号未开放该模型 | 404 | `error.code` 为 `not_found` |
 
 全部错误码见 [错误码](/errors)。

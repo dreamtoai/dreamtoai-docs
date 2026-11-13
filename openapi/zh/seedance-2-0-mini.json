@@ -91,7 +91,7 @@
       },
       "SeedanceV3CreateTaskRequest": {
         "additionalProperties": false,
-        "description": "只接受下列字段，其他字段返回 400 `不支持的参数：xxx`。",
+        "description": "只接受下列字段，其他字段返回 400 `unsupported parameter: xxx`。",
         "properties": {
           "model": {
             "default": "seedance-2.0-mini",
@@ -150,7 +150,7 @@
           },
           "duration": {
             "default": 5,
-            "description": "视频时长（秒），不传时为 `5`。\n\n- `4` ~ `15` 的整数：生成指定秒数\n- `-1`：智能时长，由模型在 4 ~ 15 秒内自选，按实际用量计费，实际时长见查询结果的 `duration`\n- 小数、字符串或范围外的值：400 `duration 仅支持 4~15 秒或 -1(智能时长)`\n\n同时传了 `frames` 时本字段被忽略。",
+            "description": "视频时长（秒），不传时为 `5`。\n\n- `4` ~ `15` 的整数：生成指定秒数\n- `-1`：智能时长，由模型在 4 ~ 15 秒内自选，按实际用量计费，实际时长见查询结果的 `duration`\n- 小数、字符串或范围外的值：400 `duration must be an integer from 4 to 15 seconds, or -1 (smart duration)`",
             "enum": [
               -1,
               4,
@@ -169,15 +169,9 @@
             "format": "int64",
             "type": "integer"
           },
-          "frames": {
-            "description": "总帧数，正整数。与 `duration` 二选一，同时传时以 `frames` 为准。",
-            "format": "int64",
-            "minimum": 1,
-            "type": "integer"
-          },
           "resolution": {
             "default": "720p",
-            "description": "输出分辨率，默认 `720p`，本模型支持 `480p` / `720p`。分辨率越高，生成耗时与费用越高。其他值返回 400 `resolution 仅支持 480p / 720p`。\n\n**可选值：**\n- `480p`：标清，生成最快、费用最低，适合预览与快速试错\n- `720p`：高清（默认），画质与速度均衡",
+            "description": "输出分辨率，默认 `720p`，本模型支持 `480p` / `720p`。分辨率越高，生成耗时与费用越高。其他值返回 400 `resolution must be one of: 480p, 720p`。\n\n**可选值：**\n- `480p`：标清，生成最快、费用最低，适合预览与快速试错\n- `720p`：高清（默认），画质与速度均衡",
             "enum": [
               "480p",
               "720p"
@@ -267,7 +261,7 @@
             "type": "string"
           },
           "omni_reference_task_type": {
-            "description": "参考任务类型，本模型**不使用**：传入合法值会被忽略，生成方式由 `content` 中的素材自动决定。其他值返回 400 `omni_reference_task_type 仅支持 auto / reference / edit / extend`。\n\n**可选值：**\n- `auto`：自动：按 `content` 中的素材判定\n- `reference`：参考生成：按参考素材生成新视频\n- `edit`：视频编辑：修改参考视频的画面内容，须带参考视频\n- `extend`：视频延长：延续参考视频继续生成，须带参考视频",
+            "description": "参考任务类型，本模型**不使用**：传入合法值会被忽略，生成方式由 `content` 中的素材自动决定。其他值返回 400 `omni_reference_task_type must be one of: auto, reference, edit, extend`。\n\n**可选值：**\n- `auto`：自动：按 `content` 中的素材判定\n- `reference`：参考生成：按参考素材生成新视频\n- `edit`：视频编辑：修改参考视频的画面内容，须带参考视频\n- `extend`：视频延长：延续参考视频继续生成，须带参考视频",
             "enum": [
               "auto",
               "reference",
@@ -400,7 +394,7 @@
             "description": "图片地址对象。"
           },
           "role": {
-            "description": "图片在生成中的作用。取值区分大小写，其他值返回 400 `content[n].role 仅支持 reference_image / first_frame / last_frame`。\n\n**可选值：**\n- `reference_image`：参考图：提取其中的主体、风格或场景，可传多张，在提示词中用「图片1」「图片2」引用\n- `first_frame`：首帧：视频从这张图开始\n- `last_frame`：尾帧：视频在这张图结束，通常与 `first_frame` 搭配实现两图之间的过渡",
+            "description": "图片在生成中的作用。取值区分大小写，其他值返回 400 `content[n].role must be one of: reference_image, first_frame, last_frame`。\n\n**可选值：**\n- `reference_image`：参考图：提取其中的主体、风格或场景，可传多张，在提示词中用「图片1」「图片2」引用\n- `first_frame`：首帧：视频从这张图开始\n- `last_frame`：尾帧：视频在这张图结束，通常与 `first_frame` 搭配实现两图之间的过渡",
             "enum": [
               "reference_image",
               "first_frame",
@@ -421,7 +415,7 @@
         "description": "素材地址。",
         "properties": {
           "url": {
-            "description": "素材地址，**必填**，二选一：\n\n- 可公网访问的 `http` / `https` 地址（不能需要鉴权或仅内网可达）\n- 素材库引用 `asset://<素材Id>`：素材须属于当前账号且状态为 `Active`；未就绪、不存在或已删除时返回 400，不扣费\n\n其他协议返回 400 `content[n].image_url.url 必须是 http/https 地址或 asset://<素材Id>`。",
+            "description": "素材地址，**必填**，二选一：\n\n- 可公网访问的 `http` / `https` 地址（不能需要鉴权或仅内网可达）\n- 素材库引用 `asset://<素材Id>`：素材须属于当前账号且状态为 `Active`；未就绪、不存在或已删除时返回 400，不扣费\n\n其他协议返回 400 `content[n].image_url.url must be an http/https URL or asset://<asset Id>`。",
             "examples": [
               "https://example.com/portrait.jpg"
             ],
@@ -485,12 +479,7 @@
             "type": "integer"
           },
           "duration": {
-            "description": "生成视频的实际时长（秒）。请求 `duration: -1`（智能时长）或使用 `frames` 时，以本字段为准。",
-            "format": "int64",
-            "type": "integer"
-          },
-          "frames": {
-            "description": "生成视频的总帧数。",
+            "description": "生成视频的实际时长（秒）。请求 `duration: -1`（智能时长）时，以本字段为准。",
             "format": "int64",
             "type": "integer"
           },
@@ -564,7 +553,7 @@
             "type": "string"
           },
           "message": {
-            "description": "可读的失败原因，例如素材不合规、超出模型限制等；未知原因时为 `视频生成失败，请重试`。",
+            "description": "可读的失败原因，例如素材不合规、超出模型限制等；未知原因时为 `Video generation failed, please retry`。",
             "type": "string"
           }
         },
@@ -674,12 +663,7 @@
             "type": "integer"
           },
           "duration": {
-            "description": "生成视频的实际时长（秒）。请求 `duration: -1`（智能时长）或使用 `frames` 时，以本字段为准。",
-            "format": "int64",
-            "type": "integer"
-          },
-          "frames": {
-            "description": "生成视频的总帧数。",
+            "description": "生成视频的实际时长（秒）。请求 `duration: -1`（智能时长）时，以本字段为准。",
             "format": "int64",
             "type": "integer"
           },
@@ -793,7 +777,7 @@
             "type": "string"
           },
           "text": {
-            "description": "视频描述提示词，去除首尾空白后长度 3 ~ 20000 个字符，否则返回 400 `提示词长度需为 3~20000 字符`。\n\n建议写法：主体 + 动作，背景 + 动作，镜头 + 运动（推进、拉远、环绕等）；用「图片1」「视频1」「音频1」引用参考素材，不要在提示词里写素材 Id。",
+            "description": "视频描述提示词，去除首尾空白后长度 3 ~ 20000 个字符，否则返回 400 `prompt text must be 3 to 20000 characters`。\n\n建议写法：主体 + 动作，背景 + 动作，镜头 + 运动（推进、拉远、环绕等）；用「图片1」「视频1」「音频1」引用参考素材，不要在提示词里写素材 Id。",
             "maxLength": 20000,
             "minLength": 3,
             "type": "string"
@@ -984,7 +968,7 @@
                     "value": {
                       "error": {
                         "code": "unauthorized",
-                        "message": "API Key 无效",
+                        "message": "Invalid API key",
                         "type": "authentication_error",
                         "http_status": 401,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1008,7 +992,7 @@
                     "value": {
                       "error": {
                         "code": "forbidden",
-                        "message": "无权限访问该资源",
+                        "message": "No permission to access this resource",
                         "type": "permission_error",
                         "http_status": 403,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1056,7 +1040,7 @@
                     "value": {
                       "error": {
                         "code": "api_error",
-                        "message": "服务器内部错误，请稍后重试",
+                        "message": "Internal server error, please retry later",
                         "type": "api_error",
                         "http_status": 500,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1080,7 +1064,7 @@
                     "value": {
                       "error": {
                         "code": "service_unavailable",
-                        "message": "服务暂时不可用，请稍后重试",
+                        "message": "Service temporarily unavailable, please retry later",
                         "type": "api_error",
                         "http_status": 503,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1294,22 +1278,6 @@
                     "resolution": "720p"
                   }
                 },
-                "指定帧数": {
-                  "description": "用 frames 直接指定总帧数。",
-                  "summary": "指定帧数",
-                  "value": {
-                    "model": "seedance-2.0-mini",
-                    "content": [
-                      {
-                        "type": "text",
-                        "text": "一只橘猫在阳光下的窗台上伸懒腰，慢镜头"
-                      }
-                    ],
-                    "ratio": "16:9",
-                    "frames": 121,
-                    "resolution": "720p"
-                  }
-                },
                 "Fast / Mini 快速出片": {
                   "description": "用 Seedance 2.0 Fast 或 Mini 快速预览。",
                   "summary": "Fast / Mini 快速出片",
@@ -1369,7 +1337,7 @@
                     "value": {
                       "error": {
                         "code": "invalid_parameter",
-                        "message": "duration 仅支持 4~15 秒或 -1(智能时长)",
+                        "message": "duration must be an integer from 4 to 15 seconds, or -1 (smart duration)",
                         "type": "invalid_request_error",
                         "http_status": 400,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4",
@@ -1394,7 +1362,7 @@
                     "value": {
                       "error": {
                         "code": "unauthorized",
-                        "message": "API Key 无效",
+                        "message": "Invalid API key",
                         "type": "authentication_error",
                         "http_status": 401,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1418,7 +1386,7 @@
                     "value": {
                       "error": {
                         "code": "insufficient_balance",
-                        "message": "余额不足",
+                        "message": "Insufficient balance",
                         "type": "insufficient_balance_error",
                         "http_status": 402,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1442,7 +1410,7 @@
                     "value": {
                       "error": {
                         "code": "forbidden",
-                        "message": "无权限访问该资源",
+                        "message": "No permission to access this resource",
                         "type": "permission_error",
                         "http_status": 403,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1466,7 +1434,7 @@
                     "value": {
                       "error": {
                         "code": "not_found",
-                        "message": "模型不存在或未开放",
+                        "message": "Model not found or not enabled",
                         "type": "invalid_request_error",
                         "http_status": 404,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1514,7 +1482,7 @@
                     "value": {
                       "error": {
                         "code": "api_error",
-                        "message": "服务器内部错误，请稍后重试",
+                        "message": "Internal server error, please retry later",
                         "type": "api_error",
                         "http_status": 500,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1538,7 +1506,7 @@
                     "value": {
                       "error": {
                         "code": "service_unavailable",
-                        "message": "服务暂时不可用，请稍后重试",
+                        "message": "Service temporarily unavailable, please retry later",
                         "type": "api_error",
                         "http_status": 503,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1633,7 +1601,7 @@
                       "status": "failed",
                       "error": {
                         "code": "task_failed",
-                        "message": "视频生成失败，请重试"
+                        "message": "Video generation failed, please retry"
                       },
                       "created_at": 1794384000,
                       "updated_at": 1794384120,
@@ -1664,7 +1632,7 @@
                     "value": {
                       "error": {
                         "code": "unauthorized",
-                        "message": "API Key 无效",
+                        "message": "Invalid API key",
                         "type": "authentication_error",
                         "http_status": 401,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1688,7 +1656,7 @@
                     "value": {
                       "error": {
                         "code": "forbidden",
-                        "message": "无权限访问该资源",
+                        "message": "No permission to access this resource",
                         "type": "permission_error",
                         "http_status": 403,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1712,7 +1680,7 @@
                     "value": {
                       "error": {
                         "code": "not_found",
-                        "message": "任务不存在",
+                        "message": "Task not found",
                         "type": "invalid_request_error",
                         "http_status": 404,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1760,7 +1728,7 @@
                     "value": {
                       "error": {
                         "code": "api_error",
-                        "message": "服务器内部错误，请稍后重试",
+                        "message": "Internal server error, please retry later",
                         "type": "api_error",
                         "http_status": 500,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1784,7 +1752,7 @@
                     "value": {
                       "error": {
                         "code": "service_unavailable",
-                        "message": "服务暂时不可用，请稍后重试",
+                        "message": "Service temporarily unavailable, please retry later",
                         "type": "api_error",
                         "http_status": 503,
                         "request_id": "req_3f9a1c2b7d4e5f60718293a4"
@@ -1890,7 +1858,7 @@
                     "taskId": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
                     "status": "failed",
                     "result": [],
-                    "errorMsg": "视频生成失败，请重试",
+                    "errorMsg": "Video generation failed, please retry",
                     "timestamp": "2026-11-11T08:03:16Z",
                     "signature": "9a7e2c4b1d..."
                   }

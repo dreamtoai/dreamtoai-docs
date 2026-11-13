@@ -100,7 +100,6 @@
                       "video/models/seedance-2-5/scenarios/reference-audio",
                       "video/models/seedance-2-5/scenarios/web-search",
                       "video/models/seedance-2-5/scenarios/asset-reference",
-                      "video/models/seedance-2-5/scenarios/frames",
                       "video/models/seedance-2-5/scenarios/smart-duration-callback",
                       "video/models/seedance-2-5/scenarios/seedance-2-5-long-video"
                     ]
@@ -131,7 +130,6 @@
                       "video/models/seedance-2-0/scenarios/reference-audio",
                       "video/models/seedance-2-0/scenarios/web-search",
                       "video/models/seedance-2-0/scenarios/asset-reference",
-                      "video/models/seedance-2-0/scenarios/frames",
                       "video/models/seedance-2-0/scenarios/smart-duration-callback"
                     ]
                   }
@@ -159,7 +157,6 @@
                       "video/models/seedance-2-0-fast/scenarios/reference-audio",
                       "video/models/seedance-2-0-fast/scenarios/web-search",
                       "video/models/seedance-2-0-fast/scenarios/asset-reference",
-                      "video/models/seedance-2-0-fast/scenarios/frames",
                       "video/models/seedance-2-0-fast/scenarios/fast-draft"
                     ]
                   }
@@ -187,7 +184,6 @@
                       "video/models/seedance-2-0-mini/scenarios/reference-audio",
                       "video/models/seedance-2-0-mini/scenarios/web-search",
                       "video/models/seedance-2-0-mini/scenarios/asset-reference",
-                      "video/models/seedance-2-0-mini/scenarios/frames",
                       "video/models/seedance-2-0-mini/scenarios/fast-draft"
                     ]
                   }
@@ -255,7 +251,6 @@
                       "en/video/models/seedance-2-5/scenarios/reference-audio",
                       "en/video/models/seedance-2-5/scenarios/web-search",
                       "en/video/models/seedance-2-5/scenarios/asset-reference",
-                      "en/video/models/seedance-2-5/scenarios/frames",
                       "en/video/models/seedance-2-5/scenarios/smart-duration-callback",
                       "en/video/models/seedance-2-5/scenarios/seedance-2-5-long-video"
                     ]
@@ -286,7 +281,6 @@
                       "en/video/models/seedance-2-0/scenarios/reference-audio",
                       "en/video/models/seedance-2-0/scenarios/web-search",
                       "en/video/models/seedance-2-0/scenarios/asset-reference",
-                      "en/video/models/seedance-2-0/scenarios/frames",
                       "en/video/models/seedance-2-0/scenarios/smart-duration-callback"
                     ]
                   }
@@ -314,7 +308,6 @@
                       "en/video/models/seedance-2-0-fast/scenarios/reference-audio",
                       "en/video/models/seedance-2-0-fast/scenarios/web-search",
                       "en/video/models/seedance-2-0-fast/scenarios/asset-reference",
-                      "en/video/models/seedance-2-0-fast/scenarios/frames",
                       "en/video/models/seedance-2-0-fast/scenarios/fast-draft"
                     ]
                   }
@@ -342,7 +335,6 @@
                       "en/video/models/seedance-2-0-mini/scenarios/reference-audio",
                       "en/video/models/seedance-2-0-mini/scenarios/web-search",
                       "en/video/models/seedance-2-0-mini/scenarios/asset-reference",
-                      "en/video/models/seedance-2-0-mini/scenarios/frames",
                       "en/video/models/seedance-2-0-mini/scenarios/fast-draft"
                     ]
                   }
@@ -443,7 +435,7 @@
     },
     {
       "source": "/video/seedance-2-0/scenarios/frames",
-      "destination": "/video/models/seedance-2-0/scenarios/frames"
+      "destination": "/video/models/seedance-2-0"
     },
     {
       "source": "/video/seedance-2-0/scenarios/image-to-video",
@@ -487,7 +479,7 @@
     },
     {
       "source": "/en/video/seedance-2-0/scenarios/frames",
-      "destination": "/en/video/models/seedance-2-0/scenarios/frames"
+      "destination": "/en/video/models/seedance-2-0"
     },
     {
       "source": "/en/video/seedance-2-0/scenarios/image-to-video",
@@ -520,6 +512,38 @@
     {
       "source": "/en/video/seedance-2-0/scenarios/web-search",
       "destination": "/en/video/models/seedance-2-0/scenarios/web-search"
+    },
+    {
+      "source": "/video/models/seedance-2-5/scenarios/frames",
+      "destination": "/video/models/seedance-2-5"
+    },
+    {
+      "source": "/video/models/seedance-2-0/scenarios/frames",
+      "destination": "/video/models/seedance-2-0"
+    },
+    {
+      "source": "/video/models/seedance-2-0-fast/scenarios/frames",
+      "destination": "/video/models/seedance-2-0-fast"
+    },
+    {
+      "source": "/video/models/seedance-2-0-mini/scenarios/frames",
+      "destination": "/video/models/seedance-2-0-mini"
+    },
+    {
+      "source": "/en/video/models/seedance-2-5/scenarios/frames",
+      "destination": "/en/video/models/seedance-2-5"
+    },
+    {
+      "source": "/en/video/models/seedance-2-0/scenarios/frames",
+      "destination": "/en/video/models/seedance-2-0"
+    },
+    {
+      "source": "/en/video/models/seedance-2-0-fast/scenarios/frames",
+      "destination": "/en/video/models/seedance-2-0-fast"
+    },
+    {
+      "source": "/en/video/models/seedance-2-0-mini/scenarios/frames",
+      "destination": "/en/video/models/seedance-2-0-mini"
     }
   ]
 }

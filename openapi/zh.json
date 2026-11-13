@@ -55,7 +55,7 @@
             "type": "array"
           },
           "Statuses": {
-            "description": "按状态筛选，可传多个，其他值返回 400 `Filter.Statuses 仅支持 Processing / Active / Failed`。\n\n**可选值：**\n- `Processing`：处理中（下载、审核、转存），暂不可引用\n- `Active`：可用，可通过 `asset://<Id>` 在生成任务中引用\n- `Failed`：处理失败，原因见 `Error`",
+            "description": "按状态筛选，可传多个，其他值返回 400 `Filter.Statuses must be one of: Processing, Active, Failed`。\n\n**可选值：**\n- `Processing`：处理中（下载、审核、转存），暂不可引用\n- `Active`：可用，可通过 `asset://<Id>` 在生成任务中引用\n- `Failed`：处理失败，原因见 `Error`",
             "items": {
               "enum": [
                 "Processing",
@@ -582,7 +582,7 @@
         "description": "CreateAsset 请求体。每次请求创建一个素材，接口为异步：返回 Id 时素材为 `Processing`，变为 `Active` 后才能在生成任务中引用。",
         "properties": {
           "GroupId": {
-            "description": "所属素材组 Id，**必填**。为空返回 400 `GroupId 不能为空`；素材组不存在或不属于当前账号返回 404。素材的 `ProjectName` 沿用该组。",
+            "description": "所属素材组 Id，**必填**。为空返回 400 `GroupId must not be empty`；素材组不存在或不属于当前账号返回 404。素材的 `ProjectName` 沿用该组。",
             "examples": [
               "group-20261111083000-p7m2q4ab"
             ],
@@ -670,7 +670,7 @@
           },
           "SortBy": {
             "default": "CreateTime",
-            "description": "排序字段，默认 `CreateTime`。其他值返回 400 `SortBy 仅支持 CreateTime / UpdateTime / Name / GroupId`。\n\n**可选值：**\n- `CreateTime`：按创建时间（默认）\n- `UpdateTime`：按更新时间\n- `Name`：按素材名称\n- `GroupId`：按所属素材组 Id",
+            "description": "排序字段，默认 `CreateTime`。其他值返回 400 `SortBy must be one of: CreateTime, UpdateTime, Name, GroupId`。\n\n**可选值：**\n- `CreateTime`：按创建时间（默认）\n- `UpdateTime`：按更新时间\n- `Name`：按素材名称\n- `GroupId`：按所属素材组 Id",
             "enum": [
               "CreateTime",
               "UpdateTime",
@@ -681,7 +681,7 @@
           },
           "SortOrder": {
             "default": "Desc",
-            "description": "排序方向，默认 `Desc`。其他值返回 400 `SortOrder 仅支持 Desc / Asc`。\n\n**可选值：**\n- `Desc`：降序（默认）\n- `Asc`：升序",
+            "description": "排序方向，默认 `Desc`。其他值返回 400 `SortOrder must be one of: Desc, Asc`。\n\n**可选值：**\n- `Desc`：降序（默认）\n- `Asc`：升序",
             "enum": [
               "Desc",
               "Asc"
@@ -731,7 +731,7 @@
             "type": "string"
           },
           "Name": {
-            "description": "新名称，**必填**，最多 255 个字符；传空串 `\"\"` 表示清空。缺省返回 400 `Name 不能缺省（传空串表示清空）`。",
+            "description": "新名称，**必填**，最多 255 个字符；传空串 `\"\"` 表示清空。缺省返回 400 `Name is required (pass an empty string to clear it)`。",
             "maxLength": 255,
             "type": [
               "string",
@@ -832,7 +832,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "GroupId 不能为空"
+                          "Message": "GroupId must not be empty"
                         }
                       }
                     }
@@ -857,7 +857,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -882,7 +882,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -907,7 +907,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材组不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -932,7 +932,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -982,7 +982,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -1078,7 +1078,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Name must be 1 to 64 characters"
                         }
                       }
                     }
@@ -1103,7 +1103,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -1128,7 +1128,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -1153,7 +1153,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材组不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -1178,7 +1178,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -1228,7 +1228,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -1321,7 +1321,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Id 不能为空"
+                          "Message": "Id must not be empty"
                         }
                       }
                     }
@@ -1346,7 +1346,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -1371,7 +1371,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -1396,7 +1396,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset not found or deleted"
                         }
                       }
                     }
@@ -1421,7 +1421,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -1471,7 +1471,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -1564,7 +1564,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Id 不能为空"
+                          "Message": "Id must not be empty"
                         }
                       }
                     }
@@ -1589,7 +1589,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -1614,7 +1614,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -1639,7 +1639,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材组不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -1664,7 +1664,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -1714,7 +1714,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -1820,7 +1820,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Id 不能为空"
+                          "Message": "Id must not be empty"
                         }
                       }
                     }
@@ -1845,7 +1845,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -1870,7 +1870,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -1895,7 +1895,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset not found or deleted"
                         }
                       }
                     }
@@ -1920,7 +1920,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -1970,7 +1970,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -2072,7 +2072,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Id 不能为空"
+                          "Message": "Id must not be empty"
                         }
                       }
                     }
@@ -2097,7 +2097,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -2122,7 +2122,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -2147,7 +2147,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材组不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -2172,7 +2172,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -2222,7 +2222,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -2335,7 +2335,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Filter.GroupIds 最多 100 个"
+                          "Message": "Filter.GroupIds allows at most 100 Ids"
                         }
                       }
                     }
@@ -2360,7 +2360,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -2385,7 +2385,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -2410,7 +2410,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材组不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -2435,7 +2435,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -2485,7 +2485,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -2610,7 +2610,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "SortBy 仅支持 CreateTime / UpdateTime / Name / GroupId"
+                          "Message": "SortBy must be one of: CreateTime, UpdateTime, Name, GroupId"
                         }
                       }
                     }
@@ -2635,7 +2635,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -2660,7 +2660,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -2685,7 +2685,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset not found or deleted"
                         }
                       }
                     }
@@ -2710,7 +2710,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -2760,7 +2760,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -2854,7 +2854,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 不能缺省（传空串表示清空）"
+                          "Message": "Name is required (pass an empty string to clear it)"
                         }
                       }
                     }
@@ -2879,7 +2879,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -2904,7 +2904,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -2929,7 +2929,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材不存在或已删除"
+                          "Message": "Asset not found or deleted"
                         }
                       }
                     }
@@ -2954,7 +2954,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -3004,7 +3004,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }
@@ -3098,7 +3098,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "Name 长度需为 1~64 个字符"
+                          "Message": "Name must be 1 to 64 characters"
                         }
                       }
                     }
@@ -3123,7 +3123,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidAuthorization",
-                          "Message": "API Key 无效"
+                          "Message": "Invalid API key"
                         }
                       }
                     }
@@ -3148,7 +3148,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "AccessDenied",
-                          "Message": "账号无权访问"
+                          "Message": "No permission to access this resource"
                         }
                       }
                     }
@@ -3173,7 +3173,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "ResourceNotFound",
-                          "Message": "素材组不存在或已删除"
+                          "Message": "Asset group not found or deleted"
                         }
                       }
                     }
@@ -3198,7 +3198,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InvalidParameter",
-                          "Message": "请求体超过 1MB"
+                          "Message": "Request body too large"
                         }
                       }
                     }
@@ -3248,7 +3248,7 @@
                         "Version": "2024-01-01",
                         "Error": {
                           "Code": "InternalError",
-                          "Message": "服务内部错误，请稍后重试"
+                          "Message": "Internal error, please retry later"
                         }
                       }
                     }

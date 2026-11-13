@@ -41,7 +41,7 @@ Authorization: Bearer {YOUR_API_KEY}
     "Version": "2024-01-01",
     "Error": {
       "Code": "InvalidAuthorization",
-      "Message": "API Key 无效"
+      "Message": "Invalid API key"
     }
   }
 }
@@ -61,7 +61,7 @@ Content-Type: application/json
 | Action | 是 | 操作名，见 [Action 清单](#action-清单) |
 | Version | 是 | 固定为 `2024-01-01` |
 
-请求体字段名为 PascalCase，只接受各 Action 文档列出的字段（含 `Filter` 内的字段）。多传或拼错的字段返回 HTTP 400 `InvalidParameter`（`不支持的参数：xxx`），不会被静默忽略。
+请求体字段名为 PascalCase，只接受各 Action 文档列出的字段（含 `Filter` 内的字段）。多传或拼错的字段返回 HTTP 400 `InvalidParameter`（`unsupported parameter: xxx`），不会被静默忽略。
 
 **成功响应**（HTTP 200）：
 

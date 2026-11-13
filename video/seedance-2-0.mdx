@@ -12,7 +12,6 @@ Seedance 视频生成接口，支持 **Seedance 2.5**、**Seedance 2.0**、**See
 - 🎬 **四个模型一个接口**：2.5 最长 30 秒；2.0 支持 480p / 720p / 1080p；Fast / Mini 支持 480p / 720p
 - 🧠 **多模态理解**：融合图片、视频、音频等参考素材
 - 🎯 **生成方式自动判定**：按素材自动区分文生视频、图生视频、首尾帧、多图参考、视频编辑与延长
-- 🎞️ **帧数控制**：支持用 `frames` 直接指定总帧数
 - ⏱️ **智能时长**：传 `duration: -1` 由模型自选时长，按实际用量计费
 - 🔊 **默认生成音频**：`generate_audio` 未传时默认生成音频
 - 🔎 **联网搜索增强**：通过 `tools` 开启，让模型参考实时信息
@@ -27,7 +26,7 @@ Seedance 视频生成接口，支持 **Seedance 2.5**、**Seedance 2.0**、**See
   - 任务成功的状态值是 `succeeded`（不是 `success`）；处理中为 `running`，失败为 `failed`。回调体里的状态值另有约定，见 [任务回调](/webhooks/task-callback)。
   - 视频地址在 `content.video_url`；它是直链，下载时**不要**带 `Authorization` 头，并请尽快转存到你自己的存储，不要当作长期地址。
   - `generate_audio` 默认 `true`（生成音频）；不需要声音时显式传 `false`。
-  - 请求体只接受文档列出的字段，多传字段会返回 400 `不支持的参数：xxx`，不会被静默忽略。
+  - 请求体只接受文档列出的字段，多传字段会返回 400 `unsupported parameter: xxx`，不会被静默忽略。
 </Warning>
 
 <CardGroup cols={2}>
@@ -269,13 +268,12 @@ API Key 的获取与使用说明见 [认证方式](/authentication)。
 | `ratio` | `adaptive` | `adaptive` / `16:9` / `9:16` / `1:1` / `4:3` / `3:4` / `21:9` |
 | `duration` | `seedance-2.5` 为 `-1`，其余 `5` | 4 ~ 15 秒（`seedance-2.5` 为 4 ~ 30 秒）整数，或 `-1` 智能时长 |
 | `resolution` | `720p` | `480p` / `720p` / `1080p`（Fast / Mini 仅 `480p` / `720p`） |
-| `frames` | 不传 | 正整数，与 `duration` 二选一，`frames` 优先 |
 | `generate_audio` | `true` | `true` / `false` |
 | `output_format` | 不传（默认 `mp4`） | `mp4` / `mov` |
 | `watermark` | `false` | `true` / `false` |
 | `bitrate_mode` | 不传（等同 `standard`） | `standard` / `high` |
 
-枚举值区分大小写，取值范围之外的值返回 HTTP 400（`invalid_parameter`），`error.param` 指出出错字段。请求体只接受文档列出的字段，传入表外字段返回 400（`不支持的参数：xxx`）。每个参数的完整说明见 [API 全部参数](/api-reference/seedance-2-0/create-task)。
+枚举值区分大小写，取值范围之外的值返回 HTTP 400（`invalid_parameter`），`error.param` 指出出错字段。请求体只接受文档列出的字段，传入表外字段返回 400（`unsupported parameter: xxx`）。每个参数的完整说明见 [API 全部参数](/api-reference/seedance-2-0/create-task)。
 
 ---
 
@@ -322,7 +320,7 @@ API Key 的获取与使用说明见 [认证方式](/authentication)。
 {
   "error": {
     "code": "invalid_parameter",
-    "message": "duration 仅支持 4~15 秒或 -1(智能时长)",
+    "message": "duration must be an integer from 4 to 15 seconds, or -1 (smart duration)",
     "type": "invalid_request_error",
     "http_status": 400,
     "request_id": "req_3f9a1c2b7d4e5f60718293a4",
@@ -376,11 +374,11 @@ API Key 的获取与使用说明见 [认证方式](/authentication)。
 ## 常见问题
 
 <AccordionGroup>
-  <Accordion title="Q1: frames 和 duration 都传了会怎样？">
-    `frames` 优先，`duration` 被忽略。使用 `frames` 时按实际生成用量计费。
+  <Accordion title="Q1: 可以用 frames 指定帧数吗？">
+    不可以。传 `frames` 返回 400（`frames is not supported, use duration`），不建任务、不扣费。请用 `duration` 指定整数秒。
   </Accordion>
   <Accordion title="Q2: 为什么传 duration 报错了？">
-    `duration` 只支持 4 ~ 15 之间的整数秒（`seedance-2.5` 为 4 ~ 30），或 `-1`（智能时长）。小数、字符串或超出所选模型范围的值都会返回 HTTP 400（例如 `duration 仅支持 4~15 秒或 -1(智能时长)`）；需要 15 秒以上请把 `model` 换成 `seedance-2.5`。传 `-1` 时由模型自选时长，任务结束后按实际用量结算。
+    `duration` 只支持 4 ~ 15 之间的整数秒（`seedance-2.5` 为 4 ~ 30），或 `-1`（智能时长）。小数、字符串或超出所选模型范围的值都会返回 HTTP 400（例如 `duration must be an integer from 4 to 15 seconds, or -1 (smart duration)`）；需要 15 秒以上请把 `model` 换成 `seedance-2.5`。传 `-1` 时由模型自选时长，任务结束后按实际用量结算。
   </Accordion>
   <Accordion title="Q3: 查询响应里为什么缺少 duration、resolution 这些字段？">
     这些字段仅在有对应信息时返回，恒定存在的只有 `id` / `model` / `status` / `created_at` / `updated_at` / `request_id`。请按「字段可能不存在」的方式做兼容解析。
@@ -391,7 +389,7 @@ API Key 的获取与使用说明见 [认证方式](/authentication)。
   <Accordion title="Q5: content 中可以不传 text 吗？">
     不可以。必须包含至少一个 `text` 类型的内容项作为提示词，否则请求被拒绝（HTTP 400）。
   </Accordion>
-  <Accordion title="Q6: 为什么返回「不支持的参数：xxx」？">
+  <Accordion title="Q6: 为什么返回「unsupported parameter: xxx」？">
     请求体只接受 [API 全部参数](/api-reference/seedance-2-0/create-task) 中列出的字段，多传的字段（例如拼写错误或其他平台的专有字段）会被拒绝，以免参数被静默忽略。请删除该字段后重试。
   </Accordion>
   <Accordion title="Q7: 视频链接可以长期使用吗？">

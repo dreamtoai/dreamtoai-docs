@@ -269,4 +269,4 @@ When an asset's `Status` is `Failed`, `Error.Code` is one of the following. Fix 
 | 429 | `RequestLimitExceeded` | Too many requests, retry later |
 | 500 | `InternalError` | Internal error, retry later |
 
-The API currently returns `Message` texts in Chinese (examples here show English translations); branch on the HTTP status and `Error.Code`.
+`Message` texts are in English; branch on the HTTP status and `Error.Code`, not on the message text.

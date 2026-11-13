@@ -18,7 +18,6 @@ description: "Seedance 2.5 视频生成：最新一代模型，单次最长 30 �
 | `duration` | `-1`（智能时长） | `4` ~ `30` 秒的整数，或 `-1` 智能时长 |
 | `resolution` | `720p` | `480p` / `720p` / `1080p` |
 | `ratio` | `adaptive` | `adaptive` / `16:9` / `9:16` / `1:1` / `4:3` / `3:4` / `21:9` |
-| `frames` | 不传 | 正整数，与 `duration` 二选一，`frames` 优先 |
 | `generate_audio` | `true` | `true` / `false` |
 | `real_person_mode` | `true` | `true` / `false` |
 | `omni_reference_task_type` | 不传（按素材判定） | `auto` / `reference` / `edit` / `extend` |
@@ -148,7 +147,6 @@ for (;;) {
 - [参考音频](/video/models/seedance-2-5/scenarios/reference-audio)
 - [联网搜索增强](/video/models/seedance-2-5/scenarios/web-search)
 - [引用素材库素材](/video/models/seedance-2-5/scenarios/asset-reference)
-- [指定帧数](/video/models/seedance-2-5/scenarios/frames)
 - [智能时长 + 回调通知](/video/models/seedance-2-5/scenarios/smart-duration-callback)
 - [Seedance 2.5 长视频](/video/models/seedance-2-5/scenarios/seedance-2-5-long-video)
 
@@ -156,8 +154,8 @@ for (;;) {
 
 | 场景 | HTTP | 返回 |
 |---|---|---|
-| `duration` 超出 4 ~ 30 或不是整数 | 400 | `duration 仅支持 4~30 秒或 -1(智能时长)` |
-| `resolution` 不在 `480p` / `720p` / `1080p` 中 | 400 | `resolution 仅支持 480p / 720p / 1080p` |
+| `duration` 超出 4 ~ 30 或不是整数 | 400 | `duration must be an integer from 4 to 30 seconds, or -1 (smart duration)` |
+| `resolution` 不在 `480p` / `720p` / `1080p` 中 | 400 | `resolution must be one of: 480p, 720p, 1080p` |
 | 账号未开放该模型 | 404 | `error.code` 为 `not_found` |
 
 全部错误码见 [错误码](/errors)。

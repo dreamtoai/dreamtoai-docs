@@ -16,7 +16,7 @@ description: "任务进入终态后，DreamTo 向创建任务时提供的 callba
 }
 ```
 
-- `callback_url` 必须是 `http` / `https` 地址，否则创建任务返回 HTTP 400（`callback_url 必须是 http/https 地址`）。
+- `callback_url` 必须是 `http` / `https` 地址，否则创建任务返回 HTTP 400（`callback_url must be an http/https URL`）。
 - 回调地址解析到私网、回环或链路本地地址时，平台拒绝投递，请使用可公网访问的地址。
 - 回调只是加速通知的手段，建议同时保留对 [查询任务状态](/api-reference/seedance-2-0/get-task) 的低频轮询兜底。
 
@@ -67,7 +67,7 @@ description: "任务进入终态后，DreamTo 向创建任务时提供的 callba
   "taskId": "task_8c1d2e3f4a5b6c7d8e9f0a1b",
   "status": "failed",
   "result": [],
-  "errorMsg": "视频生成失败，请重试",
+  "errorMsg": "Video generation failed, please retry",
   "timestamp": "2026-11-11T08:02:00Z",
   "signature": "a41f09c2d3..."
 }

@@ -18,7 +18,6 @@ Out-of-range values return 400; no task is created and nothing is billed.
 | `duration` | `5` | Integer `4`–`15` seconds, or `-1` for smart duration |
 | `resolution` | `720p` | `480p` / `720p` |
 | `ratio` | `adaptive` | `adaptive` / `16:9` / `9:16` / `1:1` / `4:3` / `3:4` / `21:9` |
-| `frames` | omitted | Positive integer; alternative to `duration`, `frames` wins |
 | `generate_audio` | `true` | `true` / `false` |
 | `real_person_mode` | `false` | `true` / `false` |
 | `omni_reference_task_type` | — | Not used by this model; valid values are ignored |
@@ -146,15 +145,14 @@ for (;;) {
 - [Reference audio](/en/video/models/seedance-2-0-fast/scenarios/reference-audio)
 - [Web search](/en/video/models/seedance-2-0-fast/scenarios/web-search)
 - [Asset library reference](/en/video/models/seedance-2-0-fast/scenarios/asset-reference)
-- [Exact frame count](/en/video/models/seedance-2-0-fast/scenarios/frames)
 - [Fast / Mini drafts](/en/video/models/seedance-2-0-fast/scenarios/fast-draft)
 
 ## Common errors
 
 | Case | HTTP | Returns |
 |---|---|---|
-| `duration` outside 4–15 or not an integer | 400 | `duration 仅支持 4~15 秒或 -1(智能时长)` |
-| `resolution` not in `480p` / `720p` | 400 | `resolution 仅支持 480p / 720p` |
+| `duration` outside 4–15 or not an integer | 400 | `duration must be an integer from 4 to 15 seconds, or -1 (smart duration)` |
+| `resolution` not in `480p` / `720p` | 400 | `resolution must be one of: 480p, 720p` |
 | Model not enabled for your account | 404 | `error.code` is `not_found` |
 
 All codes: [Errors](/en/errors).
