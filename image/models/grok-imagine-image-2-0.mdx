@@ -1,0 +1,121 @@
+---
+title: "Grok Imagine Image 2.0"
+sidebarTitle: "概述"
+description: "xAI Grok Imagine Image 2.0：OpenAI 兼容的同步图像接口，文生图与图生图同名同价，支持 2K。"
+---
+
+{/* 本页由 apps/gateway/internal/service/image_models_openapi_test.go 自动生成，请勿手工修改。 */}
+
+`grok-imagine-image-2.0` 是 xAI Grok Imagine 的新版图像模型，质感更好，并且支持 2K 输出。同一个模型名一名两用：调用 `/v1/images/generations` 为文生图，调用 `/v1/images/edits` 并传参考图为图生图 / 图片编辑，价格相同。接口为同步接口，请求成功后直接返回图片，无需轮询。
+
+| 场景 | 接口 | 模型 |
+|---|---|---|
+| 文生图 | `POST /v1/images/generations` | `grok-imagine-image-2.0` |
+| 图生图 / 图片编辑 | `POST /v1/images/edits`（传参考图） | `grok-imagine-image-2.0` |
+
+服务地址为 `https://api.dreamto.ai`，API Key 放在 `Authorization: Bearer` 请求头；文生图使用 JSON，图生图可使用 JSON 或 `multipart/form-data`。
+
+## 接口
+
+| 接口 | 用途 |
+|---|---|
+| [`POST /v1/images/generations`](/api-reference/grok-imagine-image-2-0/create-image) | 生成图片 |
+| [`POST /v1/images/edits`](/api-reference/grok-imagine-image-2-0/edit-image) | 编辑图片 |
+
+## 参数范围
+
+| 字段 | 取值 |
+|---|---|
+| `prompt` | 必填，描述要生成或修改的画面 |
+| `n` | 生成数量，默认 1，建议一次请求传 1 |
+| `response_format` | `url`（默认）/ `b64_json` |
+| `size` | `1024x1024`（默认）/ `1792x1024` / `1024x1792` / `2048x2048` |
+| `resolution` | `1k`（默认）/ `2k`，与 `size` 等价 |
+| `aspect_ratio` | `1:1` / `16:9` / `9:16` / `2:3` / `3:2` / `4:3` / `3:4`，与 `size` 二选一 |
+
+## 计费
+
+按模型价格计费，以控制台显示的价格为准。参数错误和生成失败不扣费。
+
+## 快速开始
+
+示例中的 `$DREAMTO_API_KEY` 为你的 API Key。
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.dreamto.ai/v1/images/generations" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "grok-imagine-image-2.0",
+    "prompt": "一座漂浮在云海上的未来城市，清晨柔光，电影感",
+    "n": 1,
+    "response_format": "url"
+  }'
+```
+
+```python Python
+import os
+
+import requests
+
+URL = "https://api.dreamto.ai/v1/images/generations"
+HEADERS = {"Authorization": f"Bearer {os.environ['DREAMTO_API_KEY']}"}
+
+payload = {
+    "model": "grok-imagine-image-2.0",
+    "prompt": "一座漂浮在云海上的未来城市，清晨柔光，电影感",
+    "n": 1,
+    "response_format": "url"
+}
+
+result = requests.post(URL, headers=HEADERS, json=payload, timeout=600).json()
+for image in result["data"]:
+    print(image["url"])
+```
+
+</CodeGroup>
+
+## 画幅
+
+| 参数 | 可选值 | 默认 |
+|---|---|---|
+| `size` | `1024x1024` / `1792x1024` / `1024x1792` / `2048x2048`（2K） | `1024x1024` |
+| `resolution` | `1k` / `2k`，与 `size` 等价 | `1k` |
+| `aspect_ratio` | `1:1` / `16:9` / `9:16` / `2:3` / `3:2` / `4:3` / `3:4` | - |
+
+`size` 与 `aspect_ratio` 二选一，其他取值会报错。
+
+## 图生图 / 图片编辑
+
+调用 `/v1/images/edits`，参考图有以下几种传法：
+
+| 方式 | 写法 | 说明 |
+|---|---|---|
+| 单张公网图片 | `"image": "https://.../a.jpg"` | 图片地址须能被服务端直接下载 |
+| 单张 Base64 | `"image": "data:image/png;base64,..."` | 使用完整 Data URI，不要只传裸 Base64 |
+| 多张 JSON 图片 | `"images": ["https://.../a.jpg", "data:image/png;base64,..."]` | 可混用公网链接与 Data URI |
+| multipart 上传 | `-F "image[]=@a.png" -F "image[]=@b.jpg"` | 单图也可用 `-F "image=@a.png"` |
+
+```bash cURL
+curl -X POST "https://api.dreamto.ai/v1/images/edits" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -F "model=grok-imagine-image-2.0" \
+  -F "prompt=融合两张参考图的风格，生成商品展示图" \
+  -F "image[]=@reference-a.png" \
+  -F "image[]=@reference-b.jpg" \
+  -F "response_format=url"
+```
+
+## 使用建议
+
+- 一次请求出一张：`n` 建议传 1，需要多张时分多次请求，稳定性更好。
+- 直接展示用 `url`，需要落库或二次处理用 `b64_json`。返回的链接请及时下载保存。
+- 参考图主体清晰、无遮挡时，换风格 / 换背景类指令效果最稳；需要登录、内网或境外不可达的链接请改用 Base64 Data URI。
+
+## 与官方接口的差异
+
+- 本页只提供 `grok-imagine-image-2.0`，它是唯一支持 2K 的 Grok 图像模型。
+- `response_format` 支持 `url` 和 `b64_json`；`url` 为 DreamTo 的下载地址，请及时下载保存。
+- 错误响应使用 DreamTo 的错误结构（见各接口的错误示例）。

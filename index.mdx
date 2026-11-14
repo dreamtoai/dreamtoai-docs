@@ -4,7 +4,7 @@ sidebarTitle: "简介"
 description: "通过统一的 HTTP 接口调用 DreamTo 平台的视频生成、素材库与任务回调能力。"
 ---
 
-欢迎使用 DreamTo 开放平台。本文档介绍如何通过 HTTP 接口调用平台能力，当前已开放 **Seedance 视频生成**（2.5 / 2.0 / 2.0 Fast / 2.0 Mini）、**Seedance 素材库**、**任务回调通知**，以及与官方协议一致的 **MiniMax H3** 和 **Gemini Omni** 视频生成。
+欢迎使用 DreamTo 开放平台。本文档介绍如何通过 HTTP 接口调用平台能力，当前已开放 **Seedance 视频生成**（2.5 / 2.0 / 2.0 Fast / 2.0 Mini）、**Seedance 素材库**、**任务回调通知**，以及与官方协议一致的 **MiniMax H3** 和 **Gemini Omni** 视频生成、**Gemini 3.1 Flash / Flash Lite Image**、**GPT Image 2**、**Seedream 5.0 Lite** 和 **Grok Imagine Image 2.0** 图像生成。
 
 **Base URL**: `https://api.dreamto.ai`
 
@@ -32,6 +32,24 @@ description: "通过统一的 HTTP 接口调用 DreamTo 平台的视频生成、
   </Card>
   <Card title="Gemini Omni 视频生成" icon="/icons/gemini.svg" href="/video/models/gemini-omni">
     与 Google 官方 Interactions API 一致，支持文生、图生、首尾帧、视频编辑与延长。
+  </Card>
+  <Card title="Gemini 3.1 Flash Image" icon="/icons/gemini.svg" href="/image/models/gemini-3-1-flash-image">
+    Nano Banana 2，与 Google 官方 generateContent 一致，最高 4K。
+  </Card>
+  <Card title="Gemini 3.1 Flash Lite Image" icon="/icons/gemini.svg" href="/image/models/gemini-3-1-flash-lite-image">
+    Nano Banana 2 Lite，最快、最便宜的 Gemini 图像模型。
+  </Card>
+  <Card title="GPT Image 2" icon="/icons/openai.svg" href="/image/models/gpt-image-2">
+    与 OpenAI 官方 Images API 一致，可直接使用 OpenAI SDK。
+  </Card>
+  <Card title="GPT Image 2 Eco" icon="/icons/openai.svg" href="/image/models/gpt-image-2-eco">
+    GPT Image 2 经济线路，同一模型、更低价格。
+  </Card>
+  <Card title="Seedream 5.0 Lite" icon="/icons/doubao.svg" href="/image/models/seedream-5-0-lite">
+    火山方舟 V3 图片生成协议，同步返回，支持多图参考、组图与流式输出。
+  </Card>
+  <Card title="Grok Imagine Image 2.0" icon="/icons/grok.svg" href="/image/models/grok-imagine-image-2-0">
+    OpenAI 兼容的同步图像接口，文生图与图生图同名同价，支持 2K。
   </Card>
 </CardGroup>
 

@@ -72,6 +72,68 @@
             ]
           },
           {
+            "group": "图像生成",
+            "pages": [
+              {
+                "group": "Gemini 3.1 Flash Lite Image",
+                "icon": "/icons/gemini.svg",
+                "openapi": "openapi/zh/gemini-3-1-flash-lite-image.json",
+                "pages": [
+                  "image/models/gemini-3-1-flash-lite-image",
+                  "POST /v1beta/models/gemini-3.1-flash-lite-image:generateContent"
+                ]
+              },
+              {
+                "group": "Gemini 3.1 Flash Image",
+                "icon": "/icons/gemini.svg",
+                "openapi": "openapi/zh/gemini-3-1-flash-image.json",
+                "pages": [
+                  "image/models/gemini-3-1-flash-image",
+                  "POST /v1beta/models/gemini-3.1-flash-image:generateContent"
+                ]
+              },
+              {
+                "group": "GPT Image 2",
+                "icon": "/icons/openai.svg",
+                "openapi": "openapi/zh/gpt-image-2.json",
+                "pages": [
+                  "image/models/gpt-image-2",
+                  "POST /v1/images/generations",
+                  "POST /v1/images/edits"
+                ]
+              },
+              {
+                "group": "GPT Image 2 Eco",
+                "icon": "/icons/openai.svg",
+                "openapi": "openapi/zh/gpt-image-2-eco.json",
+                "pages": [
+                  "image/models/gpt-image-2-eco",
+                  "POST /v1/images/generations",
+                  "POST /v1/images/edits"
+                ]
+              },
+              {
+                "group": "Seedream 5.0 Lite",
+                "icon": "/icons/doubao.svg",
+                "openapi": "openapi/zh/seedream-5-0-lite.json",
+                "pages": [
+                  "image/models/seedream-5-0-lite",
+                  "POST /api/v3/images/generations"
+                ]
+              },
+              {
+                "group": "Grok Imagine Image 2.0",
+                "icon": "/icons/grok.svg",
+                "openapi": "openapi/zh/grok-imagine-image-2-0.json",
+                "pages": [
+                  "image/models/grok-imagine-image-2-0",
+                  "POST /v1/images/generations",
+                  "POST /v1/images/edits"
+                ]
+              }
+            ]
+          },
+          {
             "group": "Seedance 视频生成",
             "pages": [
               "video/seedance-2-0",
@@ -252,6 +314,68 @@
               "en/index",
               "en/authentication",
               "en/errors"
+            ]
+          },
+          {
+            "group": "Image generation",
+            "pages": [
+              {
+                "group": "Gemini 3.1 Flash Lite Image",
+                "icon": "/icons/gemini.svg",
+                "openapi": "openapi/en/gemini-3-1-flash-lite-image.json",
+                "pages": [
+                  "en/image/models/gemini-3-1-flash-lite-image",
+                  "POST /v1beta/models/gemini-3.1-flash-lite-image:generateContent"
+                ]
+              },
+              {
+                "group": "Gemini 3.1 Flash Image",
+                "icon": "/icons/gemini.svg",
+                "openapi": "openapi/en/gemini-3-1-flash-image.json",
+                "pages": [
+                  "en/image/models/gemini-3-1-flash-image",
+                  "POST /v1beta/models/gemini-3.1-flash-image:generateContent"
+                ]
+              },
+              {
+                "group": "GPT Image 2",
+                "icon": "/icons/openai.svg",
+                "openapi": "openapi/en/gpt-image-2.json",
+                "pages": [
+                  "en/image/models/gpt-image-2",
+                  "POST /v1/images/generations",
+                  "POST /v1/images/edits"
+                ]
+              },
+              {
+                "group": "GPT Image 2 Eco",
+                "icon": "/icons/openai.svg",
+                "openapi": "openapi/en/gpt-image-2-eco.json",
+                "pages": [
+                  "en/image/models/gpt-image-2-eco",
+                  "POST /v1/images/generations",
+                  "POST /v1/images/edits"
+                ]
+              },
+              {
+                "group": "Seedream 5.0 Lite",
+                "icon": "/icons/doubao.svg",
+                "openapi": "openapi/en/seedream-5-0-lite.json",
+                "pages": [
+                  "en/image/models/seedream-5-0-lite",
+                  "POST /api/v3/images/generations"
+                ]
+              },
+              {
+                "group": "Grok Imagine Image 2.0",
+                "icon": "/icons/grok.svg",
+                "openapi": "openapi/en/grok-imagine-image-2-0.json",
+                "pages": [
+                  "en/image/models/grok-imagine-image-2-0",
+                  "POST /v1/images/generations",
+                  "POST /v1/images/edits"
+                ]
+              }
             ]
           },
           {

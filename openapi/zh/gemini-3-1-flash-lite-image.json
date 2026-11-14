@@ -1,0 +1,722 @@
+{
+  "components": {
+    "schemas": {
+      "GeminiImageCandidate": {
+        "additionalProperties": false,
+        "description": "一个生成结果。",
+        "properties": {
+          "content": {
+            "$ref": "#/components/schemas/GeminiImageOutputContent",
+            "description": "生成的内容。"
+          },
+          "finishReason": {
+            "description": "结束原因。\n\n**可选值：**\n- `STOP`：正常结束。\n- `MAX_TOKENS`：达到输出 Token 上限。\n- `SAFETY`：因安全原因中止。\n- `PROHIBITED_CONTENT`：内容违反使用政策。\n- `IMAGE_SAFETY`：生成的图片未通过安全检查。\n- `IMAGE_PROHIBITED_CONTENT`：生成的图片包含违禁内容。\n- `NO_IMAGE`：模型没有生成图片，可调整提示词后重试。\n- `OTHER`：其他原因。",
+            "enum": [
+              "STOP",
+              "MAX_TOKENS",
+              "SAFETY",
+              "PROHIBITED_CONTENT",
+              "IMAGE_SAFETY",
+              "IMAGE_PROHIBITED_CONTENT",
+              "NO_IMAGE",
+              "OTHER"
+            ],
+            "type": "string"
+          },
+          "index": {
+            "description": "结果序号，从 0 开始。",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "content",
+          "index"
+        ],
+        "type": "object"
+      },
+      "GeminiImageConfig": {
+        "additionalProperties": false,
+        "description": "图片输出配置。",
+        "properties": {
+          "aspectRatio": {
+            "description": "输出宽高比。不传时文生图为 `1:1`，编辑时与输入图一致。\n\n**可选值：**\n- `1:1`：正方形，1K 为 1024x1024。\n- `2:3`：竖版，1K 为 848x1264。\n- `3:2`：横版，1K 为 1264x848。\n- `3:4`：竖版，1K 为 896x1200。\n- `4:3`：横版，1K 为 1200x896。\n- `4:5`：竖版，1K 为 928x1152。\n- `5:4`：横版，1K 为 1152x928。\n- `9:16`：竖屏，1K 为 768x1376。\n- `16:9`：宽屏，1K 为 1376x768。\n- `21:9`：超宽屏，1K 为 1584x672。",
+            "enum": [
+              "1:1",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:3",
+              "4:5",
+              "5:4",
+              "9:16",
+              "16:9",
+              "21:9"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GeminiImageContent": {
+        "additionalProperties": false,
+        "description": "一轮对话内容。",
+        "properties": {
+          "role": {
+            "description": "发言方，默认 `user`。\n\n**可选值：**\n- `user`：用户。\n- `model`：模型（多轮编辑时的历史回复）。",
+            "enum": [
+              "user",
+              "model"
+            ],
+            "type": "string"
+          },
+          "parts": {
+            "description": "内容片段：文字和图片按顺序排列，每个片段只填 `text`、`inlineData`、`fileData` 之一。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiImagePart"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "parts"
+        ],
+        "type": "object"
+      },
+      "GeminiImageFileData": {
+        "additionalProperties": false,
+        "description": "图片链接。",
+        "properties": {
+          "fileUri": {
+            "description": "公网可直接下载的 `https` 图片链接。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "fileUri"
+        ],
+        "type": "object"
+      },
+      "GeminiImageGenerationConfig": {
+        "additionalProperties": false,
+        "description": "生成配置。",
+        "properties": {
+          "imageConfig": {
+            "$ref": "#/components/schemas/GeminiImageConfig",
+            "description": "图片输出配置。"
+          }
+        },
+        "type": "object"
+      },
+      "GeminiImageInlineData": {
+        "additionalProperties": false,
+        "description": "内联图片数据。",
+        "properties": {
+          "mimeType": {
+            "description": "图片 MIME 类型。\n\n**可选值：**\n- `image/png`：PNG。\n- `image/jpeg`：JPEG。\n- `image/webp`：WebP。\n- `image/heic`：HEIC。\n- `image/heif`：HEIF。",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp",
+              "image/heic",
+              "image/heif"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "description": "图片的 Base64 数据（不含 `data:` 前缀）。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mimeType",
+          "data"
+        ],
+        "type": "object"
+      },
+      "GeminiImageOutputContent": {
+        "additionalProperties": false,
+        "description": "模型输出内容。",
+        "properties": {
+          "role": {
+            "description": "固定为 `model`。\n\n**可选值：**\n- `user`：用户。\n- `model`：模型（多轮编辑时的历史回复）。",
+            "enum": [
+              "user",
+              "model"
+            ],
+            "type": "string"
+          },
+          "parts": {
+            "description": "输出片段：文字和图片按顺序排列。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiImageOutputPart"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "role",
+          "parts"
+        ],
+        "type": "object"
+      },
+      "GeminiImageOutputInlineData": {
+        "additionalProperties": false,
+        "description": "图片数据。",
+        "properties": {
+          "mimeType": {
+            "description": "图片 MIME 类型，如 `image/png`。",
+            "type": "string"
+          },
+          "data": {
+            "description": "图片的 Base64 数据。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mimeType",
+          "data"
+        ],
+        "type": "object"
+      },
+      "GeminiImageOutputPart": {
+        "additionalProperties": false,
+        "description": "一个输出片段。",
+        "properties": {
+          "text": {
+            "description": "模型返回的文字。",
+            "type": "string"
+          },
+          "inlineData": {
+            "$ref": "#/components/schemas/GeminiImageOutputInlineData",
+            "description": "生成的图片。"
+          },
+          "thought": {
+            "description": "为 `true` 时该片段是思考过程，不是最终结果。",
+            "type": "boolean"
+          },
+          "thoughtSignature": {
+            "description": "思考签名。多轮编辑时把模型返回的片段原样放回 `contents` 即可。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GeminiImagePart": {
+        "additionalProperties": false,
+        "description": "一个内容片段。",
+        "properties": {
+          "text": {
+            "description": "文字（提示词）。",
+            "type": "string"
+          },
+          "inlineData": {
+            "$ref": "#/components/schemas/GeminiImageInlineData",
+            "description": "以 Base64 内联的图片。"
+          },
+          "fileData": {
+            "$ref": "#/components/schemas/GeminiImageFileData",
+            "description": "以链接引用的图片。"
+          }
+        },
+        "type": "object"
+      },
+      "GeminiImageRequest": {
+        "additionalProperties": false,
+        "description": "generateContent 请求体。",
+        "properties": {
+          "contents": {
+            "description": "对话内容。单轮请求传一个 `user` 内容；多轮编辑时按顺序传历史轮次。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiImageContent"
+            },
+            "type": "array"
+          },
+          "generationConfig": {
+            "$ref": "#/components/schemas/GeminiImageGenerationConfig",
+            "description": "生成配置。"
+          }
+        },
+        "required": [
+          "contents"
+        ],
+        "type": "object"
+      },
+      "GeminiImageResponse": {
+        "additionalProperties": false,
+        "description": "generateContent 响应。",
+        "properties": {
+          "candidates": {
+            "description": "生成结果，通常只有一个。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiImageCandidate"
+            },
+            "type": "array"
+          },
+          "usageMetadata": {
+            "$ref": "#/components/schemas/GeminiImageUsage",
+            "description": "Token 用量。"
+          },
+          "modelVersion": {
+            "description": "生成所用的模型版本。",
+            "type": "string"
+          },
+          "responseId": {
+            "description": "响应 ID。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "candidates"
+        ],
+        "type": "object"
+      },
+      "GeminiImageTokenCount": {
+        "additionalProperties": false,
+        "description": "某一类型的 Token 数。",
+        "properties": {
+          "modality": {
+            "description": "类型。\n\n**可选值：**\n- `TEXT`：文字。\n- `IMAGE`：图片。",
+            "enum": [
+              "TEXT",
+              "IMAGE"
+            ],
+            "type": "string"
+          },
+          "tokenCount": {
+            "description": "Token 数。",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "modality",
+          "tokenCount"
+        ],
+        "type": "object"
+      },
+      "GeminiImageUsage": {
+        "additionalProperties": false,
+        "description": "Token 用量。",
+        "properties": {
+          "promptTokenCount": {
+            "description": "输入 Token 数（文字 + 图片）。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "candidatesTokenCount": {
+            "description": "输出 Token 数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "thoughtsTokenCount": {
+            "description": "思考 Token 数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalTokenCount": {
+            "description": "Token 总数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "promptTokensDetails": {
+            "description": "输入 Token 按类型明细。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiImageTokenCount"
+            },
+            "type": "array"
+          },
+          "candidatesTokensDetails": {
+            "description": "输出 Token 按类型明细。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiImageTokenCount"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "promptTokenCount",
+          "candidatesTokenCount",
+          "totalTokenCount"
+        ],
+        "type": "object"
+      },
+      "ImageAPIError": {
+        "additionalProperties": false,
+        "description": "错误信息。",
+        "properties": {
+          "code": {
+            "description": "错误码。",
+            "type": "string"
+          },
+          "http_status": {
+            "description": "HTTP 状态码。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "description": "可读的错误说明。",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "请求 ID，排查问题时请提供。",
+            "type": "string"
+          },
+          "type": {
+            "description": "错误类型。\n\n**可选值：**\n- `invalid_request_error`：请求参数错误。\n- `authentication_error`：认证失败。\n- `insufficient_balance_error`：余额不足。\n- `permission_error`：无权限。\n- `rate_limit_error`：请求过于频繁。\n- `api_error`：服务端或上游错误。",
+            "enum": [
+              "invalid_request_error",
+              "authentication_error",
+              "insufficient_balance_error",
+              "permission_error",
+              "rate_limit_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "http_status",
+          "message",
+          "request_id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ImageAPIErrorResponse": {
+        "additionalProperties": false,
+        "description": "错误响应。",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ImageAPIError",
+            "description": "错误信息。"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "DreamTo 控制台创建的 API Key，格式 `Authorization: Bearer <API Key>`。",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "googApiKey": {
+        "description": "与 Google 官方一致，也可以把 DreamTo API Key 放在 `x-goog-api-key` 请求头。",
+        "in": "header",
+        "name": "x-goog-api-key",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "description": "Nano Banana 2 Lite：与 Google 官方 generateContent 接口一致的快速、低成本图像生成与编辑。",
+    "title": "Gemini 3.1 Flash Lite Image",
+    "version": "v1beta"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1beta/models/gemini-3.1-flash-lite-image:generateContent": {
+      "post": {
+        "description": "与 Google 官方 `POST /v1beta/models/{model}:generateContent` 一致：在 `contents` 中传提示词和参考图，生成的图片以 Base64 出现在 `candidates[].content.parts[].inlineData` 中，模型也可能同时返回文字。请求是同步的，通常需要 5 ~ 60 秒。",
+        "operationId": "geminiImageGenerateContent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "文生图": {
+                  "description": "在 `contents` 中传提示词，用 `imageConfig` 指定宽高比。",
+                  "summary": "文生图",
+                  "value": {
+                    "contents": [
+                      {
+                        "role": "user",
+                        "parts": [
+                          {
+                            "text": "一家以香蕉为主题的高级餐厅里的一道精致甜点，柔和灯光，美食摄影"
+                          }
+                        ]
+                      }
+                    ],
+                    "generationConfig": {
+                      "imageConfig": {
+                        "aspectRatio": "16:9"
+                      }
+                    }
+                  }
+                },
+                "图片编辑（Base64）": {
+                  "description": "用 `inlineData` 传入待编辑图片的 Base64 数据，提示词描述修改内容。",
+                  "summary": "图片编辑（Base64）",
+                  "value": {
+                    "contents": [
+                      {
+                        "role": "user",
+                        "parts": [
+                          {
+                            "text": "把背景换成雨后的霓虹街道，人物保持不变"
+                          },
+                          {
+                            "inlineData": {
+                              "mimeType": "image/png",
+                              "data": "<BASE64_IMAGE_DATA>"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "generationConfig": {
+                      "imageConfig": {
+                        "aspectRatio": "1:1"
+                      }
+                    }
+                  }
+                },
+                "图片编辑（图片链接）": {
+                  "description": "用 `fileData.fileUri` 传公网可访问的 `https` 图片链接。",
+                  "summary": "图片编辑（图片链接）",
+                  "value": {
+                    "contents": [
+                      {
+                        "role": "user",
+                        "parts": [
+                          {
+                            "text": "修复键盘顶端的斑驳痕迹，其他内容不变"
+                          },
+                          {
+                            "fileData": {
+                              "fileUri": "https://your-cdn.example.com/keyboard.png"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "generationConfig": {
+                      "imageConfig": {
+                        "aspectRatio": "4:3"
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/GeminiImageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "candidates": [
+                        {
+                          "content": {
+                            "role": "model",
+                            "parts": [
+                              {
+                                "inlineData": {
+                                  "mimeType": "image/png",
+                                  "data": "<BASE64_IMAGE_DATA>"
+                                }
+                              }
+                            ]
+                          },
+                          "finishReason": "STOP",
+                          "index": 0
+                        }
+                      ],
+                      "usageMetadata": {
+                        "promptTokenCount": 18,
+                        "candidatesTokenCount": 1120,
+                        "totalTokenCount": 1138,
+                        "promptTokensDetails": [
+                          {
+                            "modality": "TEXT",
+                            "tokenCount": 18
+                          }
+                        ],
+                        "candidatesTokensDetails": [
+                          {
+                            "modality": "IMAGE",
+                            "tokenCount": 1120
+                          }
+                        ]
+                      },
+                      "modelVersion": "gemini-3.1-flash-lite-image",
+                      "responseId": "8bQWadqLHo-vz7IPpLWdkQ4"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiImageResponse"
+                }
+              }
+            },
+            "description": "生成成功。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "本次请求的 ID，排查问题时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误：缺少必填参数、取值不合法或传入了不支持的参数。不扣费。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "API Key 缺失或无效。"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "余额不足。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试。"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "上游生成失败（含内容审核拒绝），不扣费，可重试。"
+          }
+        },
+        "summary": "生成图片",
+        "tags": [
+          "Gemini 3.1 Flash Lite Image"
+        ],
+        "x-mint": {
+          "href": "/api-reference/gemini-3-1-flash-lite-image/generate-content",
+          "metadata": {
+            "sidebarTitle": "生成图片",
+            "title": "生成图片"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "googApiKey": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Gemini 3.1 Flash Lite Image"
+    }
+  ]
+}

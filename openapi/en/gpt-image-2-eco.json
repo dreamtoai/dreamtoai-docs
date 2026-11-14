@@ -1,0 +1,844 @@
+{
+  "components": {
+    "schemas": {
+      "ImageAPIError": {
+        "additionalProperties": false,
+        "description": "Error details.",
+        "properties": {
+          "code": {
+            "description": "Error code.",
+            "type": "string"
+          },
+          "http_status": {
+            "description": "HTTP status code.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Human-readable error message.",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Request ID; include it when reporting issues.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Error type.\n\n**Allowed values:**\n- `invalid_request_error`: Invalid request.\n- `authentication_error`: Authentication failed.\n- `insufficient_balance_error`: Insufficient balance.\n- `permission_error`: Permission denied.\n- `rate_limit_error`: Rate limited.\n- `api_error`: Server or upstream error.",
+            "enum": [
+              "invalid_request_error",
+              "authentication_error",
+              "insufficient_balance_error",
+              "permission_error",
+              "rate_limit_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "http_status",
+          "message",
+          "request_id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ImageAPIErrorResponse": {
+        "additionalProperties": false,
+        "description": "Error response.",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ImageAPIError",
+            "description": "Error details."
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "OpenAIImageData": {
+        "additionalProperties": false,
+        "description": "One generated image.",
+        "properties": {
+          "b64_json": {
+            "description": "Base64 image data (no `data:` prefix); decodes to a file in `output_format`.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OpenAIImageGenerationRequest": {
+        "additionalProperties": false,
+        "description": "Request body of image generation.",
+        "properties": {
+          "model": {
+            "description": "Model name.\n\n**Allowed values:**\n- `gpt-image-2-eco`: GPT Image 2 economy route: the same model at a lower price.",
+            "enum": [
+              "gpt-image-2-eco"
+            ],
+            "type": "string"
+          },
+          "prompt": {
+            "description": "Text description of the image, up to 32,000 characters.",
+            "type": "string"
+          },
+          "n": {
+            "description": "Number of images, 1–10, default 1.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "size": {
+            "description": "Output size: `auto` (default) or `WIDTHxHEIGHT`. Both edges must be multiples of 16, the longest edge at most 3840, the long-to-short ratio at most 3:1, and the total pixels 655,360–8,294,400. E.g. `1024x1024`, `1536x1024`, `2048x1152`, `3840x2160`.",
+            "type": "string"
+          },
+          "quality": {
+            "default": "auto",
+            "description": "Rendering quality; higher is slower and uses more output tokens.\n\n**Allowed values:**\n- `auto`: Chosen by the model (default).\n- `low`: Low: fastest and cheapest, good for drafts.\n- `medium`: Medium.\n- `high`: High: best detail and text, slowest.",
+            "enum": [
+              "auto",
+              "low",
+              "medium",
+              "high"
+            ],
+            "type": "string"
+          },
+          "background": {
+            "default": "auto",
+            "description": "Background type.\n\n**Allowed values:**\n- `auto`: Decided by the model (default).\n- `transparent`: Transparent; needs `png` or `webp` output (a preview feature upstream).\n- `opaque`: Opaque.",
+            "enum": [
+              "auto",
+              "transparent",
+              "opaque"
+            ],
+            "type": "string"
+          },
+          "output_format": {
+            "default": "png",
+            "description": "Output image format.\n\n**Allowed values:**\n- `png`: PNG (default).\n- `jpeg`: JPEG: smaller and faster.\n- `webp`: WebP.",
+            "enum": [
+              "png",
+              "jpeg",
+              "webp"
+            ],
+            "type": "string"
+          },
+          "output_compression": {
+            "description": "Compression level 0–100 (%), default 100; `jpeg` / `webp` only.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "moderation": {
+            "default": "auto",
+            "description": "Content moderation level.\n\n**Allowed values:**\n- `auto`: Standard moderation (default).\n- `low`: Less restrictive moderation.",
+            "enum": [
+              "auto",
+              "low"
+            ],
+            "type": "string"
+          },
+          "stream": {
+            "description": "Stream the result as SSE; default `false`.",
+            "type": "boolean"
+          },
+          "partial_images": {
+            "description": "Number of preview images pushed while streaming, 0–3, default 0. Each preview adds about 100 output tokens.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "user": {
+            "description": "Deprecated; use `safety_identifier`. Used only when `safety_identifier` is empty.",
+            "type": "string"
+          },
+          "safety_identifier": {
+            "description": "A stable end-user identifier for safety monitoring; hash the username or email. Up to 128 characters.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "OpenAIImageResponse": {
+        "additionalProperties": false,
+        "description": "Generation result.",
+        "properties": {
+          "created": {
+            "description": "Creation time, Unix seconds.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "data": {
+            "description": "Generated images.",
+            "items": {
+              "$ref": "#/components/schemas/OpenAIImageData"
+            },
+            "type": "array"
+          },
+          "background": {
+            "description": "Background actually used.\n\n**Allowed values:**\n- `transparent`: Transparent.\n- `opaque`: Opaque.",
+            "enum": [
+              "transparent",
+              "opaque"
+            ],
+            "type": "string"
+          },
+          "output_format": {
+            "default": "png",
+            "description": "Actual output format.\n\n**Allowed values:**\n- `png`: PNG (default).\n- `jpeg`: JPEG: smaller and faster.\n- `webp`: WebP.",
+            "enum": [
+              "png",
+              "jpeg",
+              "webp"
+            ],
+            "type": "string"
+          },
+          "quality": {
+            "description": "Actual rendering quality.\n\n**Allowed values:**\n- `low`: Low.\n- `medium`: Medium.\n- `high`: High.",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "type": "string"
+          },
+          "size": {
+            "description": "Actual output size, e.g. `1024x1024`.",
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/OpenAIImageUsage",
+            "description": "Token usage."
+          }
+        },
+        "required": [
+          "created",
+          "data"
+        ],
+        "type": "object"
+      },
+      "OpenAIImageTokenDetails": {
+        "additionalProperties": false,
+        "description": "Tokens by type.",
+        "properties": {
+          "image_tokens": {
+            "description": "Image tokens.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "text_tokens": {
+            "description": "Text tokens.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "image_tokens",
+          "text_tokens"
+        ],
+        "type": "object"
+      },
+      "OpenAIImageUsage": {
+        "additionalProperties": false,
+        "description": "Token usage.",
+        "properties": {
+          "input_tokens": {
+            "description": "Input tokens (text and images).",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_tokens_details": {
+            "$ref": "#/components/schemas/OpenAIImageTokenDetails",
+            "description": "Input token breakdown."
+          },
+          "output_tokens": {
+            "description": "Output tokens.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "output_tokens_details": {
+            "$ref": "#/components/schemas/OpenAIImageTokenDetails",
+            "description": "Output token breakdown."
+          },
+          "total_tokens": {
+            "description": "Total tokens.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "input_tokens",
+          "output_tokens",
+          "total_tokens"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "API Key created in the DreamTo console, sent as `Authorization: Bearer <API Key>`.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "gpt-image-2-eco: the economy route of GPT Image 2, with the same parameters as the official OpenAI Images API.",
+    "title": "GPT Image 2 Eco",
+    "version": "v1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/images/edits": {
+      "post": {
+        "description": "Creates images from one or more input images and a prompt, following the `multipart/form-data` form of the official OpenAI `POST /v1/images/edits`. Repeat `image[]` to upload several reference images; the optional `mask` marks the area to change (transparent pixels; same size as the first image).",
+        "operationId": "openaiImageEdit",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "description": "`multipart/form-data` form of image editing.",
+                "properties": {
+                  "image[]": {
+                    "description": "Input image files (`png` / `jpeg` / `webp`, each under 50 MB); repeat the field for several images, up to 16.",
+                    "items": {
+                      "contentMediaType": "application/octet-stream",
+                      "format": "binary",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "mask": {
+                    "contentMediaType": "application/octet-stream",
+                    "description": "Optional mask PNG: transparent pixels mark the area to change; must match the first input image's size.",
+                    "format": "binary",
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "description": "Description of the edit, up to 32,000 characters.",
+                    "type": "string"
+                  },
+                  "model": {
+                    "description": "Model name.\n\n**Allowed values:**\n- `gpt-image-2-eco`: GPT Image 2 economy route: the same model at a lower price.",
+                    "enum": [
+                      "gpt-image-2-eco"
+                    ],
+                    "type": "string"
+                  },
+                  "n": {
+                    "description": "Number of images, 1–10, default 1.",
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "size": {
+                    "description": "Output size, same rules as `size` of image generation; default `auto`.",
+                    "type": "string"
+                  },
+                  "quality": {
+                    "default": "auto",
+                    "description": "Rendering quality.\n\n**Allowed values:**\n- `auto`: Chosen by the model (default).\n- `low`: Low: fastest and cheapest, good for drafts.\n- `medium`: Medium.\n- `high`: High: best detail and text, slowest.",
+                    "enum": [
+                      "auto",
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "type": "string"
+                  },
+                  "background": {
+                    "default": "auto",
+                    "description": "Background type.\n\n**Allowed values:**\n- `auto`: Decided by the model (default).\n- `transparent`: Transparent; needs `png` or `webp` output (a preview feature upstream).\n- `opaque`: Opaque.",
+                    "enum": [
+                      "auto",
+                      "transparent",
+                      "opaque"
+                    ],
+                    "type": "string"
+                  },
+                  "output_format": {
+                    "default": "png",
+                    "description": "Output image format.\n\n**Allowed values:**\n- `png`: PNG (default).\n- `jpeg`: JPEG: smaller and faster.\n- `webp`: WebP.",
+                    "enum": [
+                      "png",
+                      "jpeg",
+                      "webp"
+                    ],
+                    "type": "string"
+                  },
+                  "output_compression": {
+                    "description": "Compression level 0–100 (%); `jpeg` / `webp` only.",
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "stream": {
+                    "description": "Stream the result as SSE; default `false`.",
+                    "type": "boolean"
+                  },
+                  "partial_images": {
+                    "description": "Number of preview images pushed while streaming, 0–3.",
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "user": {
+                    "description": "End-user identifier for safety monitoring.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "image[]",
+                  "prompt",
+                  "model"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "created": 1794643200,
+                      "data": [
+                        {
+                          "b64_json": "<BASE64_IMAGE_DATA>"
+                        }
+                      ],
+                      "background": "opaque",
+                      "output_format": "png",
+                      "quality": "medium",
+                      "size": "1024x1024",
+                      "usage": {
+                        "input_tokens": 29,
+                        "input_tokens_details": {
+                          "image_tokens": 0,
+                          "text_tokens": 29
+                        },
+                        "output_tokens": 1756,
+                        "output_tokens_details": {
+                          "image_tokens": 1756,
+                          "text_tokens": 0
+                        },
+                        "total_tokens": 1785
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            },
+            "description": "Images edited.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "ID of this request; include it when reporting issues.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request: a required parameter is missing, a value is invalid or a parameter is not supported. Not charged."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Insufficient balance."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests; retry later."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Upstream generation failed (including content moderation refusals). Not charged; you may retry."
+          }
+        },
+        "summary": "Edit image",
+        "tags": [
+          "GPT Image 2 Eco"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/gpt-image-2-eco/edit-image",
+          "metadata": {
+            "sidebarTitle": "Edit image",
+            "title": "Edit image"
+          }
+        }
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "description": "Generates images from a prompt, following the official OpenAI `POST /v1/images/generations`. The request is synchronous and returns the images as Base64 when done, usually in 10–90 seconds (longer for high quality and large sizes); set the client timeout to at least 5 minutes. With `stream: true` the response is SSE.",
+        "operationId": "openaiImageGenerate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Text to image": {
+                  "description": "Only a prompt; everything else uses the defaults.",
+                  "summary": "Text to image",
+                  "value": {
+                    "model": "gpt-image-2-eco",
+                    "prompt": "An orange cat in an astronaut helmet floating in space with Earth behind it, photorealistic",
+                    "size": "1024x1024",
+                    "quality": "medium"
+                  }
+                },
+                "2K landscape poster": {
+                  "description": "Custom size `2048x1152`, high quality, JPEG compressed to 85%.",
+                  "summary": "2K landscape poster",
+                  "value": {
+                    "model": "gpt-image-2-eco",
+                    "prompt": "A minimalist coffee brand poster with the words \"MORNING BREW\" in the center, warm tones, generous white space",
+                    "size": "2048x1152",
+                    "quality": "high",
+                    "output_format": "jpeg",
+                    "output_compression": 85
+                  }
+                },
+                "Transparent background": {
+                  "description": "`background: transparent` requires `png` or `webp` output (a preview feature upstream).",
+                  "summary": "Transparent background",
+                  "value": {
+                    "model": "gpt-image-2-eco",
+                    "prompt": "A flat green leaf icon, centered, no shadow",
+                    "size": "1024x1024",
+                    "background": "transparent",
+                    "output_format": "png"
+                  }
+                },
+                "Several images": {
+                  "description": "`n` generates 1–10 images per request; `safety_identifier` carries a hashed end-user ID.",
+                  "summary": "Several images",
+                  "value": {
+                    "model": "gpt-image-2-eco",
+                    "prompt": "Product shots of a sneaker in four different styles, white background",
+                    "n": 2,
+                    "size": "1536x1024",
+                    "quality": "low",
+                    "moderation": "auto",
+                    "safety_identifier": "user_5f2b8c1d"
+                  }
+                },
+                "Streaming": {
+                  "description": "`stream: true` returns SSE; `partial_images` sets how many previews are pushed first (0–3).",
+                  "summary": "Streaming",
+                  "value": {
+                    "model": "gpt-image-2-eco",
+                    "prompt": "A watercolor cabin in the mountains, morning mist",
+                    "size": "1024x1536",
+                    "stream": true,
+                    "partial_images": 2
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/OpenAIImageGenerationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "created": 1794643200,
+                      "data": [
+                        {
+                          "b64_json": "<BASE64_IMAGE_DATA>"
+                        }
+                      ],
+                      "background": "opaque",
+                      "output_format": "png",
+                      "quality": "medium",
+                      "size": "1024x1024",
+                      "usage": {
+                        "input_tokens": 29,
+                        "input_tokens_details": {
+                          "image_tokens": 0,
+                          "text_tokens": 29
+                        },
+                        "output_tokens": 1756,
+                        "output_tokens_details": {
+                          "image_tokens": 1756,
+                          "text_tokens": 0
+                        },
+                        "total_tokens": 1785
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            },
+            "description": "Images generated. With `stream: true` the body is `text/event-stream`.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "ID of this request; include it when reporting issues.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request: a required parameter is missing, a value is invalid or a parameter is not supported. Not charged."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Insufficient balance."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests; retry later."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Upstream generation failed (including content moderation refusals). Not charged; you may retry."
+          }
+        },
+        "summary": "Create image",
+        "tags": [
+          "GPT Image 2 Eco"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/gpt-image-2-eco/create-image",
+          "metadata": {
+            "sidebarTitle": "Create image",
+            "title": "Create image"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "GPT Image 2 Eco"
+    }
+  ]
+}

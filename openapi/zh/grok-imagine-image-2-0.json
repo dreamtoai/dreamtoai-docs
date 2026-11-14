@@ -1,0 +1,684 @@
+{
+  "components": {
+    "schemas": {
+      "GrokImageData": {
+        "additionalProperties": false,
+        "description": "一张生成的图片。",
+        "properties": {
+          "url": {
+            "description": "图片下载链接（`response_format=url` 时返回），请及时下载保存。",
+            "type": "string"
+          },
+          "b64_json": {
+            "description": "图片 Base64（`response_format=b64_json` 时返回）。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GrokImageEditRequest": {
+        "additionalProperties": false,
+        "description": "图生图 / 图片编辑请求体。",
+        "properties": {
+          "model": {
+            "description": "模型名称。\n\n**可选值：**\n- `grok-imagine-image-2.0`：Grok Imagine Image 2.0，文生图与图生图同名同价，支持 2K。",
+            "enum": [
+              "grok-imagine-image-2.0"
+            ],
+            "type": "string"
+          },
+          "prompt": {
+            "description": "描述希望如何修改画面。",
+            "type": "string"
+          },
+          "image": {
+            "description": "单张参考图：公网图片链接，或完整的 `data:image/...;base64,...` Data URI。链接须能被服务端直接下载。",
+            "type": "string"
+          },
+          "images": {
+            "description": "多张参考图，可混用公网链接与 Data URI；仅 JSON 请求使用。",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "n": {
+            "description": "生成数量，默认 1；建议一次请求传 1。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_format": {
+            "default": "url",
+            "description": "图片返回方式。\n\n**可选值：**\n- `url`：返回图片下载链接（默认）。\n- `b64_json`：直接返回 Base64 图片数据。",
+            "enum": [
+              "url",
+              "b64_json"
+            ],
+            "type": "string"
+          },
+          "size": {
+            "default": "1024x1024",
+            "description": "输出尺寸，与 `aspect_ratio` 二选一。\n\n**可选值：**\n- `1024x1024`：正方形 1K（默认）。\n- `1792x1024`：横版。\n- `1024x1792`：竖版。\n- `2048x2048`：正方形 2K。",
+            "enum": [
+              "1024x1024",
+              "1792x1024",
+              "1024x1792",
+              "2048x2048"
+            ],
+            "type": "string"
+          },
+          "resolution": {
+            "default": "1k",
+            "description": "清晰度档位，与 `size` 等价。\n\n**可选值：**\n- `1k`：1K（默认）。\n- `2k`：2K，等同 `size: 2048x2048`。",
+            "enum": [
+              "1k",
+              "2k"
+            ],
+            "type": "string"
+          },
+          "aspect_ratio": {
+            "description": "画幅比例，与 `size` 二选一。\n\n**可选值：**\n- `1:1`：正方形。\n- `16:9`：宽屏横版。\n- `9:16`：竖屏。\n- `2:3`：竖版。\n- `3:2`：横版。\n- `4:3`：横版。\n- `3:4`：竖版。",
+            "enum": [
+              "1:1",
+              "16:9",
+              "9:16",
+              "2:3",
+              "3:2",
+              "4:3",
+              "3:4"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "GrokImageGenerationRequest": {
+        "additionalProperties": false,
+        "description": "文生图请求体。",
+        "properties": {
+          "model": {
+            "description": "模型名称。\n\n**可选值：**\n- `grok-imagine-image-2.0`：Grok Imagine Image 2.0，文生图与图生图同名同价，支持 2K。",
+            "enum": [
+              "grok-imagine-image-2.0"
+            ],
+            "type": "string"
+          },
+          "prompt": {
+            "description": "描述希望生成的画面。",
+            "type": "string"
+          },
+          "n": {
+            "description": "生成数量，默认 1；建议一次请求传 1。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_format": {
+            "default": "url",
+            "description": "图片返回方式。\n\n**可选值：**\n- `url`：返回图片下载链接（默认）。\n- `b64_json`：直接返回 Base64 图片数据。",
+            "enum": [
+              "url",
+              "b64_json"
+            ],
+            "type": "string"
+          },
+          "size": {
+            "default": "1024x1024",
+            "description": "输出尺寸，与 `aspect_ratio` 二选一。\n\n**可选值：**\n- `1024x1024`：正方形 1K（默认）。\n- `1792x1024`：横版。\n- `1024x1792`：竖版。\n- `2048x2048`：正方形 2K。",
+            "enum": [
+              "1024x1024",
+              "1792x1024",
+              "1024x1792",
+              "2048x2048"
+            ],
+            "type": "string"
+          },
+          "resolution": {
+            "default": "1k",
+            "description": "清晰度档位，与 `size` 等价。\n\n**可选值：**\n- `1k`：1K（默认）。\n- `2k`：2K，等同 `size: 2048x2048`。",
+            "enum": [
+              "1k",
+              "2k"
+            ],
+            "type": "string"
+          },
+          "aspect_ratio": {
+            "description": "画幅比例，与 `size` 二选一。\n\n**可选值：**\n- `1:1`：正方形。\n- `16:9`：宽屏横版。\n- `9:16`：竖屏。\n- `2:3`：竖版。\n- `3:2`：横版。\n- `4:3`：横版。\n- `3:4`：竖版。",
+            "enum": [
+              "1:1",
+              "16:9",
+              "9:16",
+              "2:3",
+              "3:2",
+              "4:3",
+              "3:4"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "GrokImageResponse": {
+        "additionalProperties": false,
+        "description": "生成结果。",
+        "properties": {
+          "created": {
+            "description": "创建时间，Unix 秒。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "data": {
+            "description": "生成的图片列表。",
+            "items": {
+              "$ref": "#/components/schemas/GrokImageData"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "created",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ImageAPIError": {
+        "additionalProperties": false,
+        "description": "错误信息。",
+        "properties": {
+          "code": {
+            "description": "错误码。",
+            "type": "string"
+          },
+          "http_status": {
+            "description": "HTTP 状态码。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "description": "可读的错误说明。",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "请求 ID，排查问题时请提供。",
+            "type": "string"
+          },
+          "type": {
+            "description": "错误类型。\n\n**可选值：**\n- `invalid_request_error`：请求参数错误。\n- `authentication_error`：认证失败。\n- `insufficient_balance_error`：余额不足。\n- `permission_error`：无权限。\n- `rate_limit_error`：请求过于频繁。\n- `api_error`：服务端或上游错误。",
+            "enum": [
+              "invalid_request_error",
+              "authentication_error",
+              "insufficient_balance_error",
+              "permission_error",
+              "rate_limit_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "http_status",
+          "message",
+          "request_id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ImageAPIErrorResponse": {
+        "additionalProperties": false,
+        "description": "错误响应。",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ImageAPIError",
+            "description": "错误信息。"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "DreamTo 控制台创建的 API Key，格式 `Authorization: Bearer <API Key>`。",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "xAI Grok Imagine Image 2.0：OpenAI 兼容的同步图像接口，文生图与图生图同名同价，支持 2K。",
+    "title": "Grok Imagine Image 2.0",
+    "version": "v1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/images/edits": {
+      "post": {
+        "description": "图生图 / 图片编辑：用 `image`（单张）或 `images`（多张）传参考图，支持公网链接和完整的 Base64 Data URI；也可以用 `multipart/form-data` 上传 `image[]` 文件。请求是同步的。",
+        "operationId": "grokImageEdit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "图生图（单张）": {
+                  "description": "`image` 传一张公网图片链接或完整的 `data:image/...;base64,` Data URI。",
+                  "summary": "图生图（单张）",
+                  "value": {
+                    "model": "grok-imagine-image-2.0",
+                    "prompt": "保留主体构图，将背景改为雨后的霓虹街道",
+                    "image": "https://your-cdn.example.com/photo.jpg",
+                    "response_format": "url"
+                  }
+                },
+                "图生图（多张）": {
+                  "description": "`images` 传数组，可混用公网链接和 Data URI。",
+                  "summary": "图生图（多张）",
+                  "value": {
+                    "model": "grok-imagine-image-2.0",
+                    "prompt": "融合两张参考图的风格，生成商品展示图",
+                    "images": [
+                      "https://your-cdn.example.com/style-a.jpg",
+                      "data:image/png;base64,<BASE64_IMAGE_DATA>"
+                    ],
+                    "response_format": "url"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/GrokImageEditRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "created": 1794643200,
+                      "data": [
+                        {
+                          "url": "https://files.dreamto.ai/images/grok_4b8e1d6c.jpg"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GrokImageResponse"
+                }
+              }
+            },
+            "description": "编辑成功。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "本次请求的 ID，排查问题时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误：缺少必填参数、取值不合法或传入了不支持的参数。不扣费。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "API Key 缺失或无效。"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "余额不足。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试。"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "上游生成失败（含内容审核拒绝），不扣费，可重试。"
+          }
+        },
+        "summary": "编辑图片",
+        "tags": [
+          "Grok Imagine Image 2.0"
+        ],
+        "x-mint": {
+          "href": "/api-reference/grok-imagine-image-2-0/edit-image",
+          "metadata": {
+            "sidebarTitle": "编辑图片",
+            "title": "编辑图片"
+          }
+        }
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "description": "文生图。请求是同步的，成功后直接在响应中返回图片，无需轮询。",
+        "operationId": "grokImageGenerate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "文生图": {
+                  "description": "只传提示词，默认 1024x1024，返回下载链接。",
+                  "summary": "文生图",
+                  "value": {
+                    "model": "grok-imagine-image-2.0",
+                    "prompt": "一座漂浮在云海上的未来城市，清晨柔光，电影感",
+                    "n": 1,
+                    "response_format": "url"
+                  }
+                },
+                "2K 正方形": {
+                  "description": "`resolution: 2k`（等同 `size: 2048x2048`），仅 grok-imagine-image-2.0 支持。",
+                  "summary": "2K 正方形",
+                  "value": {
+                    "model": "grok-imagine-image-2.0",
+                    "prompt": "一张电影感的城市夜景海报，霓虹灯和雨后的街道",
+                    "resolution": "2k"
+                  }
+                },
+                "指定画幅": {
+                  "description": "用 `aspect_ratio` 指定画幅，与 `size` 二选一。",
+                  "summary": "指定画幅",
+                  "value": {
+                    "model": "grok-imagine-image-2.0",
+                    "prompt": "竖版手机壁纸，极光下的雪山湖泊",
+                    "response_format": "b64_json",
+                    "aspect_ratio": "9:16"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/GrokImageGenerationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "created": 1794643200,
+                      "data": [
+                        {
+                          "url": "https://files.dreamto.ai/images/grok_4b8e1d6c.jpg"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GrokImageResponse"
+                }
+              }
+            },
+            "description": "生成成功。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "本次请求的 ID，排查问题时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误：缺少必填参数、取值不合法或传入了不支持的参数。不扣费。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "API Key 缺失或无效。"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "余额不足。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试。"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "上游生成失败（含内容审核拒绝），不扣费，可重试。"
+          }
+        },
+        "summary": "生成图片",
+        "tags": [
+          "Grok Imagine Image 2.0"
+        ],
+        "x-mint": {
+          "href": "/api-reference/grok-imagine-image-2-0/create-image",
+          "metadata": {
+            "sidebarTitle": "生成图片",
+            "title": "生成图片"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Grok Imagine Image 2.0"
+    }
+  ]
+}

@@ -1,0 +1,541 @@
+{
+  "components": {
+    "schemas": {
+      "ImageAPIError": {
+        "additionalProperties": false,
+        "description": "Error details.",
+        "properties": {
+          "code": {
+            "description": "Error code.",
+            "type": "string"
+          },
+          "http_status": {
+            "description": "HTTP status code.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Human-readable error message.",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Request ID; include it when reporting issues.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Error type.\n\n**Allowed values:**\n- `invalid_request_error`: Invalid request.\n- `authentication_error`: Authentication failed.\n- `insufficient_balance_error`: Insufficient balance.\n- `permission_error`: Permission denied.\n- `rate_limit_error`: Rate limited.\n- `api_error`: Server or upstream error.",
+            "enum": [
+              "invalid_request_error",
+              "authentication_error",
+              "insufficient_balance_error",
+              "permission_error",
+              "rate_limit_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "http_status",
+          "message",
+          "request_id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ImageAPIErrorResponse": {
+        "additionalProperties": false,
+        "description": "Error response.",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ImageAPIError",
+            "description": "Error details."
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "SeedreamImageData": {
+        "additionalProperties": false,
+        "description": "One generated image.",
+        "properties": {
+          "url": {
+            "description": "Image link (with `response_format=url`); download it promptly.",
+            "type": "string"
+          },
+          "b64_json": {
+            "description": "Base64 image (with `response_format=b64_json`).",
+            "type": "string"
+          },
+          "size": {
+            "description": "Actual size, e.g. `2048x2048`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "size"
+        ],
+        "type": "object"
+      },
+      "SeedreamImageRequest": {
+        "additionalProperties": false,
+        "description": "Request body of image generation.",
+        "properties": {
+          "model": {
+            "description": "Model name.\n\n**Allowed values:**\n- `seedream-5-lite`: Seedream 5.0 Lite.",
+            "enum": [
+              "seedream-5-lite"
+            ],
+            "type": "string"
+          },
+          "prompt": {
+            "description": "The prompt; keep it under about 300 Chinese characters or 600 English words.",
+            "type": "string"
+          },
+          "image": {
+            "description": "Reference images: a string for one or an array for several, up to 14; image links or Base64 (`data:image/png;base64,<data>`, lowercase format), each up to 30 MB. Passing it makes the request image-to-image.",
+            "oneOf": [
+              {
+                "title": "One reference image",
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 14,
+                "title": "Several reference images",
+                "type": "array"
+              }
+            ]
+          },
+          "size": {
+            "description": "Output size: the tier `2K` / `3K` (1:1 output) or pixels `WIDTHxHEIGHT` (default `2048x2048`; 2560x1440–4096x4096 total pixels, aspect ratio 1/16–16). `4K` is not supported.",
+            "type": "string"
+          },
+          "response_format": {
+            "default": "url",
+            "description": "How images are returned.\n\n**Allowed values:**\n- `url`: Return an image download link (default).\n- `b64_json`: Return Base64 image data.",
+            "enum": [
+              "url",
+              "b64_json"
+            ],
+            "type": "string"
+          },
+          "stream": {
+            "description": "Stream the result as SSE; default `false`.",
+            "type": "boolean"
+          },
+          "sequential_image_generation": {
+            "default": "disabled",
+            "description": "Image-set mode.\n\n**Allowed values:**\n- `disabled`: Generate one image (default).\n- `auto`: Let the model decide from the prompt whether to create an image set.",
+            "enum": [
+              "disabled",
+              "auto"
+            ],
+            "type": "string"
+          },
+          "sequential_image_generation_options": {
+            "$ref": "#/components/schemas/SeedreamSequentialOptions",
+            "description": "Image-set options; only used when `sequential_image_generation` is `auto`."
+          },
+          "output_format": {
+            "description": "Output format. Accepted but does not affect the output yet; the response shows the actual format.\n\n**Allowed values:**\n- `png`: PNG.\n- `jpeg`: JPEG.",
+            "enum": [
+              "png",
+              "jpeg"
+            ],
+            "type": "string"
+          },
+          "watermark": {
+            "description": "Whether to add a watermark. Accepted but does not affect the output yet.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "SeedreamImageResponse": {
+        "additionalProperties": false,
+        "description": "Generation result.",
+        "properties": {
+          "model": {
+            "description": "Echoes `model` from the request.\n\n**Allowed values:**\n- `seedream-5-lite`: Seedream 5.0 Lite.",
+            "enum": [
+              "seedream-5-lite"
+            ],
+            "type": "string"
+          },
+          "created": {
+            "description": "Creation time, Unix seconds.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "data": {
+            "description": "Generated images.",
+            "items": {
+              "$ref": "#/components/schemas/SeedreamImageData"
+            },
+            "type": "array"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/SeedreamImageUsage",
+            "description": "Usage."
+          }
+        },
+        "required": [
+          "model",
+          "created",
+          "data"
+        ],
+        "type": "object"
+      },
+      "SeedreamImageUsage": {
+        "additionalProperties": false,
+        "description": "Usage.",
+        "properties": {
+          "generated_images": {
+            "description": "Number of images generated.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "description": "`sum(width × height) / 256`, rounded down.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_tokens": {
+            "description": "Same as `output_tokens`.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "generated_images",
+          "output_tokens",
+          "total_tokens"
+        ],
+        "type": "object"
+      },
+      "SeedreamSequentialOptions": {
+        "additionalProperties": false,
+        "description": "Image-set options.",
+        "properties": {
+          "max_images": {
+            "description": "Maximum number of images, 1–15.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "API Key created in the DreamTo console, sent as `Authorization: Bearer <API Key>`.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "ByteDance Seedream 5.0 Lite: the Volcengine Ark V3 images protocol, synchronous, with multi-image reference, image sets and streaming.",
+    "title": "Seedream 5.0 Lite",
+    "version": "v3"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v3/images/generations": {
+      "post": {
+        "description": "Generates images from a prompt and optional reference images (Volcengine Ark V3 images protocol). The request is synchronous and blocks until the images are ready, for at most 10 minutes; passing `image` makes it image-to-image. With `stream: true` the response is SSE.",
+        "operationId": "seedreamImageGenerate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Text to image": {
+                  "description": "`size: 2K` outputs a 2048x2048 square image.",
+                  "summary": "Text to image",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "An orange cat sitting on a windowsill watching the rain, watercolor style",
+                    "size": "2K"
+                  }
+                },
+                "Custom aspect ratio": {
+                  "description": "Use the pixel size `2848x1600` for a 16:9 landscape image.",
+                  "summary": "Custom aspect ratio",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "A vibrant close-up editorial portrait, bold color blocking, magazine cover style, studio lighting",
+                    "size": "2848x1600"
+                  }
+                },
+                "Image to image": {
+                  "description": "Pass one reference image as a link or a Base64 data URI in `image`.",
+                  "summary": "Image to image",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "Keep the pose and change the clothing material to transparent glass",
+                    "image": "https://your-cdn.example.com/input.png",
+                    "size": "2K"
+                  }
+                },
+                "Multiple reference images": {
+                  "description": "Pass an array of up to 14 images in `image` and refer to them as \"image 1\", \"image 2\" in the prompt.",
+                  "summary": "Multiple reference images",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "Replace the outfit in image 1 with the outfit in image 2",
+                    "image": [
+                      "https://your-cdn.example.com/person.png",
+                      "https://your-cdn.example.com/clothes.png"
+                    ],
+                    "size": "2K"
+                  }
+                },
+                "Image sequence": {
+                  "description": "`sequential_image_generation: auto` lets the model create a set of related images; `max_images` caps the count (1–15).",
+                  "summary": "Image sequence",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "A set of illustrations of the same mountain cabin through spring, summer, autumn and winter",
+                    "size": "2K",
+                    "sequential_image_generation": "auto",
+                    "sequential_image_generation_options": {
+                      "max_images": 4
+                    }
+                  }
+                },
+                "Streaming": {
+                  "description": "`stream: true` returns SSE and pushes each image as soon as it is ready.",
+                  "summary": "Streaming",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "Based on image 1, show the person riding a motorbike wearing sunglasses",
+                    "image": "https://your-cdn.example.com/person.png",
+                    "size": "2K",
+                    "stream": true
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/SeedreamImageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "model": "seedream-5-lite",
+                      "created": 1794643200,
+                      "data": [
+                        {
+                          "url": "https://files.dreamto.ai/images/seedream_7f3c2a9e.jpeg",
+                          "size": "2048x2048"
+                        }
+                      ],
+                      "usage": {
+                        "generated_images": 1,
+                        "output_tokens": 16384,
+                        "total_tokens": 16384
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SeedreamImageResponse"
+                }
+              }
+            },
+            "description": "Images generated. With `stream: true` the body is `text/event-stream`. The `X-Task-Id` header carries the task ID.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "ID of this request; include it when reporting issues.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request: a required parameter is missing, a value is invalid or a parameter is not supported. Not charged."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Insufficient balance."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests; retry later."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Upstream generation failed (including content moderation refusals). Not charged; you may retry."
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 504,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Generation timed out (over 10 minutes). The job still finishes and is billed."
+          }
+        },
+        "summary": "Create image",
+        "tags": [
+          "Seedream 5.0 Lite"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/seedream-5-0-lite/create-image",
+          "metadata": {
+            "sidebarTitle": "Create image",
+            "title": "Create image"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Seedream 5.0 Lite"
+    }
+  ]
+}

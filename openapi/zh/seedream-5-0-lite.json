@@ -1,0 +1,541 @@
+{
+  "components": {
+    "schemas": {
+      "ImageAPIError": {
+        "additionalProperties": false,
+        "description": "错误信息。",
+        "properties": {
+          "code": {
+            "description": "错误码。",
+            "type": "string"
+          },
+          "http_status": {
+            "description": "HTTP 状态码。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "description": "可读的错误说明。",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "请求 ID，排查问题时请提供。",
+            "type": "string"
+          },
+          "type": {
+            "description": "错误类型。\n\n**可选值：**\n- `invalid_request_error`：请求参数错误。\n- `authentication_error`：认证失败。\n- `insufficient_balance_error`：余额不足。\n- `permission_error`：无权限。\n- `rate_limit_error`：请求过于频繁。\n- `api_error`：服务端或上游错误。",
+            "enum": [
+              "invalid_request_error",
+              "authentication_error",
+              "insufficient_balance_error",
+              "permission_error",
+              "rate_limit_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "http_status",
+          "message",
+          "request_id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ImageAPIErrorResponse": {
+        "additionalProperties": false,
+        "description": "错误响应。",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ImageAPIError",
+            "description": "错误信息。"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "SeedreamImageData": {
+        "additionalProperties": false,
+        "description": "一张生成的图片。",
+        "properties": {
+          "url": {
+            "description": "图片链接（`response_format=url` 时返回），请及时下载保存。",
+            "type": "string"
+          },
+          "b64_json": {
+            "description": "图片 Base64（`response_format=b64_json` 时返回）。",
+            "type": "string"
+          },
+          "size": {
+            "description": "实际宽高，如 `2048x2048`。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "size"
+        ],
+        "type": "object"
+      },
+      "SeedreamImageRequest": {
+        "additionalProperties": false,
+        "description": "生成图片的请求体。",
+        "properties": {
+          "model": {
+            "description": "模型名称。\n\n**可选值：**\n- `seedream-5-lite`：Seedream 5.0 Lite。",
+            "enum": [
+              "seedream-5-lite"
+            ],
+            "type": "string"
+          },
+          "prompt": {
+            "description": "提示词，建议中文不超过 300 字、英文不超过 600 词。",
+            "type": "string"
+          },
+          "image": {
+            "description": "参考图。单张传字符串、多张传数组，最多 14 张；支持图片链接或 Base64（`data:image/png;base64,<数据>`，格式名小写），单张不超过 30MB。传了即为图生图。",
+            "oneOf": [
+              {
+                "title": "单张参考图",
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 14,
+                "title": "多张参考图",
+                "type": "array"
+              }
+            ]
+          },
+          "size": {
+            "description": "输出尺寸：分辨率档 `2K` / `3K`（输出 1:1），或像素值 `宽x高`（默认 `2048x2048`，总像素 2560x1440 ~ 4096x4096，宽高比 1/16 ~ 16）。暂不支持 `4K`。",
+            "type": "string"
+          },
+          "response_format": {
+            "default": "url",
+            "description": "图片返回方式。\n\n**可选值：**\n- `url`：返回图片下载链接（默认）。\n- `b64_json`：直接返回 Base64 图片数据。",
+            "enum": [
+              "url",
+              "b64_json"
+            ],
+            "type": "string"
+          },
+          "stream": {
+            "description": "是否以 SSE 流式返回，默认 `false`。",
+            "type": "boolean"
+          },
+          "sequential_image_generation": {
+            "default": "disabled",
+            "description": "组图模式。\n\n**可选值：**\n- `disabled`：只生成一张图（默认）。\n- `auto`：由模型根据提示词决定是否生成组图。",
+            "enum": [
+              "disabled",
+              "auto"
+            ],
+            "type": "string"
+          },
+          "sequential_image_generation_options": {
+            "$ref": "#/components/schemas/SeedreamSequentialOptions",
+            "description": "组图配置，仅 `sequential_image_generation` 为 `auto` 时生效。"
+          },
+          "output_format": {
+            "description": "输出格式。可以传，当前不影响输出，实际格式以响应为准。\n\n**可选值：**\n- `png`：PNG。\n- `jpeg`：JPEG。",
+            "enum": [
+              "png",
+              "jpeg"
+            ],
+            "type": "string"
+          },
+          "watermark": {
+            "description": "是否添加水印。可以传，当前不影响输出。",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "SeedreamImageResponse": {
+        "additionalProperties": false,
+        "description": "生成结果。",
+        "properties": {
+          "model": {
+            "description": "回显请求中的 `model`。\n\n**可选值：**\n- `seedream-5-lite`：Seedream 5.0 Lite。",
+            "enum": [
+              "seedream-5-lite"
+            ],
+            "type": "string"
+          },
+          "created": {
+            "description": "创建时间，Unix 秒。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "data": {
+            "description": "生成的图片列表。",
+            "items": {
+              "$ref": "#/components/schemas/SeedreamImageData"
+            },
+            "type": "array"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/SeedreamImageUsage",
+            "description": "用量。"
+          }
+        },
+        "required": [
+          "model",
+          "created",
+          "data"
+        ],
+        "type": "object"
+      },
+      "SeedreamImageUsage": {
+        "additionalProperties": false,
+        "description": "用量。",
+        "properties": {
+          "generated_images": {
+            "description": "生成的图片张数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "description": "`sum(宽 × 高) / 256` 取整。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_tokens": {
+            "description": "与 `output_tokens` 相同。",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "generated_images",
+          "output_tokens",
+          "total_tokens"
+        ],
+        "type": "object"
+      },
+      "SeedreamSequentialOptions": {
+        "additionalProperties": false,
+        "description": "组图配置。",
+        "properties": {
+          "max_images": {
+            "description": "最多生成张数，1 ~ 15。",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "DreamTo 控制台创建的 API Key，格式 `Authorization: Bearer <API Key>`。",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "字节跳动 Seedream 5.0 Lite：火山方舟 V3 图片生成协议，同步返回，支持多图参考、组图和流式输出。",
+    "title": "Seedream 5.0 Lite",
+    "version": "v3"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v3/images/generations": {
+      "post": {
+        "description": "根据提示词和可选的参考图生成图片（火山方舟 V3 图片生成协议）。请求是同步的，阻塞到出图完成后直接返回图片，最长 10 分钟；是否为图生图由是否传 `image` 决定。`stream: true` 时以 SSE 返回。",
+        "operationId": "seedreamImageGenerate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "文生图": {
+                  "description": "`size: 2K` 输出 2048x2048 的正方形图片。",
+                  "summary": "文生图",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "一只橘猫坐在窗台上看雨，水彩风格",
+                    "size": "2K"
+                  }
+                },
+                "指定宽高比": {
+                  "description": "用像素值 `2848x1600` 指定 16:9 横版。",
+                  "summary": "指定宽高比",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "充满活力的特写编辑肖像，色彩拼接丰富，杂志封面风格，工作室灯光",
+                    "size": "2848x1600"
+                  }
+                },
+                "图生图": {
+                  "description": "`image` 传一张参考图的链接或 Base64 Data URI。",
+                  "summary": "图生图",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "保持人物姿势不变，把服装材质改为透明的玻璃",
+                    "image": "https://your-cdn.example.com/input.png",
+                    "size": "2K"
+                  }
+                },
+                "多图参考": {
+                  "description": "`image` 传数组，最多 14 张，在提示词中用“图1”“图2”指代。",
+                  "summary": "多图参考",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "将图1的服装换为图2的服装",
+                    "image": [
+                      "https://your-cdn.example.com/person.png",
+                      "https://your-cdn.example.com/clothes.png"
+                    ],
+                    "size": "2K"
+                  }
+                },
+                "组图": {
+                  "description": "`sequential_image_generation: auto` 让模型按提示词生成一组关联图片，`max_images` 限制最多张数（1 ~ 15）。",
+                  "summary": "组图",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "生成一组四季变化的同一座山间小屋插画，分别对应春夏秋冬",
+                    "size": "2K",
+                    "sequential_image_generation": "auto",
+                    "sequential_image_generation_options": {
+                      "max_images": 4
+                    }
+                  }
+                },
+                "流式返回": {
+                  "description": "`stream: true` 以 SSE 返回，生成一张推送一张。",
+                  "summary": "流式返回",
+                  "value": {
+                    "model": "seedream-5-lite",
+                    "prompt": "参考图1，生成人物戴墨镜骑摩托的图片",
+                    "image": "https://your-cdn.example.com/person.png",
+                    "size": "2K",
+                    "stream": true
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/SeedreamImageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "model": "seedream-5-lite",
+                      "created": 1794643200,
+                      "data": [
+                        {
+                          "url": "https://files.dreamto.ai/images/seedream_7f3c2a9e.jpeg",
+                          "size": "2048x2048"
+                        }
+                      ],
+                      "usage": {
+                        "generated_images": 1,
+                        "output_tokens": 16384,
+                        "total_tokens": 16384
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SeedreamImageResponse"
+                }
+              }
+            },
+            "description": "生成成功。`stream: true` 时为 `text/event-stream`。响应头 `X-Task-Id` 为任务 ID。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "本次请求的 ID，排查问题时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误：缺少必填参数、取值不合法或传入了不支持的参数。不扣费。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "API Key 缺失或无效。"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "余额不足。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试。"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "上游生成失败（含内容审核拒绝），不扣费，可重试。"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 504,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "生成超时（超过 10 分钟）。任务仍会继续执行并正常计费。"
+          }
+        },
+        "summary": "生成图片",
+        "tags": [
+          "Seedream 5.0 Lite"
+        ],
+        "x-mint": {
+          "href": "/api-reference/seedream-5-0-lite/create-image",
+          "metadata": {
+            "sidebarTitle": "生成图片",
+            "title": "生成图片"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Seedream 5.0 Lite"
+    }
+  ]
+}

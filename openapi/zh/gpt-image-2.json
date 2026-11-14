@@ -1,0 +1,844 @@
+{
+  "components": {
+    "schemas": {
+      "ImageAPIError": {
+        "additionalProperties": false,
+        "description": "错误信息。",
+        "properties": {
+          "code": {
+            "description": "错误码。",
+            "type": "string"
+          },
+          "http_status": {
+            "description": "HTTP 状态码。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "description": "可读的错误说明。",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "请求 ID，排查问题时请提供。",
+            "type": "string"
+          },
+          "type": {
+            "description": "错误类型。\n\n**可选值：**\n- `invalid_request_error`：请求参数错误。\n- `authentication_error`：认证失败。\n- `insufficient_balance_error`：余额不足。\n- `permission_error`：无权限。\n- `rate_limit_error`：请求过于频繁。\n- `api_error`：服务端或上游错误。",
+            "enum": [
+              "invalid_request_error",
+              "authentication_error",
+              "insufficient_balance_error",
+              "permission_error",
+              "rate_limit_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "http_status",
+          "message",
+          "request_id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ImageAPIErrorResponse": {
+        "additionalProperties": false,
+        "description": "错误响应。",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ImageAPIError",
+            "description": "错误信息。"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "OpenAIImageData": {
+        "additionalProperties": false,
+        "description": "一张生成的图片。",
+        "properties": {
+          "b64_json": {
+            "description": "图片的 Base64 数据（不含 `data:` 前缀），解码后即为 `output_format` 格式的文件。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OpenAIImageGenerationRequest": {
+        "additionalProperties": false,
+        "description": "生成图片的请求体。",
+        "properties": {
+          "model": {
+            "description": "模型名称。\n\n**可选值：**\n- `gpt-image-2`：OpenAI GPT Image 2。",
+            "enum": [
+              "gpt-image-2"
+            ],
+            "type": "string"
+          },
+          "prompt": {
+            "description": "图片描述，最多 32000 个字符。",
+            "type": "string"
+          },
+          "n": {
+            "description": "生成张数，1 ~ 10，默认 1。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "size": {
+            "description": "输出尺寸：`auto`（默认）或 `宽x高`。宽高都须是 16 的倍数，最长边不超过 3840，长短边之比不超过 3:1，总像素在 655,360 ~ 8,294,400 之间。例如 `1024x1024`、`1536x1024`、`2048x1152`、`3840x2160`。",
+            "type": "string"
+          },
+          "quality": {
+            "default": "auto",
+            "description": "渲染质量，质量越高越慢、输出 Token 越多。\n\n**可选值：**\n- `auto`：由模型自动选择（默认）。\n- `low`：低质量，最快、最便宜，适合草稿。\n- `medium`：中等质量。\n- `high`：高质量，细节和文字最好，最慢。",
+            "enum": [
+              "auto",
+              "low",
+              "medium",
+              "high"
+            ],
+            "type": "string"
+          },
+          "background": {
+            "default": "auto",
+            "description": "背景类型。\n\n**可选值：**\n- `auto`：由模型决定（默认）。\n- `transparent`：透明背景，需 `png` 或 `webp` 输出（官方预览能力）。\n- `opaque`：不透明背景。",
+            "enum": [
+              "auto",
+              "transparent",
+              "opaque"
+            ],
+            "type": "string"
+          },
+          "output_format": {
+            "default": "png",
+            "description": "输出图片格式。\n\n**可选值：**\n- `png`：PNG（默认）。\n- `jpeg`：JPEG，体积小、速度快。\n- `webp`：WebP。",
+            "enum": [
+              "png",
+              "jpeg",
+              "webp"
+            ],
+            "type": "string"
+          },
+          "output_compression": {
+            "description": "压缩率 0 ~ 100（%），默认 100，仅 `jpeg` / `webp` 生效。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "moderation": {
+            "default": "auto",
+            "description": "内容审核强度。\n\n**可选值：**\n- `auto`：标准审核（默认）。\n- `low`：较宽松的审核。",
+            "enum": [
+              "auto",
+              "low"
+            ],
+            "type": "string"
+          },
+          "stream": {
+            "description": "是否以 SSE 流式返回，默认 `false`。",
+            "type": "boolean"
+          },
+          "partial_images": {
+            "description": "流式返回时先推送的预览图张数，0 ~ 3，默认 0。每张预览图额外产生约 100 个输出 Token。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "user": {
+            "description": "已废弃，请改用 `safety_identifier`；仅在未传 `safety_identifier` 时生效。",
+            "type": "string"
+          },
+          "safety_identifier": {
+            "description": "终端用户的稳定标识，用于安全监测，建议传用户名或邮箱的哈希值，最多 128 个字符。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "OpenAIImageResponse": {
+        "additionalProperties": false,
+        "description": "生成结果。",
+        "properties": {
+          "created": {
+            "description": "创建时间，Unix 秒。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "data": {
+            "description": "生成的图片列表。",
+            "items": {
+              "$ref": "#/components/schemas/OpenAIImageData"
+            },
+            "type": "array"
+          },
+          "background": {
+            "description": "实际使用的背景类型。\n\n**可选值：**\n- `transparent`：透明背景。\n- `opaque`：不透明背景。",
+            "enum": [
+              "transparent",
+              "opaque"
+            ],
+            "type": "string"
+          },
+          "output_format": {
+            "default": "png",
+            "description": "实际输出格式。\n\n**可选值：**\n- `png`：PNG（默认）。\n- `jpeg`：JPEG，体积小、速度快。\n- `webp`：WebP。",
+            "enum": [
+              "png",
+              "jpeg",
+              "webp"
+            ],
+            "type": "string"
+          },
+          "quality": {
+            "description": "实际渲染质量。\n\n**可选值：**\n- `low`：低质量。\n- `medium`：中等质量。\n- `high`：高质量。",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "type": "string"
+          },
+          "size": {
+            "description": "实际输出尺寸，如 `1024x1024`。",
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/OpenAIImageUsage",
+            "description": "Token 用量。"
+          }
+        },
+        "required": [
+          "created",
+          "data"
+        ],
+        "type": "object"
+      },
+      "OpenAIImageTokenDetails": {
+        "additionalProperties": false,
+        "description": "按类型的 Token 明细。",
+        "properties": {
+          "image_tokens": {
+            "description": "图片 Token 数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "text_tokens": {
+            "description": "文字 Token 数。",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "image_tokens",
+          "text_tokens"
+        ],
+        "type": "object"
+      },
+      "OpenAIImageUsage": {
+        "additionalProperties": false,
+        "description": "Token 用量。",
+        "properties": {
+          "input_tokens": {
+            "description": "输入 Token 数（文字 + 图片）。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_tokens_details": {
+            "$ref": "#/components/schemas/OpenAIImageTokenDetails",
+            "description": "输入 Token 明细。"
+          },
+          "output_tokens": {
+            "description": "输出 Token 数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "output_tokens_details": {
+            "$ref": "#/components/schemas/OpenAIImageTokenDetails",
+            "description": "输出 Token 明细。"
+          },
+          "total_tokens": {
+            "description": "Token 总数。",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "input_tokens",
+          "output_tokens",
+          "total_tokens"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "DreamTo 控制台创建的 API Key，格式 `Authorization: Bearer <API Key>`。",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "OpenAI gpt-image-2：与 OpenAI 官方 Images API 一致的文生图与图片编辑，支持自定义分辨率。",
+    "title": "GPT Image 2",
+    "version": "v1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/images/edits": {
+      "post": {
+        "description": "基于一张或多张输入图片和提示词生成新图片，与 OpenAI 官方 `POST /v1/images/edits` 的 `multipart/form-data` 用法一致。重复 `image[]` 字段可上传多张参考图；可选 `mask` 指定要修改的区域（透明像素为修改区域，尺寸须与第一张图一致）。",
+        "operationId": "openaiImageEdit",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "description": "编辑图片的 `multipart/form-data` 表单。",
+                "properties": {
+                  "image[]": {
+                    "description": "输入图片文件（`png` / `jpeg` / `webp`，每张小于 50MB），重复该字段可上传多张，最多 16 张。",
+                    "items": {
+                      "contentMediaType": "application/octet-stream",
+                      "format": "binary",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "mask": {
+                    "contentMediaType": "application/octet-stream",
+                    "description": "可选遮罩 PNG：透明像素为要修改的区域，尺寸须与第一张输入图一致。",
+                    "format": "binary",
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "description": "修改说明，最多 32000 个字符。",
+                    "type": "string"
+                  },
+                  "model": {
+                    "description": "模型名称。\n\n**可选值：**\n- `gpt-image-2`：OpenAI GPT Image 2。",
+                    "enum": [
+                      "gpt-image-2"
+                    ],
+                    "type": "string"
+                  },
+                  "n": {
+                    "description": "生成张数，1 ~ 10，默认 1。",
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "size": {
+                    "description": "输出尺寸，规则同生成接口的 `size`，默认 `auto`。",
+                    "type": "string"
+                  },
+                  "quality": {
+                    "default": "auto",
+                    "description": "渲染质量。\n\n**可选值：**\n- `auto`：由模型自动选择（默认）。\n- `low`：低质量，最快、最便宜，适合草稿。\n- `medium`：中等质量。\n- `high`：高质量，细节和文字最好，最慢。",
+                    "enum": [
+                      "auto",
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "type": "string"
+                  },
+                  "background": {
+                    "default": "auto",
+                    "description": "背景类型。\n\n**可选值：**\n- `auto`：由模型决定（默认）。\n- `transparent`：透明背景，需 `png` 或 `webp` 输出（官方预览能力）。\n- `opaque`：不透明背景。",
+                    "enum": [
+                      "auto",
+                      "transparent",
+                      "opaque"
+                    ],
+                    "type": "string"
+                  },
+                  "output_format": {
+                    "default": "png",
+                    "description": "输出图片格式。\n\n**可选值：**\n- `png`：PNG（默认）。\n- `jpeg`：JPEG，体积小、速度快。\n- `webp`：WebP。",
+                    "enum": [
+                      "png",
+                      "jpeg",
+                      "webp"
+                    ],
+                    "type": "string"
+                  },
+                  "output_compression": {
+                    "description": "压缩率 0 ~ 100（%），仅 `jpeg` / `webp` 生效。",
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "stream": {
+                    "description": "是否以 SSE 流式返回，默认 `false`。",
+                    "type": "boolean"
+                  },
+                  "partial_images": {
+                    "description": "流式返回时先推送的预览图张数，0 ~ 3。",
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "user": {
+                    "description": "终端用户标识，用于安全监测。",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "image[]",
+                  "prompt",
+                  "model"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "created": 1794643200,
+                      "data": [
+                        {
+                          "b64_json": "<BASE64_IMAGE_DATA>"
+                        }
+                      ],
+                      "background": "opaque",
+                      "output_format": "png",
+                      "quality": "medium",
+                      "size": "1024x1024",
+                      "usage": {
+                        "input_tokens": 29,
+                        "input_tokens_details": {
+                          "image_tokens": 0,
+                          "text_tokens": 29
+                        },
+                        "output_tokens": 1756,
+                        "output_tokens_details": {
+                          "image_tokens": 1756,
+                          "text_tokens": 0
+                        },
+                        "total_tokens": 1785
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            },
+            "description": "编辑成功。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "本次请求的 ID，排查问题时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误：缺少必填参数、取值不合法或传入了不支持的参数。不扣费。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "API Key 缺失或无效。"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "余额不足。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试。"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "上游生成失败（含内容审核拒绝），不扣费，可重试。"
+          }
+        },
+        "summary": "编辑图片",
+        "tags": [
+          "GPT Image 2"
+        ],
+        "x-mint": {
+          "href": "/api-reference/gpt-image-2/edit-image",
+          "metadata": {
+            "sidebarTitle": "编辑图片",
+            "title": "编辑图片"
+          }
+        }
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "description": "根据提示词生成图片，与 OpenAI 官方 `POST /v1/images/generations` 一致。请求是同步的，生成完成后在响应中以 Base64 返回图片，通常需要 10 ~ 90 秒，高质量和大尺寸更久，请把客户端超时设为 5 分钟以上。`stream: true` 时以 SSE 返回。",
+        "operationId": "openaiImageGenerate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "文生图": {
+                  "description": "只传提示词，其余参数使用默认值。",
+                  "summary": "文生图",
+                  "value": {
+                    "model": "gpt-image-2",
+                    "prompt": "一只戴着宇航员头盔的橘猫漂浮在太空中，背景是地球，写实摄影风格",
+                    "size": "1024x1024",
+                    "quality": "medium"
+                  }
+                },
+                "2K 横版海报": {
+                  "description": "自定义尺寸 `2048x1152`，高质量 JPEG 输出并压缩到 85%。",
+                  "summary": "2K 横版海报",
+                  "value": {
+                    "model": "gpt-image-2",
+                    "prompt": "极简风格的咖啡品牌海报，正中写着“MORNING BREW”，暖色调，留白充足",
+                    "size": "2048x1152",
+                    "quality": "high",
+                    "output_format": "jpeg",
+                    "output_compression": 85
+                  }
+                },
+                "透明背景": {
+                  "description": "`background: transparent` 需要配合 `png` 或 `webp` 输出（官方预览能力）。",
+                  "summary": "透明背景",
+                  "value": {
+                    "model": "gpt-image-2",
+                    "prompt": "一个扁平风格的绿色叶子图标，居中，无阴影",
+                    "size": "1024x1024",
+                    "background": "transparent",
+                    "output_format": "png"
+                  }
+                },
+                "一次生成多张": {
+                  "description": "`n` 一次生成 1 ~ 10 张；`safety_identifier` 传终端用户的哈希标识。",
+                  "summary": "一次生成多张",
+                  "value": {
+                    "model": "gpt-image-2",
+                    "prompt": "四种不同风格的运动鞋产品图，白色背景",
+                    "n": 2,
+                    "size": "1536x1024",
+                    "quality": "low",
+                    "moderation": "auto",
+                    "safety_identifier": "user_5f2b8c1d"
+                  }
+                },
+                "流式返回": {
+                  "description": "`stream: true` 以 SSE 返回，`partial_images` 指定过程中先推送的预览图张数（0 ~ 3）。",
+                  "summary": "流式返回",
+                  "value": {
+                    "model": "gpt-image-2",
+                    "prompt": "水彩风格的山间小屋，清晨薄雾",
+                    "size": "1024x1536",
+                    "stream": true,
+                    "partial_images": 2
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/OpenAIImageGenerationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "created": 1794643200,
+                      "data": [
+                        {
+                          "b64_json": "<BASE64_IMAGE_DATA>"
+                        }
+                      ],
+                      "background": "opaque",
+                      "output_format": "png",
+                      "quality": "medium",
+                      "size": "1024x1024",
+                      "usage": {
+                        "input_tokens": 29,
+                        "input_tokens_details": {
+                          "image_tokens": 0,
+                          "text_tokens": 29
+                        },
+                        "output_tokens": 1756,
+                        "output_tokens_details": {
+                          "image_tokens": 1756,
+                          "text_tokens": 0
+                        },
+                        "total_tokens": 1785
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            },
+            "description": "生成成功。`stream: true` 时为 `text/event-stream`。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "本次请求的 ID，排查问题时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误：缺少必填参数、取值不合法或传入了不支持的参数。不扣费。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "API Key 缺失或无效。"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "余额不足。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试。"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "上游生成失败（含内容审核拒绝），不扣费，可重试。"
+          }
+        },
+        "summary": "生成图片",
+        "tags": [
+          "GPT Image 2"
+        ],
+        "x-mint": {
+          "href": "/api-reference/gpt-image-2/create-image",
+          "metadata": {
+            "sidebarTitle": "生成图片",
+            "title": "生成图片"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "GPT Image 2"
+    }
+  ]
+}

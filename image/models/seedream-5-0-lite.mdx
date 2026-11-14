@@ -1,0 +1,105 @@
+---
+title: "Seedream 5.0 Lite"
+sidebarTitle: "概述"
+description: "字节跳动 Seedream 5.0 Lite：火山方舟 V3 图片生成协议，同步返回，支持多图参考、组图和流式输出。"
+---
+
+{/* 本页由 apps/gateway/internal/service/image_models_openapi_test.go 自动生成，请勿手工修改。 */}
+
+Seedream 5.0 Lite 是字节跳动 Seedream 系列的高分辨率轻量档，支持文生图、单图生图和多图参考生图（最多 14 张参考图），输出 2K / 3K。接口采用火山方舟 V3 图片生成协议：请求与响应字段均为 snake_case，请求阻塞到出图完成后直接返回图片，无需轮询；也可以开启 SSE 流式输出，生成一张推送一张。
+
+| | 火山方舟 V3 | DreamTo |
+|---|---|---|
+| 接口 | `POST /api/v3/images/generations` | `POST https://api.dreamto.ai/api/v3/images/generations` |
+| `model` | 方舟模型 ID | `seedream-5-lite` |
+| API Key | 方舟 API Key | DreamTo 控制台的 API Key，放在 `Authorization: Bearer` 请求头 |
+
+## 接口
+
+| 接口 | 用途 |
+|---|---|
+| [`POST /api/v3/images/generations`](/api-reference/seedream-5-0-lite/create-image) | 生成图片 |
+
+## 参数范围
+
+| 字段 | 取值 |
+|---|---|
+| `prompt` | 必填，建议中文不超过 300 字、英文不超过 600 词 |
+| `image` | 单张传字符串、多张传数组，最多 14 张；图片链接或 `data:image/png;base64,<数据>`（格式名小写），单张不超过 30MB |
+| `size` | `2K` / `3K`（输出 1:1），或 `宽x高` 像素值（默认 `2048x2048`），见下方 size 说明 |
+| `response_format` | `url`（默认）/ `b64_json` |
+| `stream` | `false`（默认）/ `true`（SSE 流式，见下方流式输出） |
+| `sequential_image_generation` | `disabled`（默认，只出一张）/ `auto`（由模型决定是否生成组图） |
+| `sequential_image_generation_options.max_images` | 组图最多张数，1 ~ 15 |
+
+## 计费
+
+按模型价格计费，以控制台显示的价格为准。参数错误和生成失败不扣费。
+
+## 快速开始
+
+示例中的 `$DREAMTO_API_KEY` 为你的 API Key。
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.dreamto.ai/api/v3/images/generations" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedream-5-lite",
+    "prompt": "一只橘猫坐在窗台上看雨，水彩风格",
+    "size": "2K"
+  }'
+```
+
+```python Python
+import os
+
+import requests
+
+URL = "https://api.dreamto.ai/api/v3/images/generations"
+HEADERS = {"Authorization": f"Bearer {os.environ['DREAMTO_API_KEY']}"}
+
+payload = {
+    "model": "seedream-5-lite",
+    "prompt": "一只橘猫坐在窗台上看雨，水彩风格",
+    "size": "2K"
+}
+
+result = requests.post(URL, headers=HEADERS, json=payload, timeout=600).json()
+for image in result["data"]:
+    print(image["url"])
+```
+
+</CodeGroup>
+
+## size 说明
+
+`size` 支持两种写法，二选一：
+
+- **分辨率档**：`2K` 或 `3K`（大小写不敏感），输出固定为 1:1；暂不支持 `4K`。
+- **宽高像素值**：`宽x高`，如 `2848x1600`，默认 `2048x2048`。总像素须在 2560x1440 ~ 4096x4096 之间，宽高比在 1/16 ~ 16 之间；总像素不超过 2048x3072 按 `2K` 档、否则按 `3K` 档出图并计费，并取最接近的标准宽高比（`1:1` / `4:3` / `3:4` / `16:9` / `9:16` / `3:2` / `2:3` / `21:9`），实际尺寸以响应中的 `data[].size` 为准。
+
+## 流式输出
+
+传 `"stream": true` 时以 SSE（`text/event-stream`）返回，事件如下：
+
+| 事件 | 说明 |
+|---|---|
+| `image_generation.partial_succeeded` | 一张图生成成功，带 `image_index`、`url`（或 `b64_json`）、`size` |
+| `image_generation.partial_failed` | 一张图生成失败，带 `image_index`、`error.code`、`error.message` |
+| `image_generation.completed` | 结束事件，带 `usage` |
+| `error` | 整体失败（如超时），带 `error.code`、`error.message` |
+
+最后以 `data: [DONE]` 结束。等待期间每 15 秒发送一行 `: keep-alive` 注释，客户端忽略即可；参数错误、余额不足等在推送开始前以普通 JSON 错误返回。
+
+## 超时
+
+请求最长阻塞 10 分钟，出图通常需要 10 ~ 60 秒，客户端读超时建议不低于 120 秒。超时返回 HTTP 504，任务仍会继续执行并正常计费。
+
+## 与官方接口的差异
+
+- `model` 使用 DreamTo 模型名 `seedream-5-lite`，不是方舟的模型 ID。
+- `output_format`、`watermark` 可以传，当前不影响输出，实际格式以响应为准；暂不支持图层拆分和 `4K`。
+- 错误响应使用 DreamTo 的错误结构（见接口的错误示例）。

@@ -8,6 +8,7 @@ Mintlify site (`docs.json`, MDX pages). Chinese is the default language; every p
 - `video/seedance-2-0/scenarios/*.mdx` and `en/video/seedance-2-0/scenarios/*.mdx`
 - `openapi/zh/minimax-h3.json`, `openapi/en/minimax-h3.json`, `video/models/minimax-h3.mdx` and `en/video/models/minimax-h3.mdx` (from `apps/gateway/internal/service/minimax_v2_openapi_test.go`)
 - `openapi/zh/gemini-omni.json`, `openapi/en/gemini-omni.json`, `video/models/gemini-omni.mdx` and `en/video/models/gemini-omni.mdx` (from `apps/gateway/internal/service/gemini_omni_openapi_test.go`)
+- `openapi/{zh,en}/{gemini-3-1-flash-image,gemini-3-1-flash-lite-image,gpt-image-2,gpt-image-2-eco,seedream-5-0-lite,grok-imagine-image-2-0}.json`, `image/models/*.mdx` and `en/image/models/*.mdx` (from `apps/gateway/internal/service/image_models_openapi_test.go`)
 
 They are generated from the DreamTo Gateway source code, and any hand edit is overwritten on the next generation. Report changes to them as issues.
 

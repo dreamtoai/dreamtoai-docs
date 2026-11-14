@@ -1,0 +1,107 @@
+---
+title: "GPT Image 2 Eco"
+sidebarTitle: "概述"
+description: "gpt-image-2-eco：GPT Image 2 的经济线路，参数与 OpenAI 官方 Images API 一致。"
+---
+
+{/* 本页由 apps/gateway/internal/service/image_models_openapi_test.go 自动生成，请勿手工修改。 */}
+
+`gpt-image-2-eco` 与 `gpt-image-2` 是同一个 OpenAI GPT Image 2 模型，走价格更低的线路，适合对成本敏感、可接受更长等待时间的批量任务。请求参数、返回结构与 [OpenAI 官方 Images API](https://platform.openai.com/docs/api-reference/images) 一致，只需把 `model` 换成 `gpt-image-2-eco`。
+
+| | OpenAI 官方 | DreamTo |
+|---|---|---|
+| 服务地址 | `https://api.openai.com/v1` | `https://api.dreamto.ai/v1` |
+| API Key | OpenAI API Key | DreamTo 控制台的 API Key，放在 `Authorization: Bearer` 请求头 |
+
+## 接口
+
+| 接口 | 用途 |
+|---|---|
+| [`POST /v1/images/generations`](/api-reference/gpt-image-2-eco/create-image) | 生成图片 |
+| [`POST /v1/images/edits`](/api-reference/gpt-image-2-eco/edit-image) | 编辑图片 |
+
+## 参数范围
+
+| 字段 | 取值 |
+|---|---|
+| `prompt` | 必填，最多 32000 个字符 |
+| `size` | `auto`（默认）或 `宽x高`：宽高都是 16 的倍数，最长边 ≤ 3840，长短边比 ≤ 3:1，总像素 655,360 ~ 8,294,400。常用 `1024x1024`、`1536x1024`、`1024x1536`、`2048x2048`、`2048x1152`、`3840x2160`、`2160x3840`；超过 `2560x1440` 为官方实验性分辨率 |
+| `quality` | `auto`（默认）/ `low` / `medium` / `high` |
+| `n` | 1 ~ 10，默认 1 |
+| `background` | `auto`（默认）/ `opaque` / `transparent`；透明背景为官方预览能力，需配合 `png` 或 `webp` |
+| `output_format` | `png`（默认）/ `jpeg` / `webp` |
+| `output_compression` | 0 ~ 100，默认 100，仅 `jpeg` / `webp` 生效 |
+| `stream` | `true` 时以 SSE 流式返回；`partial_images` 为 0 ~ 3 张预览图 |
+
+### 暂不支持的官方参数
+
+传入后返回 400，不调用模型、不扣费。
+
+| 参数 | 说明 |
+|---|---|
+| `response_format` | 官方 GPT Image 模型不支持，图片始终以 `b64_json` 返回 |
+| `images` | JSON 方式的编辑输入暂不支持，请用 `multipart/form-data` 上传 `image[]` |
+
+## 计费
+
+按模型价格计费，以控制台显示的价格为准。参数错误和生成失败不扣费。
+
+## 快速开始
+
+示例中的 `$DREAMTO_API_KEY` 为你的 API Key。
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.dreamto.ai/v1/images/generations" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-image-2-eco",
+    "prompt": "一只戴着宇航员头盔的橘猫漂浮在太空中，背景是地球，写实摄影风格",
+    "size": "1024x1024",
+    "quality": "medium"
+  }'
+```
+
+```python Python
+import base64
+import os
+
+from openai import OpenAI
+
+client = OpenAI(base_url="https://api.dreamto.ai/v1", api_key=os.environ["DREAMTO_API_KEY"])
+
+result = client.images.generate(
+    model="gpt-image-2-eco",
+    prompt="一只戴着宇航员头盔的橘猫漂浮在太空中，背景是地球，写实摄影风格",
+    size="1024x1024",
+    quality="medium",
+)
+with open("output.png", "wb") as f:
+    f.write(base64.b64decode(result.data[0].b64_json))
+```
+
+</CodeGroup>
+
+### 图片编辑
+
+`/v1/images/edits` 使用 `multipart/form-data` 上传图片文件，可重复 `image[]` 传多张参考图：
+
+```bash cURL
+curl -X POST "https://api.dreamto.ai/v1/images/edits" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -F "model=gpt-image-2-eco" \
+  -F "prompt=把第二张图的标志印在第一张图的帆布袋上，保持商品摄影风格" \
+  -F "image[]=@product.png" \
+  -F "image[]=@logo.png" \
+  -F "size=1024x1024" \
+  -F "quality=medium"
+```
+
+## 与官方接口的差异
+
+- 图片编辑使用 `multipart/form-data` 上传文件（`image[]`、`mask`）；暂不支持官方新增的 JSON `images` / `file_id` 写法。
+- 与官方一样只返回 Base64（`data[].b64_json`），不支持 `response_format`。
+- 传入网关未声明的参数（如 `response_format`）会返回 400，不调用模型、不扣费。
+- 错误响应使用 DreamTo 的错误结构（见各接口的错误示例）。

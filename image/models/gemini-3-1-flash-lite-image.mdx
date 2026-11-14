@@ -1,0 +1,115 @@
+---
+title: "Gemini 3.1 Flash Lite Image"
+sidebarTitle: "概述"
+description: "Nano Banana 2 Lite：与 Google 官方 generateContent 接口一致的快速、低成本图像生成与编辑。"
+---
+
+{/* 本页由 apps/gateway/internal/service/image_models_openapi_test.go 自动生成，请勿手工修改。 */}
+
+`gemini-3.1-flash-lite-image`（Nano Banana 2 Lite）是 Gemini 图像系列中速度最快、成本最低的模型，适合高并发的文生图和简单的局部编辑（换颜色、换背景、贴纸等）。只输出 1K 图片；官方说明它不针对多张参考图和多轮连续编辑做优化。接口与 [Google 官方 generateContent](https://ai.google.dev/api/generate-content) 一致，模型说明见 [官方模型页](https://ai.google.dev/gemini-api/docs/models/gemini-3.1-flash-lite-image)。
+
+| | Google 官方 | DreamTo |
+|---|---|---|
+| 服务地址 | `https://generativelanguage.googleapis.com` | `https://api.dreamto.ai` |
+| API Key | Google AI Studio 密钥 | DreamTo 控制台的 API Key，放在 `x-goog-api-key` 或 `Authorization: Bearer` 请求头 |
+
+## 接口
+
+| 接口 | 用途 |
+|---|---|
+| [`POST /v1beta/models/gemini-3.1-flash-lite-image:generateContent`](/api-reference/gemini-3-1-flash-lite-image/generate-content) | 生成图片 |
+
+## 参数范围
+
+| 字段 | 取值 |
+|---|---|
+| `contents[].parts[].text` | 提示词，描述要生成或修改的内容 |
+| `contents[].parts[].inlineData.data` | 参考图 Base64（`mimeType` 为 `image/png` / `image/jpeg` / `image/webp` / `image/heic` / `image/heif`） |
+| `contents[].parts[].fileData.fileUri` | 参考图公网 `https` 链接 |
+| `generationConfig.imageConfig.aspectRatio` | `1:1`（默认）/ `2:3` / `3:2` / `3:4` / `4:3` / `4:5` / `5:4` / `9:16` / `16:9` / `21:9` |
+
+### 暂不支持的官方参数
+
+传入后返回 400，不调用模型、不扣费。
+
+| 参数 | 说明 |
+|---|---|
+| `systemInstruction` | 暂不支持系统指令，请写在提示词中 |
+| `safetySettings` | 暂不支持自定义安全阈值，使用官方默认值 |
+
+## 计费
+
+按模型价格计费，以控制台显示的价格为准。参数错误和生成失败不扣费。
+
+## 快速开始
+
+示例中的 `$DREAMTO_API_KEY` 为你的 API Key。
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.dreamto.ai/v1beta/models/gemini-3.1-flash-lite-image:generateContent" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [
+      {
+        "role": "user",
+        "parts": [
+          {
+            "text": "一家以香蕉为主题的高级餐厅里的一道精致甜点，柔和灯光，美食摄影"
+          }
+        ]
+      }
+    ],
+    "generationConfig": {
+      "imageConfig": {
+        "aspectRatio": "16:9"
+      }
+    }
+  }'
+```
+
+```python Python
+import base64
+import os
+
+import requests
+
+URL = "https://api.dreamto.ai/v1beta/models/gemini-3.1-flash-lite-image:generateContent"
+HEADERS = {"x-goog-api-key": os.environ["DREAMTO_API_KEY"]}
+
+payload = {
+    "contents": [
+        {
+            "role": "user",
+            "parts": [
+                {
+                    "text": "一家以香蕉为主题的高级餐厅里的一道精致甜点，柔和灯光，美食摄影"
+                }
+            ]
+        }
+    ],
+    "generationConfig": {
+        "imageConfig": {
+            "aspectRatio": "16:9"
+        }
+    }
+}
+
+response = requests.post(URL, headers=HEADERS, json=payload, timeout=300).json()
+for part in response["candidates"][0]["content"]["parts"]:
+    if "inlineData" in part:
+        with open("output.png", "wb") as f:
+            f.write(base64.b64decode(part["inlineData"]["data"]))
+    elif "text" in part:
+        print(part["text"])
+```
+
+</CodeGroup>
+
+## 与官方接口的差异
+
+- 本页只覆盖 `generateContent`；暂不支持 Batch API，以及 Files API 上传后的 `files/...` 引用。
+- 参考图用 `inlineData` 传 Base64，或用 `fileData.fileUri` 传公网 `https` 链接。
+- 错误响应使用 DreamTo 的错误结构（见接口的错误示例），而不是 Google 的 `status` 结构。

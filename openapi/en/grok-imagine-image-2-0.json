@@ -1,0 +1,684 @@
+{
+  "components": {
+    "schemas": {
+      "GrokImageData": {
+        "additionalProperties": false,
+        "description": "One generated image.",
+        "properties": {
+          "url": {
+            "description": "Image download link (with `response_format=url`); save it promptly.",
+            "type": "string"
+          },
+          "b64_json": {
+            "description": "Base64 image (with `response_format=b64_json`).",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GrokImageEditRequest": {
+        "additionalProperties": false,
+        "description": "Request body of image-to-image / editing.",
+        "properties": {
+          "model": {
+            "description": "Model name.\n\n**Allowed values:**\n- `grok-imagine-image-2.0`: Grok Imagine Image 2.0: one name and price for generation and editing, up to 2K.",
+            "enum": [
+              "grok-imagine-image-2.0"
+            ],
+            "type": "string"
+          },
+          "prompt": {
+            "description": "Describes how to change the image.",
+            "type": "string"
+          },
+          "image": {
+            "description": "One reference image: a public image link or a full `data:image/...;base64,...` data URI. Links must be directly downloadable by the server.",
+            "type": "string"
+          },
+          "images": {
+            "description": "Several reference images; links and data URIs can be mixed. JSON requests only.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "n": {
+            "description": "Number of images, default 1; 1 per request is recommended.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_format": {
+            "default": "url",
+            "description": "How images are returned.\n\n**Allowed values:**\n- `url`: Return an image download link (default).\n- `b64_json`: Return Base64 image data.",
+            "enum": [
+              "url",
+              "b64_json"
+            ],
+            "type": "string"
+          },
+          "size": {
+            "default": "1024x1024",
+            "description": "Output size; use instead of `aspect_ratio`.\n\n**Allowed values:**\n- `1024x1024`: Square 1K (default).\n- `1792x1024`: Landscape.\n- `1024x1792`: Portrait.\n- `2048x2048`: Square 2K.",
+            "enum": [
+              "1024x1024",
+              "1792x1024",
+              "1024x1792",
+              "2048x2048"
+            ],
+            "type": "string"
+          },
+          "resolution": {
+            "default": "1k",
+            "description": "Resolution tier, equivalent to `size`.\n\n**Allowed values:**\n- `1k`: 1K (default).\n- `2k`: 2K, same as `size: 2048x2048`.",
+            "enum": [
+              "1k",
+              "2k"
+            ],
+            "type": "string"
+          },
+          "aspect_ratio": {
+            "description": "Aspect ratio; use instead of `size`.\n\n**Allowed values:**\n- `1:1`: Square.\n- `16:9`: Widescreen landscape.\n- `9:16`: Vertical.\n- `2:3`: Portrait.\n- `3:2`: Landscape.\n- `4:3`: Landscape.\n- `3:4`: Portrait.",
+            "enum": [
+              "1:1",
+              "16:9",
+              "9:16",
+              "2:3",
+              "3:2",
+              "4:3",
+              "3:4"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "GrokImageGenerationRequest": {
+        "additionalProperties": false,
+        "description": "Request body of text-to-image.",
+        "properties": {
+          "model": {
+            "description": "Model name.\n\n**Allowed values:**\n- `grok-imagine-image-2.0`: Grok Imagine Image 2.0: one name and price for generation and editing, up to 2K.",
+            "enum": [
+              "grok-imagine-image-2.0"
+            ],
+            "type": "string"
+          },
+          "prompt": {
+            "description": "Describes the image to generate.",
+            "type": "string"
+          },
+          "n": {
+            "description": "Number of images, default 1; 1 per request is recommended.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_format": {
+            "default": "url",
+            "description": "How images are returned.\n\n**Allowed values:**\n- `url`: Return an image download link (default).\n- `b64_json`: Return Base64 image data.",
+            "enum": [
+              "url",
+              "b64_json"
+            ],
+            "type": "string"
+          },
+          "size": {
+            "default": "1024x1024",
+            "description": "Output size; use instead of `aspect_ratio`.\n\n**Allowed values:**\n- `1024x1024`: Square 1K (default).\n- `1792x1024`: Landscape.\n- `1024x1792`: Portrait.\n- `2048x2048`: Square 2K.",
+            "enum": [
+              "1024x1024",
+              "1792x1024",
+              "1024x1792",
+              "2048x2048"
+            ],
+            "type": "string"
+          },
+          "resolution": {
+            "default": "1k",
+            "description": "Resolution tier, equivalent to `size`.\n\n**Allowed values:**\n- `1k`: 1K (default).\n- `2k`: 2K, same as `size: 2048x2048`.",
+            "enum": [
+              "1k",
+              "2k"
+            ],
+            "type": "string"
+          },
+          "aspect_ratio": {
+            "description": "Aspect ratio; use instead of `size`.\n\n**Allowed values:**\n- `1:1`: Square.\n- `16:9`: Widescreen landscape.\n- `9:16`: Vertical.\n- `2:3`: Portrait.\n- `3:2`: Landscape.\n- `4:3`: Landscape.\n- `3:4`: Portrait.",
+            "enum": [
+              "1:1",
+              "16:9",
+              "9:16",
+              "2:3",
+              "3:2",
+              "4:3",
+              "3:4"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "GrokImageResponse": {
+        "additionalProperties": false,
+        "description": "Generation result.",
+        "properties": {
+          "created": {
+            "description": "Creation time, Unix seconds.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "data": {
+            "description": "Generated images.",
+            "items": {
+              "$ref": "#/components/schemas/GrokImageData"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "created",
+          "data"
+        ],
+        "type": "object"
+      },
+      "ImageAPIError": {
+        "additionalProperties": false,
+        "description": "Error details.",
+        "properties": {
+          "code": {
+            "description": "Error code.",
+            "type": "string"
+          },
+          "http_status": {
+            "description": "HTTP status code.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Human-readable error message.",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Request ID; include it when reporting issues.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Error type.\n\n**Allowed values:**\n- `invalid_request_error`: Invalid request.\n- `authentication_error`: Authentication failed.\n- `insufficient_balance_error`: Insufficient balance.\n- `permission_error`: Permission denied.\n- `rate_limit_error`: Rate limited.\n- `api_error`: Server or upstream error.",
+            "enum": [
+              "invalid_request_error",
+              "authentication_error",
+              "insufficient_balance_error",
+              "permission_error",
+              "rate_limit_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "http_status",
+          "message",
+          "request_id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ImageAPIErrorResponse": {
+        "additionalProperties": false,
+        "description": "Error response.",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ImageAPIError",
+            "description": "Error details."
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "API Key created in the DreamTo console, sent as `Authorization: Bearer <API Key>`.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "xAI Grok Imagine Image 2.0: an OpenAI-compatible synchronous images API; text-to-image and image editing share one model and price, up to 2K.",
+    "title": "Grok Imagine Image 2.0",
+    "version": "v1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/images/edits": {
+      "post": {
+        "description": "Image-to-image / editing: pass reference images in `image` (one) or `images` (several) as public links or full Base64 data URIs, or upload `image[]` files as `multipart/form-data`. The request is synchronous.",
+        "operationId": "grokImageEdit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Edit (one image)": {
+                  "description": "Pass one public image link or a full `data:image/...;base64,` data URI in `image`.",
+                  "summary": "Edit (one image)",
+                  "value": {
+                    "model": "grok-imagine-image-2.0",
+                    "prompt": "Keep the composition and change the background to a neon street after rain",
+                    "image": "https://your-cdn.example.com/photo.jpg",
+                    "response_format": "url"
+                  }
+                },
+                "Edit (several images)": {
+                  "description": "Pass an array in `images`; links and data URIs can be mixed.",
+                  "summary": "Edit (several images)",
+                  "value": {
+                    "model": "grok-imagine-image-2.0",
+                    "prompt": "Blend the styles of the two reference images into a product shot",
+                    "images": [
+                      "https://your-cdn.example.com/style-a.jpg",
+                      "data:image/png;base64,<BASE64_IMAGE_DATA>"
+                    ],
+                    "response_format": "url"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/GrokImageEditRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "created": 1794643200,
+                      "data": [
+                        {
+                          "url": "https://files.dreamto.ai/images/grok_4b8e1d6c.jpg"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GrokImageResponse"
+                }
+              }
+            },
+            "description": "Images edited.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "ID of this request; include it when reporting issues.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request: a required parameter is missing, a value is invalid or a parameter is not supported. Not charged."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Insufficient balance."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests; retry later."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Upstream generation failed (including content moderation refusals). Not charged; you may retry."
+          }
+        },
+        "summary": "Edit image",
+        "tags": [
+          "Grok Imagine Image 2.0"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/grok-imagine-image-2-0/edit-image",
+          "metadata": {
+            "sidebarTitle": "Edit image",
+            "title": "Edit image"
+          }
+        }
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "description": "Text-to-image. The request is synchronous and returns the images directly, with no polling.",
+        "operationId": "grokImageGenerate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Text to image": {
+                  "description": "Prompt only; 1024x1024 by default, returns a download link.",
+                  "summary": "Text to image",
+                  "value": {
+                    "model": "grok-imagine-image-2.0",
+                    "prompt": "A futuristic city floating above a sea of clouds, soft morning light, cinematic",
+                    "n": 1,
+                    "response_format": "url"
+                  }
+                },
+                "2K square": {
+                  "description": "`resolution: 2k` (same as `size: 2048x2048`); grok-imagine-image-2.0 only.",
+                  "summary": "2K square",
+                  "value": {
+                    "model": "grok-imagine-image-2.0",
+                    "prompt": "A cinematic city-at-night poster with neon lights and wet streets",
+                    "resolution": "2k"
+                  }
+                },
+                "Aspect ratio": {
+                  "description": "Set the frame with `aspect_ratio`; use it instead of `size`.",
+                  "summary": "Aspect ratio",
+                  "value": {
+                    "model": "grok-imagine-image-2.0",
+                    "prompt": "A vertical phone wallpaper of a snowy mountain lake under the aurora",
+                    "response_format": "b64_json",
+                    "aspect_ratio": "9:16"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/GrokImageGenerationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "created": 1794643200,
+                      "data": [
+                        {
+                          "url": "https://files.dreamto.ai/images/grok_4b8e1d6c.jpg"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GrokImageResponse"
+                }
+              }
+            },
+            "description": "Images generated.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "ID of this request; include it when reporting issues.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "Invalid request.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request: a required parameter is missing, a value is invalid or a parameter is not supported. Not charged."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Insufficient balance."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests; retry later."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_7c1e9a4b2d3f5a6b8c9d0e1f",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ImageAPIErrorResponse"
+                }
+              }
+            },
+            "description": "Upstream generation failed (including content moderation refusals). Not charged; you may retry."
+          }
+        },
+        "summary": "Create image",
+        "tags": [
+          "Grok Imagine Image 2.0"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/grok-imagine-image-2-0/create-image",
+          "metadata": {
+            "sidebarTitle": "Create image",
+            "title": "Create image"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Grok Imagine Image 2.0"
+    }
+  ]
+}
