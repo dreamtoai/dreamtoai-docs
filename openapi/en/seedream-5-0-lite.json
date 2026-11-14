@@ -253,7 +253,7 @@
   "paths": {
     "/api/v3/images/generations": {
       "post": {
-        "description": "Generates images from a prompt and optional reference images (Volcengine Ark V3 images protocol). The request is synchronous and blocks until the images are ready, for at most 10 minutes; passing `image` makes it image-to-image. With `stream: true` the response is SSE.",
+        "description": "Generates images from a prompt and optional reference images (Volcengine Ark V3 images protocol). The request is synchronous and blocks until the images are ready; passing `image` makes it image-to-image. With `stream: true` the response is SSE.",
         "operationId": "seedreamImageGenerate",
         "requestBody": {
           "content": {
@@ -360,7 +360,7 @@
                 }
               }
             },
-            "description": "Images generated. With `stream: true` the body is `text/event-stream`. The `X-Task-Id` header carries the task ID.",
+            "description": "Images generated. With `stream: true` the body is `text/event-stream`. The `X-Request-Id` header carries the request ID; include it when reporting issues.",
             "headers": {
               "X-Request-Id": {
                 "description": "ID of this request; include it when reporting issues.",
@@ -506,7 +506,7 @@
                 }
               }
             },
-            "description": "Generation timed out (over 10 minutes). The job still finishes and is billed."
+            "description": "Generation timed out. The request is not charged and can be retried."
           }
         },
         "summary": "Create image",

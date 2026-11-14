@@ -253,7 +253,7 @@
   "paths": {
     "/api/v3/images/generations": {
       "post": {
-        "description": "根据提示词和可选的参考图生成图片（火山方舟 V3 图片生成协议）。请求是同步的，阻塞到出图完成后直接返回图片，最长 10 分钟；是否为图生图由是否传 `image` 决定。`stream: true` 时以 SSE 返回。",
+        "description": "根据提示词和可选的参考图生成图片（火山方舟 V3 图片生成协议）。请求是同步的，阻塞到出图完成后直接返回图片；是否为图生图由是否传 `image` 决定。`stream: true` 时以 SSE 返回。",
         "operationId": "seedreamImageGenerate",
         "requestBody": {
           "content": {
@@ -360,7 +360,7 @@
                 }
               }
             },
-            "description": "生成成功。`stream: true` 时为 `text/event-stream`。响应头 `X-Task-Id` 为任务 ID。",
+            "description": "生成成功。`stream: true` 时为 `text/event-stream`。响应头 `X-Request-Id` 为请求 ID，排查问题时请提供。",
             "headers": {
               "X-Request-Id": {
                 "description": "本次请求的 ID，排查问题时请提供。",
@@ -506,7 +506,7 @@
                 }
               }
             },
-            "description": "生成超时（超过 10 分钟）。任务仍会继续执行并正常计费。"
+            "description": "生成超时，本次请求不扣费，可重试。"
           }
         },
         "summary": "生成图片",

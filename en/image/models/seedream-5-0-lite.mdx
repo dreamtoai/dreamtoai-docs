@@ -96,7 +96,7 @@ The stream ends with `data: [DONE]`. A `: keep-alive` comment line is sent every
 
 ## Timeouts
 
-A request blocks for at most 10 minutes; images usually take 10–60 seconds, so set the client read timeout to at least 120 seconds. On timeout the API returns HTTP 504, and the job still finishes and is billed.
+Images usually take 10–60 seconds, longer at high resolution or with many reference images, so set the client read timeout to at least 120 seconds; for long waits, prefer streaming. If generation times out or fails, an error is returned and the request is not charged.
 
 ## Differences from the official API
 
