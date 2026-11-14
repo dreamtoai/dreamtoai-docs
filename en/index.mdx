@@ -4,7 +4,7 @@ sidebarTitle: "Introduction"
 description: "Call DreamTo video generation, asset library and task callbacks through a unified HTTP API."
 ---
 
-Welcome to the DreamTo Open Platform. These docs explain how to call the platform over HTTP. Currently available: **Seedance video generation** (2.5 / 2.0 / 2.0 Fast / 2.0 Mini), the **Seedance asset library** and **task callbacks**.
+Welcome to the DreamTo Open Platform. These docs explain how to call the platform over HTTP. Currently available: **Seedance video generation** (2.5 / 2.0 / 2.0 Fast / 2.0 Mini), the **Seedance asset library**, **task callbacks**, and official-protocol **MiniMax H3** and **Gemini Omni** video generation.
 
 **Base URL**: `https://api.dreamto.ai`
 
@@ -26,6 +26,12 @@ Welcome to the DreamTo Open Platform. These docs explain how to call the platfor
   </Card>
   <Card title="Task callback" icon="bell" href="/en/webhooks/task-callback">
     Results are pushed when tasks finish, signed with HMAC-SHA256.
+  </Card>
+  <Card title="MiniMax H3 video" icon="/icons/minimax.svg" href="/en/video/models/minimax-h3">
+    Identical to the official MiniMax V2 video API; change the base URL and API Key to migrate.
+  </Card>
+  <Card title="Gemini Omni video" icon="/icons/gemini.svg" href="/en/video/models/gemini-omni">
+    Follows the official Google Interactions API: text, image, first/last frame, video edit and extend.
   </Card>
 </CardGroup>
 

@@ -1,0 +1,138 @@
+---
+title: "Gemini Omni 视频生成（官方协议）"
+sidebarTitle: "概述"
+description: "与 Google 官方 Interactions API 一致：换服务地址和 API Key 即可从官方迁移。"
+---
+
+{/* 本页由 apps/gateway/internal/service/gemini_omni_openapi_test.go 自动生成，请勿手工修改。 */}
+
+接口路径、请求体和响应体与 [Google 官方 Interactions API](https://ai.google.dev/api/interactions-api) 一致，模型为 `gemini-omni-1.2-flash`。已经接入官方的代码，把服务地址换成 DreamTo、API Key 换成 DreamTo 的 Key 即可：
+
+| | Google 官方 | DreamTo |
+|---|---|---|
+| 服务地址 | `https://generativelanguage.googleapis.com` | `https://api.dreamto.ai` |
+| API Key | Google AI Studio 密钥 | DreamTo 控制台的 API Key，放在 `x-goog-api-key` 或 `Authorization: Bearer` 请求头 |
+
+## 接口
+
+| 接口 | 用途 |
+|---|---|
+| [`POST /v1beta/interactions`](/api-reference/gemini-omni/create-interaction) | 生成视频 |
+| [`GET /v1beta/interactions/{id}`](/api-reference/gemini-omni/get-interaction) | 查询交互 |
+
+## 调用流程
+
+1. 调用创建接口。请求是同步的：生成完成后才返回，通常需要 20 秒 ~ 2 分钟，请把客户端超时设为 10 分钟以上。
+2. `delivery: inline` 时，视频的 Base64 数据直接在创建响应的 `steps[].content[].data` 中。
+3. `delivery: uri` 时，用返回的 `id` 调用查询接口，从 `steps[].content[].uri` 下载视频。下载地址不需要 API Key，24 小时内有效，请及时下载保存。
+
+<Note>
+  创建响应的 `status` 固定为 `in_progress`；`delivery: uri` 时其中的 `uri` 不能直接下载，请以查询接口返回的地址为准。查询接口只能查询同一 API Key 在 24 小时内创建的交互。
+</Note>
+
+## 参数范围
+
+未声明的参数和下表“暂不支持”的参数会直接返回 400，不调用模型、不扣费。
+
+| 字段 | 取值 |
+|---|---|
+| `model` | `gemini-omni-1.2-flash` |
+| `response_format.aspect_ratio` | `16:9`（默认）/ `9:16` |
+| `response_format.resolution` | `360p` / `720p`（默认）/ `1080p` / `4k` |
+| `response_format.duration` | `3s` ~ `15s`，默认 `10s`；首尾帧和延长限 `3s` ~ `10s`，编辑时与输入视频等长 |
+| `response_format.delivery` | `uri` / `inline`；不传时按 `inline` 返回 |
+| 图片 | `uri` 支持公网 `https` 链接，或用 `data` 传 Base64；参考图最多 6 张 |
+| 视频 | 只能用 `data` 传 Base64（不支持视频链接）；待编辑视频 ≤ 15 秒 |
+| 音频 | 暂不支持音频输入 |
+
+### 暂不支持的官方参数
+
+| 参数 | 说明 |
+|---|---|
+| `background` | 暂不支持异步生成，请使用同步请求。 |
+| `stream` | 暂不支持流式输出。 |
+| `previous_interaction_id` | 暂不支持多轮续接；需要编辑时请在 `input` 中直接传入视频。 |
+| `response_format.gcs_uri` | 暂不支持输出到 GCS 存储桶（仅 Vertex AI 可用）。 |
+| `input[].resolution` | 暂不支持设置输入媒体解析精度。 |
+| `input[].content[].resolution` | 暂不支持设置输入媒体解析精度。 |
+| `system_instruction` | 暂不支持系统指令，请写在提示词中。 |
+| `tools` | 视频生成暂不支持工具调用。 |
+| `generation_config.tool_choice` | 视频生成暂不支持工具调用。 |
+| `safety_settings` | 暂不支持自定义安全设置。 |
+| `max_total_tokens` | 视频生成暂不支持该限制。 |
+| `generation_config.max_output_tokens` | 视频生成暂不支持该限制。 |
+| `service_tier` | 暂只提供 `standard` 等级，不支持 `flex` / `priority`。 |
+| `agent` | 视频模型暂不支持 Agent 模式。 |
+| `agent_config` | 视频模型暂不支持 Agent 模式。 |
+| `generation_config.temperature` | 暂不支持。 |
+| `generation_config.top_p` | 暂不支持。 |
+| `generation_config.stop_sequences` | 暂不支持。 |
+| `generation_config.thinking_level` | 暂不支持调整思考等级。 |
+| `generation_config.thinking_summaries` | 暂不支持思考摘要设置。 |
+
+## 计费
+
+按 Token 用量计费，以控制台显示的模型价格为准；分辨率越高、时长越长，用量越大。参数错误和生成失败不扣费。
+
+## 快速开始
+
+<CodeGroup>
+
+```bash cURL
+# 1. 生成视频（同步，等待完成）
+curl -X POST "https://api.dreamto.ai/v1beta/interactions" \
+  --max-time 900 \
+  -H "Authorization: Bearer $DREAMTO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gemini-omni-1.2-flash",
+    "input": "夜晚的未来城市，镜头缓慢推进，霓虹灯倒映在湿润的街道上。",
+    "response_format": {
+      "type": "video",
+      "aspect_ratio": "16:9",
+      "resolution": "720p",
+      "duration": "8s",
+      "delivery": "uri"
+    }
+  }'
+
+# 2. 查询交互，取 steps[].content[].uri
+curl "https://api.dreamto.ai/v1beta/interactions/job_2805f00afeeb52775470220f" \
+  -H "Authorization: Bearer $DREAMTO_API_KEY"
+```
+
+```python Python
+import os
+
+import requests
+
+BASE_URL = "https://api.dreamto.ai"
+HEADERS = {"Authorization": f"Bearer {os.environ['DREAMTO_API_KEY']}"}
+
+payload = {
+    "model": "gemini-omni-1.2-flash",
+    "input": "夜晚的未来城市，镜头缓慢推进，霓虹灯倒映在湿润的街道上。",
+    "response_format": {
+        "type": "video",
+        "aspect_ratio": "16:9",
+        "resolution": "720p",
+        "duration": "8s",
+        "delivery": "uri"
+    }
+}
+
+created = requests.post(f"{BASE_URL}/v1beta/interactions", headers=HEADERS, json=payload, timeout=900).json()
+interaction = requests.get(f"{BASE_URL}/v1beta/interactions/{created['id']}", headers=HEADERS, timeout=60).json()
+video = next(c for s in interaction["steps"] if s["type"] == "model_output" for c in s["content"])
+with open("output.mp4", "wb") as f:
+    f.write(requests.get(video["uri"], timeout=300).content)
+```
+
+</CodeGroup>
+
+## 与官方接口的差异
+
+- 只提供 `gemini-omni-1.2-flash`。
+- 暂不支持异步（`background`）、流式（`stream`）和多轮续接（`previous_interaction_id`），请使用同步请求，需要编辑时在 `input` 中直接传入视频。
+- 交互 `id` 由 DreamTo 生成（`job_` 开头）；视频下载地址为 DreamTo 地址（`/v1beta/files/...`）。
+- 错误响应使用 DreamTo 的错误结构（见各接口的错误示例），`message` 为英文。

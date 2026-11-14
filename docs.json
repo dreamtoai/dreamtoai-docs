@@ -72,7 +72,7 @@
             ]
           },
           {
-            "group": "视频生成",
+            "group": "Seedance 视频生成",
             "pages": [
               "video/seedance-2-0",
               "webhooks/task-callback",
@@ -190,18 +190,6 @@
                 ]
               },
               {
-                "group": "MiniMax H3",
-                "icon": "film",
-                "openapi": "openapi/zh/minimax-h3.json",
-                "pages": [
-                  "video/models/minimax-h3",
-                  "POST /v2/video_generation",
-                  "POST /v2/video_regeneration",
-                  "POST /v2/h3_context_ir",
-                  "GET /v2/query/video_generation/{task_id}"
-                ]
-              },
-              {
                 "group": "Seedance 素材库",
                 "icon": "/icons/doubao.svg",
                 "pages": [
@@ -220,6 +208,38 @@
                 "openapi": "openapi/zh.json"
               }
             ]
+          },
+          {
+            "group": "MiniMax 视频生成",
+            "pages": [
+              {
+                "group": "MiniMax H3",
+                "icon": "/icons/minimax.svg",
+                "openapi": "openapi/zh/minimax-h3.json",
+                "pages": [
+                  "video/models/minimax-h3",
+                  "POST /v2/video_generation",
+                  "POST /v2/video_regeneration",
+                  "POST /v2/h3_context_ir",
+                  "GET /v2/query/video_generation/{task_id}"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Gemini 视频生成",
+            "pages": [
+              {
+                "group": "Gemini Omni",
+                "icon": "/icons/gemini.svg",
+                "openapi": "openapi/zh/gemini-omni.json",
+                "pages": [
+                  "video/models/gemini-omni",
+                  "POST /v1beta/interactions",
+                  "GET /v1beta/interactions/{id}"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -235,7 +255,7 @@
             ]
           },
           {
-            "group": "Video generation",
+            "group": "Seedance video",
             "pages": [
               "en/video/seedance-2-0",
               "en/webhooks/task-callback",
@@ -353,18 +373,6 @@
                 ]
               },
               {
-                "group": "MiniMax H3",
-                "icon": "film",
-                "openapi": "openapi/en/minimax-h3.json",
-                "pages": [
-                  "en/video/models/minimax-h3",
-                  "POST /v2/video_generation",
-                  "POST /v2/video_regeneration",
-                  "POST /v2/h3_context_ir",
-                  "GET /v2/query/video_generation/{task_id}"
-                ]
-              },
-              {
                 "group": "Seedance asset library",
                 "icon": "/icons/doubao.svg",
                 "pages": [
@@ -381,6 +389,38 @@
                   "POST /api/v3/assets?Action=DeleteAsset&Version=2024-01-01"
                 ],
                 "openapi": "openapi/en.json"
+              }
+            ]
+          },
+          {
+            "group": "MiniMax video",
+            "pages": [
+              {
+                "group": "MiniMax H3",
+                "icon": "/icons/minimax.svg",
+                "openapi": "openapi/en/minimax-h3.json",
+                "pages": [
+                  "en/video/models/minimax-h3",
+                  "POST /v2/video_generation",
+                  "POST /v2/video_regeneration",
+                  "POST /v2/h3_context_ir",
+                  "GET /v2/query/video_generation/{task_id}"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Gemini video",
+            "pages": [
+              {
+                "group": "Gemini Omni",
+                "icon": "/icons/gemini.svg",
+                "openapi": "openapi/en/gemini-omni.json",
+                "pages": [
+                  "en/video/models/gemini-omni",
+                  "POST /v1beta/interactions",
+                  "GET /v1beta/interactions/{id}"
+                ]
               }
             ]
           }

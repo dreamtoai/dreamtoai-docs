@@ -1,0 +1,1270 @@
+{
+  "components": {
+    "schemas": {
+      "GeminiOmniContentPart": {
+        "additionalProperties": false,
+        "description": "A part inside `user_input`.",
+        "properties": {
+          "type": {
+            "description": "Part type.\n\n**Allowed values:**\n- `text`: Text\n- `image`: Image\n- `video`: Video",
+            "enum": [
+              "text",
+              "image",
+              "video"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "description": "Text; required when `type` is `text`.",
+            "type": "string"
+          },
+          "mime_type": {
+            "description": "Media MIME type; required when `type` is `image` or `video`.\n\n**Allowed values:**\n- `image/png`: PNG image\n- `image/jpeg`: JPEG image\n- `image/webp`: WebP image\n- `image/heic`: HEIC image\n- `image/heif`: HEIF image\n- `image/gif`: GIF image\n- `image/bmp`: BMP image\n- `image/tiff`: TIFF image\n- `video/mp4`: MP4 video\n- `video/mpeg`: MPEG video\n- `video/mpg`: MPG video\n- `video/mov`: MOV video\n- `video/quicktime`: QuickTime video\n- `video/avi`: AVI video\n- `video/x-flv`: FLV video\n- `video/webm`: WebM video\n- `video/wmv`: WMV video\n- `video/x-ms-wmv`: WMV video\n- `video/3gpp`: 3GPP video",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp",
+              "image/heic",
+              "image/heif",
+              "image/gif",
+              "image/bmp",
+              "image/tiff",
+              "video/mp4",
+              "video/mpeg",
+              "video/mpg",
+              "video/mov",
+              "video/quicktime",
+              "video/avi",
+              "video/x-flv",
+              "video/webm",
+              "video/wmv",
+              "video/x-ms-wmv",
+              "video/3gpp"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "description": "Base64 content of the image or video, without a `data:...;base64,` prefix; use either `data` or `uri`. Videos must be sent in this field.",
+            "type": "string"
+          },
+          "uri": {
+            "description": "Media URL; use either `uri` or `data`. Images accept a public `https` link; video links are not supported yet, so use `data`; YouTube links are not supported.",
+            "type": "string"
+          },
+          "name": {
+            "description": "A custom name for a video clip that the prompt can refer to (for example \"continue clip_a\").",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniError": {
+        "additionalProperties": false,
+        "description": "Error details.",
+        "properties": {
+          "code": {
+            "description": "Error code, such as `invalid_request`, `unauthorized`, `insufficient_balance`, `not_found`, `rate_limit_exceeded` or `service_unavailable`.",
+            "type": "string"
+          },
+          "http_status": {
+            "description": "HTTP status code.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Error message.",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Request ID, the same as the `X-Request-Id` header; include it when contacting support.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Error type.\n\n**Allowed values:**\n- `invalid_request_error`: Invalid request\n- `authentication_error`: Missing or invalid API Key\n- `insufficient_balance_error`: Insufficient balance\n- `permission_error`: No access to this model\n- `rate_limit_error`: Too many requests\n- `api_error`: Service unavailable or generation failed",
+            "enum": [
+              "invalid_request_error",
+              "authentication_error",
+              "insufficient_balance_error",
+              "permission_error",
+              "rate_limit_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "http_status",
+          "message",
+          "request_id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniErrorResponse": {
+        "additionalProperties": false,
+        "description": "Error response.",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/GeminiOmniError",
+            "description": "Error details."
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniGenerationConfig": {
+        "additionalProperties": false,
+        "description": "Generation settings.",
+        "properties": {
+          "video_config": {
+            "$ref": "#/components/schemas/GeminiOmniVideoConfig",
+            "description": "Video task settings."
+          },
+          "seed": {
+            "description": "Random seed; fix it for reproducible results.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "GeminiOmniInputPart": {
+        "additionalProperties": false,
+        "description": "An input part.",
+        "properties": {
+          "type": {
+            "description": "Part type.\n\n**Allowed values:**\n- `text`: Text\n- `image`: Image\n- `video`: Video\n- `user_input`: A user turn; parts go in `content`",
+            "enum": [
+              "text",
+              "image",
+              "video",
+              "user_input"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "description": "Text; required when `type` is `text`.",
+            "type": "string"
+          },
+          "mime_type": {
+            "description": "Media MIME type; required when `type` is `image` or `video`.\n\n**Allowed values:**\n- `image/png`: PNG image\n- `image/jpeg`: JPEG image\n- `image/webp`: WebP image\n- `image/heic`: HEIC image\n- `image/heif`: HEIF image\n- `image/gif`: GIF image\n- `image/bmp`: BMP image\n- `image/tiff`: TIFF image\n- `video/mp4`: MP4 video\n- `video/mpeg`: MPEG video\n- `video/mpg`: MPG video\n- `video/mov`: MOV video\n- `video/quicktime`: QuickTime video\n- `video/avi`: AVI video\n- `video/x-flv`: FLV video\n- `video/webm`: WebM video\n- `video/wmv`: WMV video\n- `video/x-ms-wmv`: WMV video\n- `video/3gpp`: 3GPP video",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp",
+              "image/heic",
+              "image/heif",
+              "image/gif",
+              "image/bmp",
+              "image/tiff",
+              "video/mp4",
+              "video/mpeg",
+              "video/mpg",
+              "video/mov",
+              "video/quicktime",
+              "video/avi",
+              "video/x-flv",
+              "video/webm",
+              "video/wmv",
+              "video/x-ms-wmv",
+              "video/3gpp"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "description": "Base64 content of the image or video, without a `data:...;base64,` prefix; use either `data` or `uri`. Videos must be sent in this field.",
+            "type": "string"
+          },
+          "uri": {
+            "description": "Media URL; use either `uri` or `data`. Images accept a public `https` link; video links are not supported yet, so use `data`; YouTube links are not supported.",
+            "type": "string"
+          },
+          "name": {
+            "description": "A custom name for a video clip that the prompt can refer to (for example \"continue clip_a\").",
+            "type": "string"
+          },
+          "content": {
+            "description": "Parts of a `user_input` item (one user turn in the official format).",
+            "items": {
+              "$ref": "#/components/schemas/GeminiOmniContentPart"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniInteraction": {
+        "additionalProperties": false,
+        "description": "An interaction.",
+        "properties": {
+          "id": {
+            "description": "Interaction ID (prefixed `job_`), used to query it.",
+            "type": "string"
+          },
+          "object": {
+            "description": "Object type, always `interaction`; only in the create response.",
+            "type": "string"
+          },
+          "model": {
+            "default": "gemini-omni-1.2-flash",
+            "description": "Model name.\n\n**Allowed values:**\n- `gemini-omni-1.2-flash`: Gemini Omni 1.2 Flash",
+            "enum": [
+              "gemini-omni-1.2-flash"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "description": "Interaction status. Always `in_progress` in the create response; use the status returned by the query endpoint.\n\n**Allowed values:**\n- `in_progress`: In progress\n- `completed`: Completed\n- `failed`: Failed\n- `cancelled`: Cancelled",
+            "enum": [
+              "in_progress",
+              "completed",
+              "failed",
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "created": {
+            "description": "Creation time (UTC, RFC 3339).",
+            "type": "string"
+          },
+          "updated": {
+            "description": "Last update time (UTC, RFC 3339).",
+            "type": "string"
+          },
+          "service_tier": {
+            "description": "Service tier, currently `standard`.",
+            "type": "string"
+          },
+          "steps": {
+            "description": "Generation steps. The video is in the `content` of the step whose `type` is `model_output`.",
+            "items": {
+              "$ref": "#/components/schemas/GeminiOmniStep"
+            },
+            "type": "array"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/GeminiOmniUsage",
+            "description": "Token usage."
+          },
+          "error": {
+            "$ref": "#/components/schemas/GeminiOmniTaskError",
+            "description": "Failure reason; only when `status` is `failed`."
+          }
+        },
+        "required": [
+          "id",
+          "model",
+          "status"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniInteractionRequest": {
+        "additionalProperties": false,
+        "description": "Request body for creating an interaction (generating a video). Undeclared and unsupported parameters return 400.",
+        "properties": {
+          "model": {
+            "default": "gemini-omni-1.2-flash",
+            "description": "Model name. Must be `gemini-omni-1.2-flash`.\n\n**Allowed values:**\n- `gemini-omni-1.2-flash`: Gemini Omni 1.2 Flash",
+            "enum": [
+              "gemini-omni-1.2-flash"
+            ],
+            "type": "string"
+          },
+          "input": {
+            "description": "The input: a prompt string, or an array of multimodal parts (text, images, videos). English prompts work best; put negative requirements in the prompt (for example \"No dialogue\"). Up to 6 reference images (up to 3 per character, up to 2 characters); for first and last frame send two images in order (first, then last), `3s`–`10s`; reference videos are for new generations only, up to 3 clips for `3s`–`10s` outputs and 1 clip for `11s`–`15s`, each at most 3 seconds; videos to edit are at most 15 seconds. Audio input is not supported yet.",
+            "oneOf": [
+              {
+                "title": "Text prompt",
+                "type": "string"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GeminiOmniInputPart"
+                },
+                "title": "Array of parts",
+                "type": "array"
+              }
+            ]
+          },
+          "response_format": {
+            "$ref": "#/components/schemas/GeminiOmniResponseFormat",
+            "description": "Output settings: aspect ratio, resolution, duration and delivery."
+          },
+          "generation_config": {
+            "$ref": "#/components/schemas/GeminiOmniGenerationConfig",
+            "description": "Generation settings."
+          },
+          "store": {
+            "description": "Whether to store the interaction. Defaults to `true`. Must be `true` (or omitted) with `delivery: uri`; `false` only works with `delivery: inline`.",
+            "type": "boolean"
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Custom key-value labels for organizing requests.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "model",
+          "input"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniModalityTokens": {
+        "additionalProperties": false,
+        "description": "Tokens of one modality.",
+        "properties": {
+          "modality": {
+            "description": "Modality.\n\n**Allowed values:**\n- `text`: Text\n- `image`: Image\n- `video`: Video",
+            "enum": [
+              "text",
+              "image",
+              "video"
+            ],
+            "type": "string"
+          },
+          "tokens": {
+            "description": "Tokens.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "modality",
+          "tokens"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniOutputContent": {
+        "additionalProperties": false,
+        "description": "The output video.",
+        "properties": {
+          "type": {
+            "description": "Content type.\n\n**Allowed values:**\n- `video`: Video",
+            "enum": [
+              "video"
+            ],
+            "type": "string"
+          },
+          "mime_type": {
+            "description": "Video MIME type, such as `video/mp4`.",
+            "type": "string"
+          },
+          "uri": {
+            "description": "Video download link, returned with `delivery: uri`. The link returned by the query endpoint needs no API Key and is valid for 24 hours.",
+            "type": "string"
+          },
+          "data": {
+            "description": "Base64 video content, returned with `delivery: inline`. 1080p / 4k or long videos can exceed 10 MB.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniResponseFormat": {
+        "additionalProperties": false,
+        "description": "Output settings.",
+        "properties": {
+          "type": {
+            "default": "video",
+            "description": "Output type. Must be `video`.\n\n**Allowed values:**\n- `video`: Video",
+            "enum": [
+              "video"
+            ],
+            "type": "string"
+          },
+          "aspect_ratio": {
+            "default": "16:9",
+            "description": "Aspect ratio. Defaults to `16:9`.\n\n**Allowed values:**\n- `16:9`: Landscape\n- `9:16`: Portrait",
+            "enum": [
+              "16:9",
+              "9:16"
+            ],
+            "type": "string"
+          },
+          "resolution": {
+            "default": "720p",
+            "description": "Resolution. Defaults to `720p`. `1080p` / `4k` are upscaled and use more tokens.\n\n**Allowed values:**\n- `360p`: 360p\n- `720p`: 720p (default)\n- `1080p`: 1080p, upscaled\n- `4k`: 4K, upscaled",
+            "enum": [
+              "360p",
+              "720p",
+              "1080p",
+              "4k"
+            ],
+            "type": "string"
+          },
+          "duration": {
+            "default": "10s",
+            "description": "Video duration as whole seconds plus `s`, `3s`–`15s`, default `10s`; takes precedence over a duration in the prompt. `3s`–`10s` for first/last frame and extend; edits keep the input duration.\n\n**Allowed values:**\n- `3s`: 3 seconds\n- `4s`: 4 seconds\n- `5s`: 5 seconds\n- `6s`: 6 seconds\n- `7s`: 7 seconds\n- `8s`: 8 seconds\n- `9s`: 9 seconds\n- `10s`: 10 seconds (default)\n- `11s`: 11 seconds\n- `12s`: 12 seconds\n- `13s`: 13 seconds\n- `14s`: 14 seconds\n- `15s`: 15 seconds",
+            "enum": [
+              "3s",
+              "4s",
+              "5s",
+              "6s",
+              "7s",
+              "8s",
+              "9s",
+              "10s",
+              "11s",
+              "12s",
+              "13s",
+              "14s",
+              "15s"
+            ],
+            "type": "string"
+          },
+          "delivery": {
+            "description": "How the video is delivered. `inline` when omitted.\n\n**Allowed values:**\n- `uri`: Return a download link (recommended)\n- `inline`: Return the video as Base64 in the response",
+            "enum": [
+              "uri",
+              "inline"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GeminiOmniStep": {
+        "additionalProperties": false,
+        "description": "A generation step.",
+        "properties": {
+          "type": {
+            "description": "Step type.\n\n**Allowed values:**\n- `thought`: Model reasoning\n- `model_output`: Model output",
+            "enum": [
+              "thought",
+              "model_output"
+            ],
+            "type": "string"
+          },
+          "signature": {
+            "description": "Signature of the model's reasoning, returned when `type` is `thought`; no action needed.",
+            "type": "string"
+          },
+          "content": {
+            "description": "Output content, returned when `type` is `model_output`.",
+            "items": {
+              "$ref": "#/components/schemas/GeminiOmniOutputContent"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniTaskError": {
+        "additionalProperties": false,
+        "description": "Failure reason.",
+        "properties": {
+          "type": {
+            "description": "Error type.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Error message.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "message"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniUsage": {
+        "additionalProperties": false,
+        "description": "Token usage.",
+        "properties": {
+          "initial_input_tokens": {
+            "description": "Initial input tokens.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_tokens_by_modality": {
+            "description": "Input tokens by modality.",
+            "items": {
+              "$ref": "#/components/schemas/GeminiOmniModalityTokens"
+            },
+            "type": "array"
+          },
+          "output_tokens_by_modality": {
+            "description": "Output tokens by modality.",
+            "items": {
+              "$ref": "#/components/schemas/GeminiOmniModalityTokens"
+            },
+            "type": "array"
+          },
+          "total_cached_tokens": {
+            "description": "Cached tokens.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_input_tokens": {
+            "description": "Total input tokens.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_output_tokens": {
+            "description": "Total output tokens.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_thought_tokens": {
+            "description": "Total thought tokens.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_tokens": {
+            "description": "Total tokens.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_tool_use_tokens": {
+            "description": "Total tool-use tokens.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "initial_input_tokens",
+          "total_cached_tokens",
+          "total_input_tokens",
+          "total_output_tokens",
+          "total_thought_tokens",
+          "total_tokens",
+          "total_tool_use_tokens"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniVideoConfig": {
+        "additionalProperties": false,
+        "description": "Video task settings.",
+        "properties": {
+          "task": {
+            "description": "Task type, optional. Prefer describing the task in the prompt; setting it applies stricter input checks.\n\n**Allowed values:**\n- `text_to_video`: Text to video\n- `image_to_video`: Image to video\n- `reference_to_video`: Reference images to video (consistent characters)\n- `edit`: Edit the input video\n- `extend`: Extend the input video by 3s–10s, at most 30 seconds in total",
+            "enum": [
+              "text_to_video",
+              "image_to_video",
+              "reference_to_video",
+              "edit",
+              "extend"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "Send your DreamTo API Key in the `Authorization: Bearer <API Key>` header, or in the `x-goog-api-key` header as with Google.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "Same paths, request bodies and responses as the official Google Interactions API (`POST /v1beta/interactions`, `GET /v1beta/interactions/{id}`). To migrate from Google, change the base URL to `https://api.dreamto.ai` and authenticate with a DreamTo API Key.",
+    "title": "Gemini Omni Video API",
+    "version": "v1beta"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1beta/interactions": {
+      "post": {
+        "description": "Creates an interaction and generates the video synchronously; the call returns when the video is ready (usually 20 seconds to 2 minutes, so set the client timeout to at least 10 minutes). With `delivery: inline` the video is in `steps[].content[].data`; with `delivery: uri` query the returned `id` to get the download link. Invalid requests return 400 without calling the model or charging.",
+        "operationId": "geminiOmniCreateInteraction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Text to video": {
+                  "description": "Pass the prompt string as `input`.",
+                  "summary": "Text to video",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": "A futuristic city at night, slow dolly-in, neon reflections on the wet street.",
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "16:9",
+                      "resolution": "720p",
+                      "duration": "8s",
+                      "delivery": "uri"
+                    }
+                  }
+                },
+                "Image to video": {
+                  "description": "A prompt and one image that the video starts from.",
+                  "summary": "Image to video",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "text",
+                        "text": "Make the drawing move realistically."
+                      },
+                      {
+                        "type": "image",
+                        "mime_type": "image/png",
+                        "uri": "https://your-cdn.example.com/drawing.png"
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "9:16",
+                      "resolution": "720p",
+                      "duration": "6s",
+                      "delivery": "uri"
+                    },
+                    "generation_config": {
+                      "video_config": {
+                        "task": "image_to_video"
+                      }
+                    }
+                  }
+                },
+                "First and last frame": {
+                  "description": "Send two images in order, first frame then last frame; 3s–10s.",
+                  "summary": "First and last frame",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "text",
+                        "text": "Transition smoothly from the first image to the second; steady camera."
+                      },
+                      {
+                        "type": "image",
+                        "mime_type": "image/png",
+                        "uri": "https://your-cdn.example.com/first-frame.png"
+                      },
+                      {
+                        "type": "image",
+                        "mime_type": "image/png",
+                        "uri": "https://your-cdn.example.com/last-frame.png"
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "16:9",
+                      "resolution": "720p",
+                      "duration": "6s",
+                      "delivery": "uri"
+                    }
+                  }
+                },
+                "Reference images": {
+                  "description": "Keep characters consistent with up to 6 reference images (up to 3 per character, up to 2 characters).",
+                  "summary": "Reference images",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "text",
+                        "text": "The girl from the images runs down a street after the rain and looks back with a smile."
+                      },
+                      {
+                        "type": "image",
+                        "mime_type": "image/png",
+                        "uri": "https://your-cdn.example.com/girl-front.png"
+                      },
+                      {
+                        "type": "image",
+                        "mime_type": "image/png",
+                        "uri": "https://your-cdn.example.com/girl-side.png"
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "16:9",
+                      "resolution": "720p",
+                      "duration": "8s",
+                      "delivery": "uri"
+                    },
+                    "generation_config": {
+                      "video_config": {
+                        "task": "reference_to_video"
+                      }
+                    }
+                  }
+                },
+                "Video edit": {
+                  "description": "Send the video as Base64 in `data` (video links are not supported); the output matches the input duration.",
+                  "summary": "Video edit",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "video",
+                        "mime_type": "video/mp4",
+                        "data": "<BASE64_VIDEO_DATA>"
+                      },
+                      {
+                        "type": "text",
+                        "text": "Make the violin invisible and keep everything else."
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "resolution": "720p",
+                      "delivery": "uri"
+                    },
+                    "generation_config": {
+                      "video_config": {
+                        "task": "edit"
+                      }
+                    }
+                  }
+                },
+                "Video extend": {
+                  "description": "Extend by 3s–10s; returns the original and the extension as one video, at most 30 seconds in total.",
+                  "summary": "Video extend",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "video",
+                        "mime_type": "video/mp4",
+                        "data": "<BASE64_VIDEO_DATA>",
+                        "name": "clip_a"
+                      },
+                      {
+                        "type": "text",
+                        "text": "Continue clip_a: pull back to reveal the whole city."
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "16:9",
+                      "resolution": "720p",
+                      "duration": "5s",
+                      "delivery": "uri"
+                    },
+                    "generation_config": {
+                      "video_config": {
+                        "task": "extend"
+                      }
+                    }
+                  }
+                },
+                "Inline video": {
+                  "description": "`delivery: inline` returns the video as Base64 in the response; with a fixed `seed` and `labels`.",
+                  "summary": "Inline video",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": "Close-up of a candle slowly burning in the dark.",
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "9:16",
+                      "resolution": "360p",
+                      "duration": "4s",
+                      "delivery": "inline"
+                    },
+                    "generation_config": {
+                      "seed": 42
+                    },
+                    "store": false,
+                    "labels": {
+                      "project": "demo"
+                    }
+                  }
+                },
+                "user_input wrapper": {
+                  "description": "The official turn format: parts go in the `content` array of a `type: user_input` item.",
+                  "summary": "user_input wrapper",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "user_input",
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "Waves crashing on rocks at sunset, slow motion."
+                          },
+                          {
+                            "type": "image",
+                            "mime_type": "image/jpeg",
+                            "uri": "https://your-cdn.example.com/coast.jpg"
+                          }
+                        ]
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "16:9",
+                      "resolution": "1080p",
+                      "duration": "8s",
+                      "delivery": "uri"
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/GeminiOmniInteractionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "id": "job_2805f00afeeb52775470220f",
+                      "object": "interaction",
+                      "model": "gemini-omni-1.2-flash",
+                      "status": "in_progress",
+                      "created": "2026-11-13T14:24:41Z",
+                      "updated": "2026-11-13T14:24:41Z",
+                      "service_tier": "standard",
+                      "steps": [
+                        {
+                          "type": "thought",
+                          "signature": "<signature>"
+                        },
+                        {
+                          "type": "model_output",
+                          "content": [
+                            {
+                              "type": "video",
+                              "mime_type": "video/mp4",
+                              "data": "<BASE64_VIDEO_DATA>"
+                            }
+                          ]
+                        }
+                      ],
+                      "usage": {
+                        "initial_input_tokens": 5807,
+                        "input_tokens_by_modality": [
+                          {
+                            "modality": "text",
+                            "tokens": 14
+                          },
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "output_tokens_by_modality": [
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "total_cached_tokens": 0,
+                        "total_input_tokens": 5807,
+                        "total_output_tokens": 5793,
+                        "total_thought_tokens": 425,
+                        "total_tokens": 12025,
+                        "total_tool_use_tokens": 0
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniInteraction"
+                }
+              }
+            },
+            "description": "The video was generated.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request ID; include it when contacting support.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "parameter background is not supported yet",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid or unsupported parameters."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "Insufficient balance."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests; retry later."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "Generation failed or the service is temporarily unavailable; not charged, retry later."
+          }
+        },
+        "summary": "Generate a video",
+        "tags": [
+          "Gemini Omni"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/gemini-omni/create-interaction",
+          "metadata": {
+            "sidebarTitle": "Generate a video",
+            "title": "Generate a video"
+          }
+        }
+      }
+    },
+    "/v1beta/interactions/{id}": {
+      "get": {
+        "description": "Returns the interaction with the video download link or Base64 data. Only interactions created by the same API Key within 24 hours can be queried.",
+        "operationId": "geminiOmniGetInteraction",
+        "parameters": [
+          {
+            "description": "The interaction `id` returned by the create endpoint.",
+            "example": "job_2805f00afeeb52775470220f",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "examples": [
+                "job_2805f00afeeb52775470220f"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Completed (uri)": {
+                    "summary": "Completed (uri)",
+                    "value": {
+                      "id": "job_2805f00afeeb52775470220f",
+                      "model": "gemini-omni-1.2-flash",
+                      "status": "completed",
+                      "created": "2026-11-13T14:24:41Z",
+                      "updated": "2026-11-13T14:24:41Z",
+                      "service_tier": "standard",
+                      "steps": [
+                        {
+                          "type": "thought",
+                          "signature": "<signature>"
+                        },
+                        {
+                          "type": "model_output",
+                          "content": [
+                            {
+                              "type": "video",
+                              "mime_type": "video/mp4",
+                              "uri": "https://api.dreamto.ai/v1beta/files/tp2ucw8b6itg:download?alt=media"
+                            }
+                          ]
+                        }
+                      ],
+                      "usage": {
+                        "initial_input_tokens": 5807,
+                        "input_tokens_by_modality": [
+                          {
+                            "modality": "text",
+                            "tokens": 14
+                          },
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "output_tokens_by_modality": [
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "total_cached_tokens": 0,
+                        "total_input_tokens": 5807,
+                        "total_output_tokens": 5793,
+                        "total_thought_tokens": 425,
+                        "total_tokens": 12025,
+                        "total_tool_use_tokens": 0
+                      }
+                    }
+                  },
+                  "Completed (inline)": {
+                    "summary": "Completed (inline)",
+                    "value": {
+                      "id": "job_2805f00afeeb52775470220f",
+                      "model": "gemini-omni-1.2-flash",
+                      "status": "completed",
+                      "created": "2026-11-13T14:24:41Z",
+                      "updated": "2026-11-13T14:24:41Z",
+                      "service_tier": "standard",
+                      "steps": [
+                        {
+                          "type": "thought",
+                          "signature": "<signature>"
+                        },
+                        {
+                          "type": "model_output",
+                          "content": [
+                            {
+                              "type": "video",
+                              "mime_type": "video/mp4",
+                              "data": "<BASE64_VIDEO_DATA>"
+                            }
+                          ]
+                        }
+                      ],
+                      "usage": {
+                        "initial_input_tokens": 5807,
+                        "input_tokens_by_modality": [
+                          {
+                            "modality": "text",
+                            "tokens": 14
+                          },
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "output_tokens_by_modality": [
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "total_cached_tokens": 0,
+                        "total_input_tokens": 5807,
+                        "total_output_tokens": 5793,
+                        "total_thought_tokens": 425,
+                        "total_tokens": 12025,
+                        "total_tool_use_tokens": 0
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniInteraction"
+                }
+              }
+            },
+            "description": "The interaction.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Request ID; include it when contacting support.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "Missing or invalid API Key."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "not_found",
+                        "http_status": 404,
+                        "message": "The requested file was not found or has expired.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "The interaction does not exist, expired (older than 24 hours) or belongs to another API Key."
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "Generation failed or the service is temporarily unavailable; not charged, retry later."
+          }
+        },
+        "summary": "Get an interaction",
+        "tags": [
+          "Gemini Omni"
+        ],
+        "x-mint": {
+          "href": "/en/api-reference/gemini-omni/get-interaction",
+          "metadata": {
+            "sidebarTitle": "Get an interaction",
+            "title": "Get an interaction"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Gemini Omni"
+    }
+  ]
+}

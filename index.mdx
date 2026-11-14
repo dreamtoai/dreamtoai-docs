@@ -4,7 +4,7 @@ sidebarTitle: "简介"
 description: "通过统一的 HTTP 接口调用 DreamTo 平台的视频生成、素材库与任务回调能力。"
 ---
 
-欢迎使用 DreamTo 开放平台。本文档介绍如何通过 HTTP 接口调用平台能力，当前已开放 **Seedance 视频生成**（2.5 / 2.0 / 2.0 Fast / 2.0 Mini）、**Seedance 素材库** 与 **任务回调通知**。
+欢迎使用 DreamTo 开放平台。本文档介绍如何通过 HTTP 接口调用平台能力，当前已开放 **Seedance 视频生成**（2.5 / 2.0 / 2.0 Fast / 2.0 Mini）、**Seedance 素材库**、**任务回调通知**，以及与官方协议一致的 **MiniMax H3** 和 **Gemini Omni** 视频生成。
 
 **Base URL**: `https://api.dreamto.ai`
 
@@ -26,6 +26,12 @@ description: "通过统一的 HTTP 接口调用 DreamTo 平台的视频生成、
   </Card>
   <Card title="任务回调" icon="bell" href="/webhooks/task-callback">
     任务完成后主动推送结果，支持 HMAC-SHA256 签名校验。
+  </Card>
+  <Card title="MiniMax H3 视频生成" icon="/icons/minimax.svg" href="/video/models/minimax-h3">
+    与 MiniMax 官方 V2 视频接口一致，换服务地址和 API Key 即可迁移。
+  </Card>
+  <Card title="Gemini Omni 视频生成" icon="/icons/gemini.svg" href="/video/models/gemini-omni">
+    与 Google 官方 Interactions API 一致，支持文生、图生、首尾帧、视频编辑与延长。
   </Card>
 </CardGroup>
 

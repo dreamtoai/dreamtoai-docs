@@ -1,0 +1,1270 @@
+{
+  "components": {
+    "schemas": {
+      "GeminiOmniContentPart": {
+        "additionalProperties": false,
+        "description": "`user_input` 中的片段。",
+        "properties": {
+          "type": {
+            "description": "片段类型。\n\n**可选值：**\n- `text`：文本\n- `image`：图片\n- `video`：视频",
+            "enum": [
+              "text",
+              "image",
+              "video"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "description": "文本内容，`type` 为 `text` 时必填。",
+            "type": "string"
+          },
+          "mime_type": {
+            "description": "媒体 MIME 类型，`type` 为 `image` / `video` 时必填。\n\n**可选值：**\n- `image/png`：PNG 图片\n- `image/jpeg`：JPEG 图片\n- `image/webp`：WebP 图片\n- `image/heic`：HEIC 图片\n- `image/heif`：HEIF 图片\n- `image/gif`：GIF 图片\n- `image/bmp`：BMP 图片\n- `image/tiff`：TIFF 图片\n- `video/mp4`：MP4 视频\n- `video/mpeg`：MPEG 视频\n- `video/mpg`：MPG 视频\n- `video/mov`：MOV 视频\n- `video/quicktime`：QuickTime 视频\n- `video/avi`：AVI 视频\n- `video/x-flv`：FLV 视频\n- `video/webm`：WebM 视频\n- `video/wmv`：WMV 视频\n- `video/x-ms-wmv`：WMV 视频\n- `video/3gpp`：3GPP 视频",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp",
+              "image/heic",
+              "image/heif",
+              "image/gif",
+              "image/bmp",
+              "image/tiff",
+              "video/mp4",
+              "video/mpeg",
+              "video/mpg",
+              "video/mov",
+              "video/quicktime",
+              "video/avi",
+              "video/x-flv",
+              "video/webm",
+              "video/wmv",
+              "video/x-ms-wmv",
+              "video/3gpp"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "description": "图片或视频的 Base64 内容，不含 `data:...;base64,` 前缀，与 `uri` 二选一。视频只能用此字段传入。",
+            "type": "string"
+          },
+          "uri": {
+            "description": "媒体地址，与 `data` 二选一。图片支持公网可访问的 `https` 链接；视频暂不支持链接，请用 `data`；不支持 YouTube 链接。",
+            "type": "string"
+          },
+          "name": {
+            "description": "视频片段的自定义名称，可在提示词中引用（如“接着 clip_a 继续”）。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniError": {
+        "additionalProperties": false,
+        "description": "错误详情。",
+        "properties": {
+          "code": {
+            "description": "错误码，如 `invalid_request`、`unauthorized`、`insufficient_balance`、`not_found`、`rate_limit_exceeded`、`service_unavailable`。",
+            "type": "string"
+          },
+          "http_status": {
+            "description": "HTTP 状态码。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "message": {
+            "description": "错误信息（英文）。",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "请求 Id，与响应头 `X-Request-Id` 相同，排查问题时请提供。",
+            "type": "string"
+          },
+          "type": {
+            "description": "错误类型。\n\n**可选值：**\n- `invalid_request_error`：请求参数错误\n- `authentication_error`：API Key 无效或缺失\n- `insufficient_balance_error`：余额不足\n- `permission_error`：无权使用该模型\n- `rate_limit_error`：请求过于频繁\n- `api_error`：服务暂时不可用或生成失败",
+            "enum": [
+              "invalid_request_error",
+              "authentication_error",
+              "insufficient_balance_error",
+              "permission_error",
+              "rate_limit_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "http_status",
+          "message",
+          "request_id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniErrorResponse": {
+        "additionalProperties": false,
+        "description": "错误响应。",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/GeminiOmniError",
+            "description": "错误详情。"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniGenerationConfig": {
+        "additionalProperties": false,
+        "description": "生成配置。",
+        "properties": {
+          "video_config": {
+            "$ref": "#/components/schemas/GeminiOmniVideoConfig",
+            "description": "视频任务设置。"
+          },
+          "seed": {
+            "description": "随机种子，固定后可获得可复现的结果。",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "GeminiOmniInputPart": {
+        "additionalProperties": false,
+        "description": "输入片段。",
+        "properties": {
+          "type": {
+            "description": "片段类型。\n\n**可选值：**\n- `text`：文本\n- `image`：图片\n- `video`：视频\n- `user_input`：一轮用户输入，片段放在 `content` 中",
+            "enum": [
+              "text",
+              "image",
+              "video",
+              "user_input"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "description": "文本内容，`type` 为 `text` 时必填。",
+            "type": "string"
+          },
+          "mime_type": {
+            "description": "媒体 MIME 类型，`type` 为 `image` / `video` 时必填。\n\n**可选值：**\n- `image/png`：PNG 图片\n- `image/jpeg`：JPEG 图片\n- `image/webp`：WebP 图片\n- `image/heic`：HEIC 图片\n- `image/heif`：HEIF 图片\n- `image/gif`：GIF 图片\n- `image/bmp`：BMP 图片\n- `image/tiff`：TIFF 图片\n- `video/mp4`：MP4 视频\n- `video/mpeg`：MPEG 视频\n- `video/mpg`：MPG 视频\n- `video/mov`：MOV 视频\n- `video/quicktime`：QuickTime 视频\n- `video/avi`：AVI 视频\n- `video/x-flv`：FLV 视频\n- `video/webm`：WebM 视频\n- `video/wmv`：WMV 视频\n- `video/x-ms-wmv`：WMV 视频\n- `video/3gpp`：3GPP 视频",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp",
+              "image/heic",
+              "image/heif",
+              "image/gif",
+              "image/bmp",
+              "image/tiff",
+              "video/mp4",
+              "video/mpeg",
+              "video/mpg",
+              "video/mov",
+              "video/quicktime",
+              "video/avi",
+              "video/x-flv",
+              "video/webm",
+              "video/wmv",
+              "video/x-ms-wmv",
+              "video/3gpp"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "description": "图片或视频的 Base64 内容，不含 `data:...;base64,` 前缀，与 `uri` 二选一。视频只能用此字段传入。",
+            "type": "string"
+          },
+          "uri": {
+            "description": "媒体地址，与 `data` 二选一。图片支持公网可访问的 `https` 链接；视频暂不支持链接，请用 `data`；不支持 YouTube 链接。",
+            "type": "string"
+          },
+          "name": {
+            "description": "视频片段的自定义名称，可在提示词中引用（如“接着 clip_a 继续”）。",
+            "type": "string"
+          },
+          "content": {
+            "description": "`type` 为 `user_input` 时的片段数组（官方多轮格式的一轮用户输入）。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiOmniContentPart"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniInteraction": {
+        "additionalProperties": false,
+        "description": "交互对象。",
+        "properties": {
+          "id": {
+            "description": "交互 Id（`job_` 开头），用于查询。",
+            "type": "string"
+          },
+          "object": {
+            "description": "对象类型，固定为 `interaction`，仅创建响应返回。",
+            "type": "string"
+          },
+          "model": {
+            "default": "gemini-omni-1.2-flash",
+            "description": "模型名称。\n\n**可选值：**\n- `gemini-omni-1.2-flash`：Gemini Omni 1.2 Flash",
+            "enum": [
+              "gemini-omni-1.2-flash"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "description": "交互状态。创建响应固定为 `in_progress`，以查询接口返回的状态为准。\n\n**可选值：**\n- `in_progress`：生成中\n- `completed`：已完成\n- `failed`：失败\n- `cancelled`：已取消",
+            "enum": [
+              "in_progress",
+              "completed",
+              "failed",
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "created": {
+            "description": "创建时间（UTC，RFC 3339）。",
+            "type": "string"
+          },
+          "updated": {
+            "description": "更新时间（UTC，RFC 3339）。",
+            "type": "string"
+          },
+          "service_tier": {
+            "description": "服务等级，当前为 `standard`。",
+            "type": "string"
+          },
+          "steps": {
+            "description": "生成步骤。视频在 `type` 为 `model_output` 的步骤的 `content` 中。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiOmniStep"
+            },
+            "type": "array"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/GeminiOmniUsage",
+            "description": "Token 用量。"
+          },
+          "error": {
+            "$ref": "#/components/schemas/GeminiOmniTaskError",
+            "description": "失败原因，仅 `status` 为 `failed` 时返回。"
+          }
+        },
+        "required": [
+          "id",
+          "model",
+          "status"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniInteractionRequest": {
+        "additionalProperties": false,
+        "description": "创建交互（生成视频）的请求体。未声明的参数和暂不支持的参数会返回 400。",
+        "properties": {
+          "model": {
+            "default": "gemini-omni-1.2-flash",
+            "description": "模型名称，固定为 `gemini-omni-1.2-flash`。\n\n**可选值：**\n- `gemini-omni-1.2-flash`：Gemini Omni 1.2 Flash",
+            "enum": [
+              "gemini-omni-1.2-flash"
+            ],
+            "type": "string"
+          },
+          "input": {
+            "description": "输入。可以是提示词字符串，也可以是多模态片段数组（文本、图片、视频）。英文提示词效果最佳；负向要求直接写在提示词中（如“No dialogue”）。参考图最多 6 张（每个角色最多 3 张、最多 2 个角色）；首尾帧按顺序传两张图片（先首帧后尾帧），时长限 `3s` ~ `10s`；参考视频仅用于新生成，`3s` ~ `10s` 输出最多 3 段、`11s` ~ `15s` 输出仅 1 段，每段不超过 3 秒；待编辑视频不超过 15 秒。暂不支持音频输入。",
+            "oneOf": [
+              {
+                "title": "文本提示词",
+                "type": "string"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GeminiOmniInputPart"
+                },
+                "title": "多模态片段数组",
+                "type": "array"
+              }
+            ]
+          },
+          "response_format": {
+            "$ref": "#/components/schemas/GeminiOmniResponseFormat",
+            "description": "输出设置：比例、分辨率、时长与交付方式。"
+          },
+          "generation_config": {
+            "$ref": "#/components/schemas/GeminiOmniGenerationConfig",
+            "description": "生成配置。"
+          },
+          "store": {
+            "description": "是否保存交互，默认 `true`。`delivery` 为 `uri` 时必须为 `true`（或不传）；`false` 只能配合 `delivery: inline`。",
+            "type": "boolean"
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "自定义键值标签，用于归类请求。",
+            "type": "object"
+          }
+        },
+        "required": [
+          "model",
+          "input"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniModalityTokens": {
+        "additionalProperties": false,
+        "description": "单个模态的 Token 数。",
+        "properties": {
+          "modality": {
+            "description": "模态。\n\n**可选值：**\n- `text`：文本\n- `image`：图片\n- `video`：视频",
+            "enum": [
+              "text",
+              "image",
+              "video"
+            ],
+            "type": "string"
+          },
+          "tokens": {
+            "description": "Token 数。",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "modality",
+          "tokens"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniOutputContent": {
+        "additionalProperties": false,
+        "description": "输出的视频。",
+        "properties": {
+          "type": {
+            "description": "内容类型。\n\n**可选值：**\n- `video`：视频",
+            "enum": [
+              "video"
+            ],
+            "type": "string"
+          },
+          "mime_type": {
+            "description": "视频 MIME 类型，如 `video/mp4`。",
+            "type": "string"
+          },
+          "uri": {
+            "description": "视频下载地址，`delivery` 为 `uri` 时返回。查询接口返回的地址不需要 API Key，24 小时内有效。",
+            "type": "string"
+          },
+          "data": {
+            "description": "视频的 Base64 内容，`delivery` 为 `inline` 时返回。1080p / 4k 或长视频可达十几 MB。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniResponseFormat": {
+        "additionalProperties": false,
+        "description": "输出设置。",
+        "properties": {
+          "type": {
+            "default": "video",
+            "description": "输出类型，固定为 `video`。\n\n**可选值：**\n- `video`：视频",
+            "enum": [
+              "video"
+            ],
+            "type": "string"
+          },
+          "aspect_ratio": {
+            "default": "16:9",
+            "description": "画面比例，默认 `16:9`。\n\n**可选值：**\n- `16:9`：横屏\n- `9:16`：竖屏",
+            "enum": [
+              "16:9",
+              "9:16"
+            ],
+            "type": "string"
+          },
+          "resolution": {
+            "default": "720p",
+            "description": "分辨率，默认 `720p`。`1080p` / `4k` 为超分输出，Token 用量更高。\n\n**可选值：**\n- `360p`：360p\n- `720p`：720p（默认）\n- `1080p`：1080p，超分输出\n- `4k`：4K，超分输出",
+            "enum": [
+              "360p",
+              "720p",
+              "1080p",
+              "4k"
+            ],
+            "type": "string"
+          },
+          "duration": {
+            "default": "10s",
+            "description": "视频时长，整数秒加 `s`，`3s` ~ `15s`，默认 `10s`，优先于提示词中的时长。首尾帧与延长限 `3s` ~ `10s`；编辑时输出与输入视频等长。\n\n**可选值：**\n- `3s`：3 秒\n- `4s`：4 秒\n- `5s`：5 秒\n- `6s`：6 秒\n- `7s`：7 秒\n- `8s`：8 秒\n- `9s`：9 秒\n- `10s`：10 秒（默认）\n- `11s`：11 秒\n- `12s`：12 秒\n- `13s`：13 秒\n- `14s`：14 秒\n- `15s`：15 秒",
+            "enum": [
+              "3s",
+              "4s",
+              "5s",
+              "6s",
+              "7s",
+              "8s",
+              "9s",
+              "10s",
+              "11s",
+              "12s",
+              "13s",
+              "14s",
+              "15s"
+            ],
+            "type": "string"
+          },
+          "delivery": {
+            "description": "视频交付方式。不传时按 `inline` 返回。\n\n**可选值：**\n- `uri`：返回下载地址（推荐）\n- `inline`：在响应中直接返回 Base64 视频",
+            "enum": [
+              "uri",
+              "inline"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GeminiOmniStep": {
+        "additionalProperties": false,
+        "description": "生成步骤。",
+        "properties": {
+          "type": {
+            "description": "步骤类型。\n\n**可选值：**\n- `thought`：模型思考\n- `model_output`：模型输出",
+            "enum": [
+              "thought",
+              "model_output"
+            ],
+            "type": "string"
+          },
+          "signature": {
+            "description": "模型思考过程的签名，`type` 为 `thought` 时返回，无需处理。",
+            "type": "string"
+          },
+          "content": {
+            "description": "输出内容，`type` 为 `model_output` 时返回。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiOmniOutputContent"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniTaskError": {
+        "additionalProperties": false,
+        "description": "失败原因。",
+        "properties": {
+          "type": {
+            "description": "错误类型。",
+            "type": "string"
+          },
+          "message": {
+            "description": "错误信息（英文）。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "message"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniUsage": {
+        "additionalProperties": false,
+        "description": "Token 用量。",
+        "properties": {
+          "initial_input_tokens": {
+            "description": "初始输入 Token 数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_tokens_by_modality": {
+            "description": "按模态拆分的输入 Token。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiOmniModalityTokens"
+            },
+            "type": "array"
+          },
+          "output_tokens_by_modality": {
+            "description": "按模态拆分的输出 Token。",
+            "items": {
+              "$ref": "#/components/schemas/GeminiOmniModalityTokens"
+            },
+            "type": "array"
+          },
+          "total_cached_tokens": {
+            "description": "命中缓存的 Token 数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_input_tokens": {
+            "description": "输入 Token 总数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_output_tokens": {
+            "description": "输出 Token 总数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_thought_tokens": {
+            "description": "思考 Token 总数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_tokens": {
+            "description": "Token 总数。",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_tool_use_tokens": {
+            "description": "工具调用 Token 总数。",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "initial_input_tokens",
+          "total_cached_tokens",
+          "total_input_tokens",
+          "total_output_tokens",
+          "total_thought_tokens",
+          "total_tokens",
+          "total_tool_use_tokens"
+        ],
+        "type": "object"
+      },
+      "GeminiOmniVideoConfig": {
+        "additionalProperties": false,
+        "description": "视频任务设置。",
+        "properties": {
+          "task": {
+            "description": "任务类型，可选。建议优先用自然语言描述，显式指定会施加更严格的输入约束。\n\n**可选值：**\n- `text_to_video`：文生视频\n- `image_to_video`：图生视频\n- `reference_to_video`：参考图生视频（角色一致）\n- `edit`：编辑输入视频\n- `extend`：延长输入视频，每次 3s ~ 10s，总时长不超过 30 秒",
+            "enum": [
+              "text_to_video",
+              "image_to_video",
+              "reference_to_video",
+              "edit",
+              "extend"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "在请求头 `Authorization: Bearer <API Key>` 中携带 DreamTo API Key；也可以像官方一样放在 `x-goog-api-key` 请求头。",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "与 Google 官方 Interactions API（`POST /v1beta/interactions`、`GET /v1beta/interactions/{id}`）的路径、请求体和响应体一致。从官方迁移时，把服务地址换成 `https://api.dreamto.ai`、API Key 换成 DreamTo 的 Key 即可。",
+    "title": "Gemini Omni 视频生成 API",
+    "version": "v1beta"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1beta/interactions": {
+      "post": {
+        "description": "创建交互并同步生成视频，生成完成后返回（通常 20 秒 ~ 2 分钟，请把客户端超时设为 10 分钟以上）。`delivery: inline` 时视频在响应的 `steps[].content[].data` 中；`delivery: uri` 时用返回的 `id` 调用查询接口获取下载地址。参数错误返回 400，不调用模型、不扣费。",
+        "operationId": "geminiOmniCreateInteraction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "文生视频": {
+                  "description": "`input` 直接传提示词字符串。",
+                  "summary": "文生视频",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": "夜晚的未来城市，镜头缓慢推进，霓虹灯倒映在湿润的街道上。",
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "16:9",
+                      "resolution": "720p",
+                      "duration": "8s",
+                      "delivery": "uri"
+                    }
+                  }
+                },
+                "图生视频": {
+                  "description": "提示词加一张图片，图片作为画面起点。",
+                  "summary": "图生视频",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "text",
+                        "text": "让画中的人物自然地动起来。"
+                      },
+                      {
+                        "type": "image",
+                        "mime_type": "image/png",
+                        "uri": "https://your-cdn.example.com/drawing.png"
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "9:16",
+                      "resolution": "720p",
+                      "duration": "6s",
+                      "delivery": "uri"
+                    },
+                    "generation_config": {
+                      "video_config": {
+                        "task": "image_to_video"
+                      }
+                    }
+                  }
+                },
+                "首尾帧": {
+                  "description": "按顺序传两张图片：先首帧后尾帧，时长 3s ~ 10s。",
+                  "summary": "首尾帧",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "text",
+                        "text": "从第一张图自然过渡到第二张图，镜头平稳。"
+                      },
+                      {
+                        "type": "image",
+                        "mime_type": "image/png",
+                        "uri": "https://your-cdn.example.com/first-frame.png"
+                      },
+                      {
+                        "type": "image",
+                        "mime_type": "image/png",
+                        "uri": "https://your-cdn.example.com/last-frame.png"
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "16:9",
+                      "resolution": "720p",
+                      "duration": "6s",
+                      "delivery": "uri"
+                    }
+                  }
+                },
+                "多图参考": {
+                  "description": "用参考图保持角色一致，最多 6 张（每个角色最多 3 张，最多 2 个角色）。",
+                  "summary": "多图参考",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "text",
+                        "text": "图片中的女孩在雨后的街道上奔跑，回头微笑。"
+                      },
+                      {
+                        "type": "image",
+                        "mime_type": "image/png",
+                        "uri": "https://your-cdn.example.com/girl-front.png"
+                      },
+                      {
+                        "type": "image",
+                        "mime_type": "image/png",
+                        "uri": "https://your-cdn.example.com/girl-side.png"
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "16:9",
+                      "resolution": "720p",
+                      "duration": "8s",
+                      "delivery": "uri"
+                    },
+                    "generation_config": {
+                      "video_config": {
+                        "task": "reference_to_video"
+                      }
+                    }
+                  }
+                },
+                "视频编辑": {
+                  "description": "视频用 `data` 传 Base64（不支持视频链接），输出时长与输入视频一致。",
+                  "summary": "视频编辑",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "video",
+                        "mime_type": "video/mp4",
+                        "data": "<BASE64_VIDEO_DATA>"
+                      },
+                      {
+                        "type": "text",
+                        "text": "把小提琴变成隐形的，其余保持不变。"
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "resolution": "720p",
+                      "delivery": "uri"
+                    },
+                    "generation_config": {
+                      "video_config": {
+                        "task": "edit"
+                      }
+                    }
+                  }
+                },
+                "视频延长": {
+                  "description": "每次延长 3s ~ 10s，返回原视频与延长部分拼接后的完整视频，总时长不超过 30 秒。",
+                  "summary": "视频延长",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "video",
+                        "mime_type": "video/mp4",
+                        "data": "<BASE64_VIDEO_DATA>",
+                        "name": "clip_a"
+                      },
+                      {
+                        "type": "text",
+                        "text": "接着 clip_a 继续：镜头拉远，露出整座城市。"
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "16:9",
+                      "resolution": "720p",
+                      "duration": "5s",
+                      "delivery": "uri"
+                    },
+                    "generation_config": {
+                      "video_config": {
+                        "task": "extend"
+                      }
+                    }
+                  }
+                },
+                "直接返回视频数据": {
+                  "description": "`delivery: inline` 在响应中直接返回 Base64 视频；配合固定 `seed` 和 `labels`。",
+                  "summary": "直接返回视频数据",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": "一支蜡烛在黑暗中缓缓燃烧，特写。",
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "9:16",
+                      "resolution": "360p",
+                      "duration": "4s",
+                      "delivery": "inline"
+                    },
+                    "generation_config": {
+                      "seed": 42
+                    },
+                    "store": false,
+                    "labels": {
+                      "project": "demo"
+                    }
+                  }
+                },
+                "user_input 包装格式": {
+                  "description": "官方多轮格式：片段放在 `type: user_input` 的 `content` 数组中。",
+                  "summary": "user_input 包装格式",
+                  "value": {
+                    "model": "gemini-omni-1.2-flash",
+                    "input": [
+                      {
+                        "type": "user_input",
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "海浪拍打礁石，日落时分，慢动作。"
+                          },
+                          {
+                            "type": "image",
+                            "mime_type": "image/jpeg",
+                            "uri": "https://your-cdn.example.com/coast.jpg"
+                          }
+                        ]
+                      }
+                    ],
+                    "response_format": {
+                      "type": "video",
+                      "aspect_ratio": "16:9",
+                      "resolution": "1080p",
+                      "duration": "8s",
+                      "delivery": "uri"
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/GeminiOmniInteractionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "id": "job_2805f00afeeb52775470220f",
+                      "object": "interaction",
+                      "model": "gemini-omni-1.2-flash",
+                      "status": "in_progress",
+                      "created": "2026-11-13T14:24:41Z",
+                      "updated": "2026-11-13T14:24:41Z",
+                      "service_tier": "standard",
+                      "steps": [
+                        {
+                          "type": "thought",
+                          "signature": "<signature>"
+                        },
+                        {
+                          "type": "model_output",
+                          "content": [
+                            {
+                              "type": "video",
+                              "mime_type": "video/mp4",
+                              "data": "<BASE64_VIDEO_DATA>"
+                            }
+                          ]
+                        }
+                      ],
+                      "usage": {
+                        "initial_input_tokens": 5807,
+                        "input_tokens_by_modality": [
+                          {
+                            "modality": "text",
+                            "tokens": 14
+                          },
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "output_tokens_by_modality": [
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "total_cached_tokens": 0,
+                        "total_input_tokens": 5807,
+                        "total_output_tokens": 5793,
+                        "total_thought_tokens": 425,
+                        "total_tokens": 12025,
+                        "total_tool_use_tokens": 0
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniInteraction"
+                }
+              }
+            },
+            "description": "视频已生成。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "请求 Id，排查问题时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "invalid_request",
+                        "http_status": 400,
+                        "message": "parameter background is not supported yet",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "参数错误，或使用了暂不支持的参数。"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "API Key 无效或缺失。"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "insufficient_balance",
+                        "http_status": 402,
+                        "message": "Insufficient balance.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "insufficient_balance_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "余额不足。"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "rate_limit_exceeded",
+                        "http_status": 429,
+                        "message": "Rate limit exceeded. Please try again later.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "rate_limit_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "请求过于频繁，请稍后重试。"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "生成失败或服务暂时不可用，不扣费，可稍后重试。"
+          }
+        },
+        "summary": "生成视频",
+        "tags": [
+          "Gemini Omni"
+        ],
+        "x-mint": {
+          "href": "/api-reference/gemini-omni/create-interaction",
+          "metadata": {
+            "sidebarTitle": "生成视频",
+            "title": "生成视频"
+          }
+        }
+      }
+    },
+    "/v1beta/interactions/{id}": {
+      "get": {
+        "description": "按 `id` 查询交互，返回视频下载地址或 Base64 数据。只能查询同一 API Key 在 24 小时内创建的交互。",
+        "operationId": "geminiOmniGetInteraction",
+        "parameters": [
+          {
+            "description": "创建接口返回的交互 `id`。",
+            "example": "job_2805f00afeeb52775470220f",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "examples": [
+                "job_2805f00afeeb52775470220f"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "已完成（uri）": {
+                    "summary": "已完成（uri）",
+                    "value": {
+                      "id": "job_2805f00afeeb52775470220f",
+                      "model": "gemini-omni-1.2-flash",
+                      "status": "completed",
+                      "created": "2026-11-13T14:24:41Z",
+                      "updated": "2026-11-13T14:24:41Z",
+                      "service_tier": "standard",
+                      "steps": [
+                        {
+                          "type": "thought",
+                          "signature": "<signature>"
+                        },
+                        {
+                          "type": "model_output",
+                          "content": [
+                            {
+                              "type": "video",
+                              "mime_type": "video/mp4",
+                              "uri": "https://api.dreamto.ai/v1beta/files/tp2ucw8b6itg:download?alt=media"
+                            }
+                          ]
+                        }
+                      ],
+                      "usage": {
+                        "initial_input_tokens": 5807,
+                        "input_tokens_by_modality": [
+                          {
+                            "modality": "text",
+                            "tokens": 14
+                          },
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "output_tokens_by_modality": [
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "total_cached_tokens": 0,
+                        "total_input_tokens": 5807,
+                        "total_output_tokens": 5793,
+                        "total_thought_tokens": 425,
+                        "total_tokens": 12025,
+                        "total_tool_use_tokens": 0
+                      }
+                    }
+                  },
+                  "已完成（inline）": {
+                    "summary": "已完成（inline）",
+                    "value": {
+                      "id": "job_2805f00afeeb52775470220f",
+                      "model": "gemini-omni-1.2-flash",
+                      "status": "completed",
+                      "created": "2026-11-13T14:24:41Z",
+                      "updated": "2026-11-13T14:24:41Z",
+                      "service_tier": "standard",
+                      "steps": [
+                        {
+                          "type": "thought",
+                          "signature": "<signature>"
+                        },
+                        {
+                          "type": "model_output",
+                          "content": [
+                            {
+                              "type": "video",
+                              "mime_type": "video/mp4",
+                              "data": "<BASE64_VIDEO_DATA>"
+                            }
+                          ]
+                        }
+                      ],
+                      "usage": {
+                        "initial_input_tokens": 5807,
+                        "input_tokens_by_modality": [
+                          {
+                            "modality": "text",
+                            "tokens": 14
+                          },
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "output_tokens_by_modality": [
+                          {
+                            "modality": "video",
+                            "tokens": 5793
+                          }
+                        ],
+                        "total_cached_tokens": 0,
+                        "total_input_tokens": 5807,
+                        "total_output_tokens": 5793,
+                        "total_thought_tokens": 425,
+                        "total_tokens": 12025,
+                        "total_tool_use_tokens": 0
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniInteraction"
+                }
+              }
+            },
+            "description": "交互详情。",
+            "headers": {
+              "X-Request-Id": {
+                "description": "请求 Id，排查问题时请提供。",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "unauthorized",
+                        "http_status": 401,
+                        "message": "Unauthorized.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "authentication_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "API Key 无效或缺失。"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "not_found",
+                        "http_status": 404,
+                        "message": "The requested file was not found or has expired.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "invalid_request_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "交互不存在、已过期（超过 24 小时）或不属于当前 API Key。"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example": {
+                    "value": {
+                      "error": {
+                        "code": "service_unavailable",
+                        "http_status": 502,
+                        "message": "Service temporarily unavailable. Please try again later.",
+                        "request_id": "req_3f9a1c2b7d4e5f60718293a4",
+                        "type": "api_error"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiOmniErrorResponse"
+                }
+              }
+            },
+            "description": "生成失败或服务暂时不可用，不扣费，可稍后重试。"
+          }
+        },
+        "summary": "查询交互",
+        "tags": [
+          "Gemini Omni"
+        ],
+        "x-mint": {
+          "href": "/api-reference/gemini-omni/get-interaction",
+          "metadata": {
+            "sidebarTitle": "查询交互",
+            "title": "查询交互"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.dreamto.ai"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Gemini Omni"
+    }
+  ]
+}
